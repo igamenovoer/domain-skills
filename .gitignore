@@ -1,5 +1,11 @@
 # pixi environments
 .pixi/
 
+# Python caches
+__pycache__/
+*.py[cod]
+
 # local workspace state
 tmp/
+.mypy_cache/
+.ruff_cache/
