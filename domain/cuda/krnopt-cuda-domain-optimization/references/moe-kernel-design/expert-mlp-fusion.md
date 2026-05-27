@@ -3,18 +3,20 @@
 Use this when GEMM1, activation, and GEMM2 boundaries write too much
 intermediate data or launch too many kernels.
 
-## Sources
+## Source Basis
 
-- Paper: "FusedXpert: GPU Kernel for Fine-Grained Mixture of Experts"
-- Related paper: "Axe: A Simple Unified Layout Abstraction for Machine Learning
-  Compilers"
-- KB paths:
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/fusedxpert-paper.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/axe-layout-paper.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/hpc-ops-fused-moe-design.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/sonicmoe-kernel-design.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/glu-activation-fusion.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/moe-fusion-beyond-baseline.md`
+- Paper: [Axe: A Simple Unified Layout Abstraction for Machine Learning Compilers](https://arxiv.org/abs/2601.19092).
+- Project/source: [Tencent HPC-Ops](https://github.com/Tencent/hpc-ops).
+- Paper/blog/source: [SonicMoE](https://arxiv.org/abs/2512.14080),
+  [Tri Dao SonicMoE write-up](https://tridao.me/blog/2026/sonicmoe-blackwell/),
+  [Dao-AILab/sonic-moe](https://github.com/Dao-AILab/sonic-moe).
+- Internal source-mined basis: FusedXpert paper summary in the CUDA KB; no
+  stable public URL was identified during this rewrite. Use the idea as
+  lineage for fine-grained expert MLP fusion, not as an authority for local
+  performance claims.
+- Distilled idea: reduce the large GEMM1 -> activation -> GEMM2 intermediate
+  boundary when activation traffic or launch boundaries dominate, while
+  preserving split fallback points.
 
 ## Method Card
 
@@ -23,7 +25,9 @@ intermediate data or launch too many kernels.
 - Applicable regime: FP8 forward paths, large intermediate dimensions, fine-grained experts, or staged pipelines where activation traffic is visible after GEMM optimization.
 - Pros: removes or shortens `[routed_tokens, intermediate_dim]` intermediates, can prepare GEMM2 input scale/layout earlier, and targets SwiGLU-specific MoE cost.
 - Cons / guardrails: raises register, shared-memory, and scheduler pressure; full GEMM1 -> activation -> GEMM2 fusion needs explicit tile dependencies and a fallback split.
-- Primary anchors: HPC-Ops for the staged FP8 forward pipeline, SonicMoE for IO-aware MoE fusion, and FusedXpert/Axe for fusion and tile-pipelining lineage.
+- Primary anchors: HPC-Ops for staged FP8 forward pipelines, SonicMoE for
+  IO-aware MoE fusion, and FusedXpert/Axe lineage for fusion and
+  tile-pipelining ideas.
 
 ## Pattern
 

@@ -3,16 +3,13 @@
 Use this when expert M dimensions are uneven and padded rows are visible in
 profiles or traffic estimates.
 
-## Sources
+## Source Basis
 
-- Paper: "TMA-Adaptive FP8 Grouped GEMM: Eliminating Padding Requirements in
-  Low-Precision Training and Inference on Hopper"
-- KB paths:
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/tma-adaptive-grouped-gemm-paper.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/tma-adaptive-source-code.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/hopper-optimization-guides/moe-grouped-gemm.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/tma-descriptor-pool.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/grouped-gemm.md`
+- Paper: [TMA-Adaptive FP8 Grouped GEMM: Eliminating Padding Requirements in Low-Precision Training and Inference on Hopper](https://arxiv.org/abs/2508.16584).
+- Source: [sukoncon/TMA-Adaptive-FP8-Grouped-GEMM](https://github.com/sukoncon/TMA-Adaptive-FP8-Grouped-GEMM).
+- Baseline source: [DeepGEMM](https://github.com/deepseek-ai/DeepGEMM).
+- Distilled idea: isolate residual-M handling from the full-tile path so
+  invalid padded rows are skipped only when padding waste is actually visible.
 
 ## Method Card
 

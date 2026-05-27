@@ -3,18 +3,15 @@
 Use this when many uneven expert tiles should share one resident grouped-GEMM
 kernel.
 
-## Sources
+## Source Basis
 
-- Engineering reference: "Accelerating MoE's with a Triton Persistent
-  Cache-Aware Grouped GEMM Kernel"
-- Related paper: "FlashMoE: Fast Distributed MoE in a Single Kernel"
-- KB paths:
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/pytorch-persistent-cache-aware-grouped-gemm.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/flashdmoe-paper.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/hopper-optimization-guides/deepgemm-sm90-practices.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/sglang-moe-backend-design.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/grouped-gemm.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/moe-fusion-beyond-baseline.md`
+- Engineering reference: [Accelerating MoE's with a Triton Persistent Cache-Aware Grouped GEMM Kernel](https://pytorch.org/blog/accelerating-moes-with-a-triton-persistent-cache-aware-grouped-gemm-kernel/).
+- Paper: [FlashMoE: Fast Distributed MoE in a Single Kernel](https://arxiv.org/abs/2506.04667).
+- Source/project docs: [DeepGEMM](https://github.com/deepseek-ai/DeepGEMM)
+  and [SGLang](https://github.com/sgl-project/sglang).
+- Distilled idea: keep a fixed resident worker set and loop over grouped
+  tiles when launch overhead, tail waves, or expert-weight L2 locality is the
+  measured problem.
 
 ## Method Card
 

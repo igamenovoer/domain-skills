@@ -2,20 +2,26 @@
 
 Use this reference when the user asks how to enhance GPU utilization on a specific NVIDIA GPU, or when the hardware-aware question is about low SM utilization, low Tensor Core utilization, underfed WGMMA/`tcgen05`, memory-pipe saturation, scheduler underfill, or launch gaps.
 
-## Source Anchors
+## Source Basis
 
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/gpu-utilization-maximization/index.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/gpu-utilization-maximization/tensor-core-tiling-and-async-pipelines.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/gpu-utilization-maximization/memory-traffic-and-layout-control.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/gpu-utilization-maximization/irregular-workload-scheduling.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/gpu-utilization-maximization/fusion-and-quantization.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/gpu-utilization-maximization/launch-and-serving-overhead.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/gpu-utilization-maximization/profiler-first-model.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/blackwell-microarchitectural-tuning-facts/tensor-core-pipeline-and-scheduler.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/blackwell-microarchitectural-tuning-facts/data-movement-and-memory.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/blackwell-microarchitectural-tuning-facts/consumer-vs-datacenter-targets.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/sm100-scheduler-and-tma.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/blackwell-umma-tmem-gemm-programming.md`
+- Official CUDA methodology:
+  [CUDA C++ Programming Guide](https://docs.nvidia.com/cuda/cuda-c-programming-guide/),
+  [CUDA C++ Best Practices Guide](https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/),
+  and [Nsight Compute documentation](https://docs.nvidia.com/nsight-compute/).
+- Architecture references:
+  [Hopper Tuning Guide](https://docs.nvidia.com/cuda/hopper-tuning-guide/)
+  and [Blackwell Tuning Guide](https://docs.nvidia.com/cuda/archive/13.0.0/blackwell-tuning-guide/contents.html).
+- Blackwell programming references:
+  [CUTLASS](https://github.com/NVIDIA/cutlass),
+  [Colfax Blackwell TMEM GEMM tutorial](https://research.colfax-intl.com/cutlass-tutorial-writing-gemm-kernels-using-tensor-memory-for-nvidia-blackwell-gpus/),
+  and [Colfax Blackwell block-scaling tutorial](https://research.colfax-intl.com/cutlass-tutorial-hardware-supported-block-scaling-with-nvidia-blackwell-gpus/).
+- Microarchitecture context:
+  [Dissecting the NVIDIA Blackwell Architecture with Microbenchmarks](https://arxiv.org/abs/2507.10789)
+  and [Microbenchmark-Driven Analytical Performance Modeling Across Modern GPU Architectures](https://arxiv.org/abs/2605.04178).
+- Distilled idea: utilization work must name the limiting path, useful-work
+  waste, hardware surface, and confirmation metric. Occupancy alone is not a
+  target, and SM100/B200 features must not be assumed on consumer Blackwell
+  devices.
 
 ## Core Framing
 

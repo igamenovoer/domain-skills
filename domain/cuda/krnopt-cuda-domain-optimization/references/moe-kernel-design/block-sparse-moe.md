@@ -3,14 +3,13 @@
 Use this when dropless routing and variable expert sizes matter more than
 maximal operator fusion.
 
-## Sources
+## Source Basis
 
-- Paper: "MegaBlocks: Efficient Sparse Training with Mixture-of-Experts"
-- KB paths:
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/megablocks-paper.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/megablocks-source-code.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/block-sparse-moe.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/moe-kernel-design-compendium.md`
+- Paper: [MegaBlocks: Efficient Sparse Training with Mixture-of-Experts](https://arxiv.org/abs/2211.15841).
+- Source: [databricks/megablocks](https://github.com/databricks/megablocks).
+- Distilled idea: represent dropless MoE as block-sparse matrix
+  multiplication so variable expert loads become sparse topology instead of
+  token dropping or full-capacity padding.
 
 ## Method Card
 
@@ -19,7 +18,9 @@ maximal operator fusion.
 - Applicable regime: training forward/backward paths, dropless semantics, and workloads where block-boundary padding is preferable to full capacity padding.
 - Pros: natural no-token-drop formulation, covers forward and backward sparse GEMM variants, and avoids many per-expert tiny launches.
 - Cons / guardrails: sparse topology, gather, activation, and scatter can remain separate boundaries; block padding can dominate decode or tiny expert batches; infrastructure cost is higher than grouped-GEMM variants.
-- Primary anchors: MegaBlocks paper/source for block-sparse formulation and MoE kernel design compendium for where it sits relative to grouped and scatter-GEMM designs.
+- Primary anchors: MegaBlocks paper/source for block-sparse formulation and
+  the domain technique index for where it sits relative to grouped and
+  scatter-GEMM designs.
 
 ## Pattern
 

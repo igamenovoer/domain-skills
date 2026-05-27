@@ -13,14 +13,21 @@ count / gather
   -> routing-weight scale and reduce / combine
 ```
 
-## Source Anchors
+## Source Basis
 
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/hpc-ops-fused-moe-design.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/vllm-fused-moe-design.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/sglang-moe-backend-design.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/sonicmoe-kernel-design.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/hopper-optimization-guides/deepgemm-sm90-practices.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/block-scaled-fp8.md`
+- Source/project docs: [Tencent HPC-Ops](https://github.com/Tencent/hpc-ops),
+  [SGLang](https://github.com/sgl-project/sglang), and
+  [vLLM fused MoE](https://docs.vllm.ai/en/latest/api/vllm/model_executor/layers/fused_moe/).
+- Source/project docs: [DeepGEMM](https://github.com/deepseek-ai/DeepGEMM)
+  for SM90 grouped FP8 GEMM and scale-layout contracts.
+- Paper/blog/source: [SonicMoE](https://arxiv.org/abs/2512.14080),
+  [Tri Dao SonicMoE write-up](https://tridao.me/blog/2026/sonicmoe-blackwell/).
+- NVIDIA references for block-scale lineage:
+  [cuBLAS 12.9 block-scaled matmul blog](https://developer.nvidia.com/blog/boosting-matrix-multiplication-speed-and-flexibility-with-nvidia-cublas-12-9/)
+  and [CUTLASS](https://github.com/NVIDIA/cutlass).
+- Distilled idea: keep the FP8 MoE forward path staged until a measured
+  boundary justifies fusion, and treat scale/layout contracts as correctness
+  inputs rather than backend details.
 
 ## Pipeline Practice Cards
 

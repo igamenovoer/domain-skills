@@ -72,7 +72,8 @@ Every method page should give enough context for an agent to decide whether the 
 - applicable regime: decode, prefill, training, fixed contest geometry, single-GPU local experts, or expert-parallel distributed MoE
 - pros: expected win mechanism
 - cons / guardrails: constraints, failure modes, and when not to use it
-- primary anchors: KB pages, papers, or source stacks to inspect when deeper detail is needed
+- primary anchors: public papers, repositories, official docs, or clearly
+  labeled source-mined context to inspect when deeper detail is needed
 
 ## Decision Tree
 

@@ -3,24 +3,16 @@
 Use this when experts are sharded across GPUs and expert-parallel communication
 dominates dispatch, compute, or combine.
 
-## Sources
+## Source Basis
 
-- Papers:
-  - "NCCL EP: Towards a Unified Expert Parallel Communication API for NCCL"
-  - "Flux: Fast Software-based Communication Overlap on GPUs through Kernel
-    Fusion"
-  - "COMET: Fine-grained Computation-Communication Overlapping for
-    Mixture-of-Experts"
-  - "Harnessing Inter-GPU Shared Memory for Seamless MoE
-    Communication-Computation Fusion"
-- KB paths:
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/nccl-ep-paper.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/flux-paper.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/flux-source-code.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/comet-paper.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/ccfuser-paper.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/expert-parallelism.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/moe-fusion-beyond-baseline.md`
+- Paper: [NCCL EP: Towards a Unified Expert Parallel Communication API for NCCL](https://arxiv.org/abs/2603.13606).
+- Paper and source: [Flux: Fast Software-based Communication Overlap on GPUs through Kernel Fusion](https://arxiv.org/abs/2406.06858),
+  [bytedance/flux](https://github.com/bytedance/flux).
+- Paper: [COMET: Fine-grained Computation-communication Overlapping for Mixture-of-Experts](https://arxiv.org/abs/2502.19811).
+- Paper page: [Harnessing Inter-GPU Shared Memory for Seamless MoE Communication-Computation Fusion](https://researchr.org/publication/WangXY0C25).
+- Distilled idea: communication-heavy MoE should be treated as staged
+  dispatch/compute/combine overlap, with separate low-latency and
+  high-throughput regimes rather than one collective boundary.
 
 ## Method Card
 
@@ -29,7 +21,9 @@ dominates dispatch, compute, or combine.
 - Applicable regime: distributed expert-parallel inference/training; for single-GPU local experts, use only the readiness and producer/consumer scheduling ideas.
 - Pros: reduces idle time behind collective barriers and can overlap communication with expert compute at sub-layer granularity.
 - Cons / guardrails: topology, framework integration, completion semantics, and payload size decide the outcome; importing distributed complexity into a single-GPU kernel is usually a mistake.
-- Primary anchors: Expert Parallelism concept for scope, Flux/COMET source for fused AG/scatter/GEMM and GEMM/gather/RS splits, and NCCL EP for library-mode selection.
+- Primary anchors: Flux/COMET for fine-grained overlap, NCCL EP for
+  library-mode selection, and the communication-fusion paper lineage for
+  when distributed expert parallelism is the real bottleneck.
 
 ## Pattern
 

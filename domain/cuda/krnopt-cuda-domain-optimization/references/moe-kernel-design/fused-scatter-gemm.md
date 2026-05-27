@@ -3,16 +3,14 @@
 Use this when explicit token permutation, unpermutation, or dispatch/combine
 buffers dominate memory traffic.
 
-## Sources
+## Source Basis
 
-- Paper: "Scattered Mixture-of-Experts Implementation"
-- Related paper: "FusedXpert: GPU Kernel for Fine-Grained Mixture of Experts"
-- KB paths:
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/scattermoe-paper.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/scattermoe-source-code.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/fusedxpert-paper.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/fused-scatter-gemm.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/moe-implementation-kernel-techniques.md`
+- Paper: [Scattered Mixture-of-Experts Implementation](https://arxiv.org/abs/2403.08245).
+- Source: [shawntan/scattermoe](https://github.com/shawntan/scattermoe).
+- Internal source-mined basis: FusedXpert paper summary in the CUDA KB; no
+  stable public URL was identified during this rewrite.
+- Distilled idea: absorb dispatch/unpermute into GEMM tile loads and stores
+  when indexed access is cheaper than materializing routed token buffers.
 
 ## Method Card
 

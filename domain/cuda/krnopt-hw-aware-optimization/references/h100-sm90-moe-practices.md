@@ -10,16 +10,27 @@ This page embeds the relevant Hopper MoE guidance directly. The recurring patter
 
 Local upstream checkouts can still be useful for comparison, but this reference should be sufficient to choose the Hopper-specific practice card without depending on a separate knowledge base.
 
-## Source Anchors
+## Source Basis
 
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/hopper-optimization-guides/moe-grouped-gemm.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/hopper-optimization-guides/deepgemm-sm90-practices.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/sglang-moe-backend-design.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/vllm-fused-moe-design.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/hpc-ops-fused-moe-design.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/sonicmoe-kernel-design.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/static-batching-irregular-workloads-moe.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/tma-adaptive-grouped-gemm-paper.md`
+- Hopper grouped-GEMM baselines:
+  [DeepGEMM](https://github.com/deepseek-ai/DeepGEMM),
+  [CUTLASS](https://github.com/NVIDIA/cutlass), and
+  [PyTorch persistent cache-aware grouped GEMM](https://pytorch.org/blog/accelerating-moes-with-a-triton-persistent-cache-aware-grouped-gemm-kernel/).
+- Serving/runtime source-mined basis:
+  [SGLang](https://github.com/sgl-project/sglang),
+  [vLLM fused MoE](https://github.com/vllm-project/vllm/tree/main/vllm/model_executor/layers/fused_moe),
+  and [Tencent HPC-Ops](https://github.com/Tencent/hpc-ops). These are
+  public source references, not required local checkouts.
+- Hopper irregular-work techniques:
+  [Static Batching of Irregular Workloads on GPUs](https://arxiv.org/abs/2501.16103)
+  and [TMA-Adaptive FP8 Grouped GEMM](https://arxiv.org/abs/2508.16584).
+- Cross-generation context:
+  [SonicMoE](https://arxiv.org/abs/2512.14080) and the
+  [SonicMoE write-up](https://tridao.me/blog/2026/sonicmoe-blackwell/).
+- Distilled idea: keep Hopper MoE guidance centered on SM90 TMA/WGMMA,
+  register-resident accumulators, FP32 scale metadata, grouped scheduling,
+  and explicit decode/prefill regime splits. Do not import SM100 TMEM,
+  `tcgen05.mma`, CLC, or packed Blackwell scale contracts into an SM90 plan.
 
 ## What To Establish First
 

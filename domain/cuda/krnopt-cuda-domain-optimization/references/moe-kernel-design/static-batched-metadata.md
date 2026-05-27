@@ -3,16 +3,15 @@
 Use this when explicit token reordering is expensive but a fully dynamic
 device-side grouped-GEMM scheduler is too heavy.
 
-## Sources
+## Source Basis
 
-- Paper: "Static Batching of Irregular Workloads on GPUs: Framework and
-  Application to Efficient MoE Model Inference"
-- Implementation reference: DashInfer source provenance
-- KB paths:
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/static-batching-irregular-workloads-moe.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/static-batching.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/hopper-optimization-guides/moe-grouped-gemm.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/moe-fusion-beyond-baseline.md`
+- Paper: [Static Batching of Irregular Workloads on GPUs](https://arxiv.org/abs/2501.16103).
+- Implementation lineage: DashInfer-style static metadata was distilled from
+  source-mined public code; if no stable project page is available, treat this
+  as a technique summary rather than a dependency.
+- Distilled idea: store compact virtual-CTA metadata and row indices so
+  expert GEMMs can gather token rows without materializing full contiguous
+  expert-token buffers.
 
 ## Method Card
 
@@ -21,7 +20,8 @@ device-side grouped-GEMM scheduler is too heavy.
 - Applicable regime: device-known per-expert M, irregular local expert loads, and paths where dispatch/unpermute traffic is more important than pure GEMM tile shape.
 - Pros: avoids duplicate contiguous token buffers, keeps Hopper WGMMA grouped GEMM viable, and gives predictable metadata instead of an all-dynamic queue.
 - Cons / guardrails: row-index loads may reduce coalescing; metadata and prefix decoding can become the bottleneck; worst-case skew and empty experts need dedicated tests.
-- Primary anchors: Static Batching / DashInfer source digest for H20/H800 mechanics and Hopper MoE Grouped GEMM for the broader grouped-GEMM context.
+- Primary anchors: Static Batching for the virtual-CTA metadata model and the
+  Hopper grouped-GEMM pattern for where row-index loads fit.
 
 ## Pattern
 

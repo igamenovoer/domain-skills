@@ -4,15 +4,18 @@ Use this page when a Hopper/H20/H100/H800 MoE request asks which backend, kernel
 
 The main lesson from SGLang, vLLM, DeepGEMM, FlashInfer, CUTLASS, HPC-Ops, and SonicMoE is that Hopper MoE is not one universal kernel. Classify the workload regime before choosing a backend or implementation pattern.
 
-## Source Anchors
+## Source Basis
 
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/sglang-moe-backend-design.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/vllm-fused-moe-design.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/hpc-ops-fused-moe-design.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/sonicmoe-kernel-design.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/hopper-optimization-guides/moe-grouped-gemm.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/concepts/hopper-optimization-guides/deepgemm-sm90-practices.md`
-- `kbs/cuda-kernel-optimization-kb/wiki/summaries/hopper-specific-moe-kernel-targets.md`
+- Source-mined public repos: [SGLang](https://github.com/sgl-project/sglang)
+  and [vLLM fused MoE](https://github.com/vllm-project/vllm/tree/main/vllm/model_executor/layers/fused_moe).
+- Source/project docs: [DeepGEMM](https://github.com/deepseek-ai/DeepGEMM),
+  [Tencent HPC-Ops](https://github.com/Tencent/hpc-ops), and
+  [SonicMoE](https://tridao.me/blog/2026/sonicmoe-blackwell/).
+- Implementation lineage: CUTLASS grouped GEMM examples, FlashInfer/TRT-LLM
+  fused-MoE interfaces, and DeepGEMM SM90 grouped FP8 paths.
+- Distilled idea: choose a Hopper MoE regime first. Decode, prefill,
+  padding-heavy grouped GEMM, dispatch-heavy pipelines, and full FP8 forward
+  fusion need different backends and failure checks.
 
 ## Decision Flow
 

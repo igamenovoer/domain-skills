@@ -3,15 +3,15 @@
 Use this when the operator is bespoke and launch, dispatch, compute, and
 combine boundaries dominate enough to justify one persistent kernel.
 
-## Sources
+## Source Basis
 
-- Paper: "FlashMoE: Fast Distributed MoE in a Single Kernel"
-- KB paths:
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/flashdmoe-paper.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/flashmoe-source-code.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/sonicmoe-kernel-design.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/moe-fusion-beyond-baseline.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/moe-kernel-design-compendium.md`
+- Paper: [FlashMoE: Fast Distributed MoE in a Single Kernel](https://arxiv.org/abs/2506.04667).
+- Source: [osayamenja/FlashMoE](https://github.com/osayamenja/FlashMoE).
+- Paper/blog/source: [SonicMoE](https://arxiv.org/abs/2512.14080),
+  [Tri Dao SonicMoE write-up](https://tridao.me/blog/2026/sonicmoe-blackwell/).
+- Distilled idea: only collapse dispatch, compute, and combine into one
+  persistent operator when queueing and overlap remove measured boundaries
+  that staged fusion cannot address.
 
 ## Method Card
 

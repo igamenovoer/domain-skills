@@ -3,14 +3,13 @@
 Use this when dispatch and combine are visible costs but cannot be fused into
 GEMM tile load/store.
 
-## Sources
+## Source Basis
 
-- Paper: "Tutel: Adaptive Mixture-of-Experts at Scale"
-- KB paths:
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/tutel-paper.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/summaries/tutel-source-code.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/sparse-moe-dispatch.md`
-  - `kbs/cuda-kernel-optimization-kb/wiki/concepts/moe-kernel-design-compendium.md`
+- Paper: [Tutel: Adaptive Mixture-of-Experts at Scale](https://arxiv.org/abs/2206.03382).
+- Source: [microsoft/tutel](https://github.com/microsoft/tutel).
+- Distilled idea: use sparse encode/decode and route-index kernels when the
+  GEMM path cannot absorb indirection, but treat separate dispatch/combine
+  buffers as a memory-traffic cost to remeasure.
 
 ## Method Card
 
@@ -19,7 +18,8 @@ GEMM tile load/store.
 - Applicable regime: retrofit work where separate GEMM kernels must remain, distributed paths where dispatch/combine can overlap communication, or early-stage baselines before deeper fusion.
 - Pros: simpler to integrate than fused scatter-GEMM, preserves existing expert GEMM kernels, and provides SIMT reduction/vectorization patterns.
 - Cons / guardrails: still materializes buffers and is often global-memory bound; usually loses to fused scatter-GEMM when tile loads/stores can absorb indirection.
-- Primary anchors: Tutel paper/source for sparse encode/decode and sparse MoE dispatch concept notes for the `T * k` route model.
+- Primary anchors: Tutel paper/source for sparse encode/decode and the
+  `T * k` active-route model.
 
 ## Pattern
 
