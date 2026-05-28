@@ -156,8 +156,9 @@ starting hypotheses when static inspection is the only evidence.
   `wmma`, `mma.sync`, or WGMMA use; dtype-mixed epilogues doing implicit
   promotions to FP32 or FP64; scalar fallback paths where a packed SIMD
   intrinsic exists; manual implementations of standard primitives where
-  cuBLAS, cuBLASLt, CUTLASS/CuTe, CUB, cuDNN, NCCL, or framework/runtime
-  primitives may fit; generic `pow`/`exp` where a specialized variant fits.
+  cuBLAS, cuBLASLt, cuDNN, NCCL, framework/runtime primitives, CCCL APIs
+  such as CUB/Thrust/libcu++, or CUTLASS/CuTe may fit; generic `pow`/`exp`
+  where a specialized variant fits.
 
 ## Source-Localized Hotspots To Collect First
 

@@ -241,9 +241,11 @@ concrete resource symptom rather than by fashion.
 
 For production optimization, do not treat this ladder as permission to
 handcraft GEMM before checking standard CUDA primitives. The preferred order is
-precompiled vendor libraries first, header/template or generated-kernel
-libraries second, and handcrafted kernels only when the higher tiers fail the
-feature, integration, fusion, or measured-performance requirements.
+precompiled vendor/runtime libraries first, CCCL header-only CUDA core
+primitives second when the hotspot is a scan/reduction/sort/collective building
+block or CUDA C++ utility, header/template or generated-kernel libraries third,
+and handcrafted kernels only when the higher tiers fail the feature,
+integration, fusion, or measured-performance requirements.
 
 1. **Baseline one-thread-per-output**: warp-adjacent lanes walk strided
    addresses; most outputs re-load the same global bytes. Before optimizing,

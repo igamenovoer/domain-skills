@@ -136,16 +136,24 @@ primitive, prefer the standard-library-style ladder before handcrafting:
 
 ```text
 precompiled vendor/runtime libraries
+  -> CCCL header-only CUDA core primitives
   -> header/template or generated-kernel libraries
   -> handcrafted CUDA kernels
 ```
 
-In practice this means checking cuBLAS, cuBLASLt, cuDNN, CUB, NCCL, or available
-framework/runtime kernels first when they support the operation. If those do not
-support the required feature or perform badly on the measured workload, consider
-CUTLASS/CuTe, CUTLASS DSL, TileLang/CuTile-style generators, or domain wrappers
-such as DeepGEMM and FlashInfer. Only recommend handcrafted SIMT, WGMMA/TMA, or
-deeply fused kernels after stating why the higher tiers do not fit. Use
+In practice this means checking cuBLAS, cuBLASLt, cuDNN, NCCL, or available
+framework/runtime kernels first when they support the operation. For standard
+parallel primitives and CUDA C++ building blocks, check CCCL APIs next: CUB for
+device-, block-, and warp-level algorithms, Thrust for higher-level parallel
+algorithms, and libcu++/`cuda::` for CUDA-aware standard-library facilities,
+atomics, barriers, pipelines, and memory utilities. CCCL is header-only and is
+usually provided by the CUDA Toolkit include path used by `nvcc`; treat a
+separate CCCL checkout or package as a version/include decision rather than as a
+runtime library dependency. If those do not support the required feature or
+perform badly on the measured workload, consider CUTLASS/CuTe, CUTLASS DSL,
+TileLang/CuTile-style generators, or domain wrappers such as DeepGEMM and
+FlashInfer. Only recommend handcrafted SIMT, WGMMA/TMA, or deeply fused kernels
+after stating why the higher tiers do not fit. Use
 [references/vendor-cuda-primitive-selection-subskill.md](references/vendor-cuda-primitive-selection-subskill.md)
 when this decision matters.
 
