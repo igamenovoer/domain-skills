@@ -1,0 +1,6 @@
+interface:
+  display_name: "imsight-autodev-master"
+  short_description: "Layered dispatch to Houmao slave agents"
+  default_prompt: "Use $imsight-autodev-master use help to see master dispatch subcommands, or use a specific subcommand to dispatch an OpenSpec request."
+policy:
+  allow_implicit_invocation: false

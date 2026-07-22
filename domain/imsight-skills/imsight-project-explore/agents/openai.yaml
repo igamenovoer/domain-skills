@@ -1,0 +1,6 @@
+interface:
+  display_name: "imsight-project-explore"
+  short_description: "Explore project specs, scope, and ambiguities"
+  default_prompt: "Use $imsight-project-explore in auto mode to inspect this project, choose the exploration type, state that routing choice, and ask me the first decision-bearing question before making project decisions."
+policy:
+  allow_implicit_invocation: false

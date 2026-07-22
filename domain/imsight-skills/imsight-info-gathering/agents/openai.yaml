@@ -1,0 +1,6 @@
+interface:
+  display_name: "imsight-info-gathering"
+  short_description: "Search, download, find links, and synthesize sourced reports"
+  default_prompt: "Use $imsight-info-gathering use help to see Imsight search, download, find-hint, find-libgen, source-ledger, and report subcommands."
+policy:
+  allow_implicit_invocation: false

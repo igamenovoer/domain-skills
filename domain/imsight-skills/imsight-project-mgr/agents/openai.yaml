@@ -1,0 +1,6 @@
+interface:
+  display_name: "imsight-project-mgr"
+  short_description: "Manage project foundations and isolated development"
+  default_prompt: "Use $imsight-project-mgr use help to see project-foundation and project-development subcommands."
+policy:
+  allow_implicit_invocation: false

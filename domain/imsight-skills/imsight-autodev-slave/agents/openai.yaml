@@ -1,0 +1,6 @@
+interface:
+  display_name: "imsight-autodev-slave"
+  short_description: "Slave-agent request processing workflows"
+  default_prompt: "Use $imsight-autodev-slave use help to see slave workflow subcommands, or use a specific subcommand to process a master's request."
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,6 @@
+interface:
+  display_name: "imsight-paper-search"
+  short_description: "Direct curl recipes for Semantic Scholar paper, author, recommendation, and dataset APIs"
+  default_prompt: "Use the imsight-paper-search skill to build direct curl calls against the Semantic Scholar APIs."
+policy:
+  allow_implicit_invocation: false

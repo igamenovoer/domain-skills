@@ -1,0 +1,6 @@
+interface:
+  display_name: "imsight-project-automation"
+  short_description: "Project automation routines for development workflows"
+  default_prompt: "Use $imsight-project-automation use help to see available automation subcommands, or use a specific subcommand to run a project-automation routine."
+policy:
+  allow_implicit_invocation: false

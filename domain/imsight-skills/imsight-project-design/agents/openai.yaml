@@ -1,0 +1,6 @@
+interface:
+  display_name: "imsight-project-design"
+  short_description: "Staged Imsight feature plans"
+  default_prompt: "Use $imsight-project-design help to choose a staged feature-design subcommand."
+policy:
+  allow_implicit_invocation: false

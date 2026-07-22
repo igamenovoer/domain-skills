@@ -1,0 +1,6 @@
+interface:
+  display_name: "imsight-reporting"
+  short_description: "Write evidence-based daily project reports"
+  default_prompt: "Use $imsight-reporting use write-day-log to prepare today's three-point report from Git and project evidence."
+policy:
+  allow_implicit_invocation: false
