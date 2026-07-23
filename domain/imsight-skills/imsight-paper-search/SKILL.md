@@ -25,8 +25,7 @@ When this skill is invoked, execute the following steps in order.
    - Select the correct base URL from **Base URLs**.
    - Replace path placeholders such as `{paper_id}` with real IDs.
    - Add required query parameters and any desired optional filters.
-   - Check the environment variable `S2_API_KEY`. If it is not set, also look in commonly known environment files such as `.env` or `.env.local` in the working directory.
-   - If a non-empty `S2_API_KEY` value is found, include `-H "x-api-key: $S2_API_KEY"` in the curl command. Do not expose the key in output.
+   - **Resolve the API key** following **API Key**. If a non-empty key is found, include `-H "x-api-key: $S2_API_KEY"` in the curl command. Do not expose the key in output.
    - For POST endpoints, set `-H "Content-Type: application/json"` and pass the JSON body with `-d`.
 4. **Run curl and parse the JSON response**. Use `jq` or another JSON formatter to inspect results.
 5. **Paginate list endpoints** using `offset`/`limit` or the `next`/`token` fields returned in the response. Stop when there is no next page or the user has enough results.
@@ -58,12 +57,23 @@ If the user's task does not map cleanly to a documented endpoint, use your nativ
 | List datasets in a release | Datasets | GET | `/release/{release_id}` | `references/datasets-api.md` |
 | Download links for a dataset | Datasets | GET | `/release/{release_id}/dataset/{dataset_name}` | `references/datasets-api.md` |
 
-## Authentication
+## API Key
 
-An API key is optional but provides higher rate limits. The skill looks for a key in this order:
+Do not mix key acquisition into the workflow. Resolve the key in this dedicated section and reference it from workflow step 3.
 
-1. The shell environment variable `S2_API_KEY` if it is set and non-empty.
-2. Common environment files in the working directory, such as `.env` or `.env.local`, that define `S2_API_KEY`.
+### Obtaining a key
+
+Request a Semantic Scholar API key through the official API registration process. Once granted, store it in an environment variable or secret manager. Never commit the key.
+
+### Resolving the key
+
+When a curl command needs authentication, look for a key in this order:
+
+1. **User prompt** — the key provided explicitly in the current request.
+2. **Previous chat context** — a key already shared or set earlier in the conversation.
+3. **Shell environment** — the `S2_API_KEY` environment variable if it is set and non-empty.
+4. **Environment files** — common files such as `.env` or `.env.local` in the working directory that define `S2_API_KEY`.
+5. **No key** — proceed without a key. The API still works but with lower rate limits.
 
 When a key is found, pass it as:
 
@@ -71,7 +81,7 @@ When a key is found, pass it as:
 -H "x-api-key: $S2_API_KEY"
 ```
 
-Store the key in an environment variable or secret manager. Never commit an API key or expose it in output.
+Do not expose the key in chat output, logs, or persisted artifacts.
 
 ## Base URLs
 
