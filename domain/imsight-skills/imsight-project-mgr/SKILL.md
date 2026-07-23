@@ -1,6 +1,6 @@
 ---
 name: imsight-project-mgr
-description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes a supported project-foundation or project-development operation to it. Covers Pixi/Python project initialization and structure, universal project rules, clean Git worktrees, and isolated implementation. Do not invoke implicitly for generic project tasks or from Imsight context alone.
+description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes a supported project-foundation, project-development, or GitHub release operation to it. Covers Pixi/Python project initialization and structure, universal project rules, clean Git worktrees, isolated implementation, and project releases. Do not invoke implicitly for generic project tasks or from Imsight context alone.
 ---
 
 # Imsight Project Manager
@@ -13,6 +13,7 @@ Use this skill as the manually invoked or internally routed entrypoint for Imsig
 
 - Use only when the user explicitly invokes `imsight-project-mgr` or another loaded skill routes a supported operation here.
 - Use for the project-foundation and isolated-development operations in **Subcommands**.
+- Use for an explicit request to prepare and publish a project release on GitHub.
 - Do not activate implicitly for generic project work or from Imsight context alone.
 
 ## Workflow
@@ -54,6 +55,7 @@ This contract does not replace intentional project-foundation edits in the targe
 | `declare-universal-rules` | Add or refresh Imsight universal rules in a coding-agent project context file | `commands/declare-universal-rules.md` |
 | `create-worktree` | Create a clean Git worktree and safely reuse eligible local state | `commands/create-worktree.md` |
 | `impl-in-worktree` | Implement and verify a change on a fresh local branch in an isolated worktree | `commands/impl-in-worktree.md` |
+| `github-release` | Prepare the project changelog and publish a verified GitHub release with an explicit change list | `commands/github-release.md` |
 | `help` | Explain this skill, its invocation restriction, categories, and public subcommands | This entrypoint |
 
 Each operational subcommand is independently invocable; the table order does not impose a lifecycle.
@@ -66,6 +68,7 @@ Each operational subcommand is independently invocable; the table order does not
 - Route development-host setup and installation to `imsight-dev-box-init`.
 - Route networking to `imsight-dev-box-network` and miscellaneous infrastructure to `imsight-project-misc`.
 - Within `impl-in-worktree`, this skill owns the isolated branch, worktree, verification, and local-delivery boundary. The native coding workflow or explicitly named domain skill owns implementation logic.
+- Within `github-release`, this skill owns release preparation, changelog maintenance, GitHub release publication through `gh`, and post-publication verification. Repository instructions own project-specific versioning, build, validation, signing, and asset requirements.
 
 ## Guardrails
 
