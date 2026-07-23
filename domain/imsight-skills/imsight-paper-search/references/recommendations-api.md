@@ -4,7 +4,7 @@ Base URL: `https://api.semanticscholar.org/recommendations/v1`
 
 Official docs: https://api.semanticscholar.org/api-docs/recommendations
 
-Set `x-api-key` in the request header when an API key is configured.
+Use an API key only when one is available. First check the shell environment variable `S2_API_KEY`; if it is not set, check common environment files such as `.env` or `.env.local` in the working directory. If a non-empty `S2_API_KEY` value is found, include `-H "x-api-key: $S2_API_KEY"` in the curl command.
 
 ## POST /papers/ — Get recommended papers for lists of positive and negative example papers
 

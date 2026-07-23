@@ -25,7 +25,8 @@ When this skill is invoked, execute the following steps in order.
    - Select the correct base URL from **Base URLs**.
    - Replace path placeholders such as `{paper_id}` with real IDs.
    - Add required query parameters and any desired optional filters.
-   - Include `-H "x-api-key: $S2_API_KEY"` when an API key is available.
+   - Check the environment variable `S2_API_KEY`. If it is not set, also look in commonly known environment files such as `.env` or `.env.local` in the working directory.
+   - If a non-empty `S2_API_KEY` value is found, include `-H "x-api-key: $S2_API_KEY"` in the curl command. Do not expose the key in output.
    - For POST endpoints, set `-H "Content-Type: application/json"` and pass the JSON body with `-d`.
 4. **Run curl and parse the JSON response**. Use `jq` or another JSON formatter to inspect results.
 5. **Paginate list endpoints** using `offset`/`limit` or the `next`/`token` fields returned in the response. Stop when there is no next page or the user has enough results.
@@ -59,13 +60,18 @@ If the user's task does not map cleanly to a documented endpoint, use your nativ
 
 ## Authentication
 
-An API key is optional but provides higher rate limits. Pass it as a header:
+An API key is optional but provides higher rate limits. The skill looks for a key in this order:
+
+1. The shell environment variable `S2_API_KEY` if it is set and non-empty.
+2. Common environment files in the working directory, such as `.env` or `.env.local`, that define `S2_API_KEY`.
+
+When a key is found, pass it as:
 
 ```bash
 -H "x-api-key: $S2_API_KEY"
 ```
 
-Store keys in environment variables or secret managers. Never commit an API key.
+Store the key in an environment variable or secret manager. Never commit an API key or expose it in output.
 
 ## Base URLs
 
@@ -90,6 +96,8 @@ Store keys in environment variables or secret managers. Never commit an API key.
 ## Guardrails
 
 - DO NOT commit API keys or hardcode them into skill files, scripts, or example commands.
+- DO NOT expose the API key in chat output, logs, or persisted artifacts.
+- DO NOT read environment files outside the working directory to find an API key unless the user explicitly directs it.
 - DO NOT use `/paper/search` for result sets larger than 1,000; use bulk search or the Datasets API.
 - DO NOT exceed documented per-request limits, such as 500 paper IDs in `/paper/batch` or 1,000 author IDs in `/author/batch`.
 - DO NOT assume every response record contains every requested field; handle missing or null values gracefully.
