@@ -87,7 +87,9 @@ tmp/
 
 Do not add `.git/` to `.gitignore` unless it matches an existing local standard. Add `skillset/README.md` explaining that project-specific agent skills live there and use `<project-slug>-<what>` names.
 
-Create `context/plans/`, `context/features/`, `context/design/`, `context/summaries/`, and `context/archived/` even when the new project has no context artifacts yet. Add `.gitkeep` to any empty context home that must survive the initial Git commit, and remove that placeholder after substantive content is added.
+Create `context/plans/`, `context/features/`, `context/design/`, `context/summaries/`, and `context/archived/` even when the new project has no context artifacts yet. In each subdirectory, create a `README.md` that briefly describes the subdirectory's purpose based on **Directory Roles**.
+
+Also create a top-level `context/README.md` that explains the `context/` layout and points to each subdirectory. Do not add `.gitkeep` to a subdirectory that already contains a `README.md`; add `.gitkeep` only to an empty context subdirectory that must survive the initial Git commit, and remove that placeholder after substantive content is added.
 
 ## Pixi Initialization
 
@@ -114,4 +116,5 @@ For an existing project, inspect the manifest first and add only missing request
 - `.pixi/`, `tmp/`, and `extern/orphan/*` are ignored.
 - Documentation and AI context have distinct homes.
 - `context/` contains the `plans/`, `features/`, `design/`, `summaries/`, and `archived/` homes with no project knowledge placed in an ambiguous catch-all location.
+- Each `context/` subdirectory contains a `README.md` describing its purpose.
 - `skillset/README.md` documents the `<project-slug>-<what>` naming convention for project-specific skills.

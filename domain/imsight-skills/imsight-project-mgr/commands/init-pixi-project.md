@@ -60,7 +60,7 @@ If dependency installation fails, preserve the initialized manifest and lock evi
 
 ## Structural Handoff
 
-After Pixi bootstrap, execute `structure-pixi-project` to create or reconcile the import package, tests, documentation, scripts, external dependency homes, project skill home, ignore rules, and review checklist. The structural handoff must create `context/plans/`, `context/features/`, `context/design/`, `context/summaries/`, and `context/archived/`; do not replace that hierarchy with a single undifferentiated `context/` directory.
+After Pixi bootstrap, execute `structure-pixi-project` to create or reconcile the import package, tests, documentation, scripts, external dependency homes, project skill home, ignore rules, and review checklist. The structural handoff must create `context/plans/`, `context/features/`, `context/design/`, `context/summaries/`, and `context/archived/`, each with a `README.md`; do not replace that hierarchy with a single undifferentiated `context/` directory.
 
 ## Example Prompts
 
