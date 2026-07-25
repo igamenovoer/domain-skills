@@ -53,6 +53,7 @@ This contract does not replace intentional install destinations such as tool hom
 | `help` | Explain this dev-box setup skill and list available subcommands | This entrypoint |
 | `houmao-setup` | Install `houmao`, verify `houmao-mgr`, or install Houmao system skills for Codex/Claude/Gemini | `references/houmao-skills-and-manager.md` |
 | `tavily-setup` | Install Tavily CLI (`tvly`), authenticate it, or install Tavily third-party skills into an agent skill home | `references/tavily-cli-and-skills.md` |
+| `context7-setup` | Install Context7 CLI (`ctx7`) and the `context7-cli` skill for an agent; CLI-based, not MCP | `references/context7-cli-setup.md` |
 | `claude-kimi-launcher` | Create or repair the `claude-kimi` launcher for Claude Code through Kimi Code | `references/claude-kimi-launcher.md` |
 | `houmao-claude-kimi-specialist` | Create a Houmao specialist that uses Claude Code with Kimi credentials | `references/houmao-claude-kimi-specialist.md` |
 | `codex-cli-setup` | Configure Codex CLI according to Imsight preferences | `references/codex-cli-setup.md` |

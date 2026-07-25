@@ -4,7 +4,12 @@ param(
     [string]$CmdShimPath = "",
     [string]$KeyFilePath = "",
     [string]$BaseUrl = "https://api.moonshot.ai/anthropic",
-    [string]$Model = "kimi-k3",
+    [string]$Model = "opus",
+    [string]$ModelOpus = "",
+    [string]$ModelSonnet = "",
+    [string]$ModelHaiku = "",
+    [string]$ModelFable = "",
+    [string]$ModelSubagent = "",
     [string]$CompactWindow = "",
     [string]$ClaudeBin = ""
 )
@@ -29,13 +34,45 @@ if ([string]::IsNullOrWhiteSpace($KeyFilePath)) {
     $KeyFilePath = Join-Path (Split-Path -Parent $OutputPath) "kimi-api-key"
 }
 
+# The Kimi Code membership endpoint authenticates with ANTHROPIC_API_KEY;
+# the Moonshot API-platform endpoint authenticates with ANTHROPIC_AUTH_TOKEN.
+# Tier defaults also differ per lane. Never map an alias to a highspeed
+# variant by default.
+$useApiKeyAuth = $BaseUrl -like '*api.kimi.com*'
+if ($useApiKeyAuth) {
+    if ([string]::IsNullOrWhiteSpace($ModelOpus)) { $ModelOpus = 'k3-256k' }
+    if ([string]::IsNullOrWhiteSpace($ModelSonnet)) { $ModelSonnet = 'kimi-for-coding' }
+    if ([string]::IsNullOrWhiteSpace($ModelHaiku)) { $ModelHaiku = 'kimi-for-coding' }
+    if ([string]::IsNullOrWhiteSpace($ModelFable)) { $ModelFable = 'k3' }
+    if ([string]::IsNullOrWhiteSpace($ModelSubagent)) { $ModelSubagent = 'kimi-for-coding' }
+} else {
+    if ([string]::IsNullOrWhiteSpace($ModelOpus)) { $ModelOpus = 'kimi-k3' }
+    if ([string]::IsNullOrWhiteSpace($ModelSonnet)) { $ModelSonnet = 'kimi-k2.7-code' }
+    if ([string]::IsNullOrWhiteSpace($ModelHaiku)) { $ModelHaiku = 'kimi-k2.6' }
+    if ([string]::IsNullOrWhiteSpace($ModelFable)) { $ModelFable = 'kimi-k3' }
+    if ([string]::IsNullOrWhiteSpace($ModelSubagent)) { $ModelSubagent = 'kimi-k2.7-code' }
+}
+
+# Resolve a Claude tier alias to its Kimi model; raw model names pass through.
+function Resolve-TierModel {
+    param([string]$Name)
+    switch ($Name) {
+        'opus'   { return $ModelOpus }
+        'sonnet' { return $ModelSonnet }
+        'haiku'  { return $ModelHaiku }
+        'fable'  { return $ModelFable }
+        default  { return $Name }
+    }
+}
+$startupModelResolved = Resolve-TierModel -Name $Model
+
 if ([string]::IsNullOrWhiteSpace($CompactWindow)) {
-    if ($Model -match 'k2\.' -or $Model -like 'kimi-for-coding*' -or $Model -eq 'k3') {
-        # K2-series models, the K2.7 Code family, and coding-plan k3
-        # (Moderato tier) use a 256K context window.
+    if ($startupModelResolved -match 'k2\.' -or $startupModelResolved -like 'kimi-for-coding*' -or $startupModelResolved -eq 'k3' -or $startupModelResolved -eq 'k3-256k') {
+        # K2-series models, the K2.7 Code family, coding-plan k3
+        # (Moderato tier), and k3-256k use a 256K context window.
         $CompactWindow = '262144'
     } else {
-        # kimi-k3 and coding-plan k3[1m] use a 1M context window.
+        # kimi-k3 and 1M-variant models use a 1M context window.
         $CompactWindow = '1048576'
     }
 }
@@ -43,10 +80,6 @@ if ($CompactWindow -notmatch '^\d+$') {
     Write-Error "invalid -CompactWindow: $CompactWindow (expected a number)"
     exit 2
 }
-
-# The Kimi Code membership endpoint authenticates with ANTHROPIC_API_KEY;
-# the Moonshot API-platform endpoint authenticates with ANTHROPIC_AUTH_TOKEN.
-$useApiKeyAuth = $BaseUrl -like '*api.kimi.com*'
 
 function ConvertTo-SingleQuotedLiteralValue {
     param([string]$Value)
@@ -56,6 +89,11 @@ function ConvertTo-SingleQuotedLiteralValue {
 $keyFileLiteral = ConvertTo-SingleQuotedLiteralValue -Value $KeyFilePath
 $baseUrlLiteral = ConvertTo-SingleQuotedLiteralValue -Value $BaseUrl
 $modelLiteral = ConvertTo-SingleQuotedLiteralValue -Value $Model
+$modelOpusLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ModelOpus
+$modelSonnetLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ModelSonnet
+$modelHaikuLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ModelHaiku
+$modelFableLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ModelFable
+$modelSubagentLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ModelSubagent
 $claudeBinLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ClaudeBin
 
 if ($useApiKeyAuth) {
@@ -65,11 +103,18 @@ Remove-Item Env:ANTHROPIC_AUTH_TOKEN -ErrorAction SilentlyContinue
 Remove-Item Env:CLAUDE_CODE_OAUTH_TOKEN -ErrorAction SilentlyContinue
 "@
     $laneBlock = @"
-`$env:ANTHROPIC_DEFAULT_FABLE_MODEL = `$kimiModel
+`$env:ANTHROPIC_DEFAULT_FABLE_MODEL = `$kimiModelFable
 if ([string]::IsNullOrWhiteSpace(`$env:CLAUDE_CODE_MAX_CONTEXT_TOKENS)) {
     `$env:CLAUDE_CODE_MAX_CONTEXT_TOKENS = '$CompactWindow'
 }
-if (`$kimiModel -eq 'k3' -or `$kimiModel -eq 'k3[1m]') {
+`$kimiStartupResolved = `$kimiModel
+switch (`$kimiModel) {
+    'opus'   { `$kimiStartupResolved = `$kimiModelOpus }
+    'sonnet' { `$kimiStartupResolved = `$kimiModelSonnet }
+    'haiku'  { `$kimiStartupResolved = `$kimiModelHaiku }
+    'fable'  { `$kimiStartupResolved = `$kimiModelFable }
+}
+if (`$kimiStartupResolved -eq 'k3' -or `$kimiStartupResolved -like 'k3-*' -or `$kimiStartupResolved -eq 'k3[1m]') {
     # Only K3 supports CLAUDE_CODE_EFFORT_LEVEL, and only max.
     if ([string]::IsNullOrWhiteSpace(`$env:CLAUDE_CODE_EFFORT_LEVEL)) {
         `$env:CLAUDE_CODE_EFFORT_LEVEL = 'max'
@@ -139,11 +184,18 @@ fs.writeFileSync(
 '@
 }
 
-`$kimiModel = if ([string]::IsNullOrWhiteSpace(`$env:CLAUDE_KIMI_MODEL)) { '$modelLiteral' } else { `$env:CLAUDE_KIMI_MODEL }
-`$env:ANTHROPIC_DEFAULT_OPUS_MODEL = `$kimiModel
-`$env:ANTHROPIC_DEFAULT_SONNET_MODEL = `$kimiModel
-`$env:ANTHROPIC_DEFAULT_HAIKU_MODEL = `$kimiModel
-`$env:CLAUDE_CODE_SUBAGENT_MODEL = `$kimiModel
+# CLAUDE_KIMI_MODEL is the single override knob: it resets the startup model
+# and every tier at once. Per-tier overrides use CLAUDE_KIMI_MODEL_<TIER>.
+`$kimiModel = if (-not [string]::IsNullOrWhiteSpace(`$env:CLAUDE_KIMI_MODEL)) { `$env:CLAUDE_KIMI_MODEL } else { '$modelLiteral' }
+`$kimiModelOpus = if (-not [string]::IsNullOrWhiteSpace(`$env:CLAUDE_KIMI_MODEL)) { `$env:CLAUDE_KIMI_MODEL } elseif (-not [string]::IsNullOrWhiteSpace(`$env:CLAUDE_KIMI_MODEL_OPUS)) { `$env:CLAUDE_KIMI_MODEL_OPUS } else { '$modelOpusLiteral' }
+`$kimiModelSonnet = if (-not [string]::IsNullOrWhiteSpace(`$env:CLAUDE_KIMI_MODEL)) { `$env:CLAUDE_KIMI_MODEL } elseif (-not [string]::IsNullOrWhiteSpace(`$env:CLAUDE_KIMI_MODEL_SONNET)) { `$env:CLAUDE_KIMI_MODEL_SONNET } else { '$modelSonnetLiteral' }
+`$kimiModelHaiku = if (-not [string]::IsNullOrWhiteSpace(`$env:CLAUDE_KIMI_MODEL)) { `$env:CLAUDE_KIMI_MODEL } elseif (-not [string]::IsNullOrWhiteSpace(`$env:CLAUDE_KIMI_MODEL_HAIKU)) { `$env:CLAUDE_KIMI_MODEL_HAIKU } else { '$modelHaikuLiteral' }
+`$kimiModelFable = if (-not [string]::IsNullOrWhiteSpace(`$env:CLAUDE_KIMI_MODEL)) { `$env:CLAUDE_KIMI_MODEL } elseif (-not [string]::IsNullOrWhiteSpace(`$env:CLAUDE_KIMI_MODEL_FABLE)) { `$env:CLAUDE_KIMI_MODEL_FABLE } else { '$modelFableLiteral' }
+`$kimiModelSubagent = if (-not [string]::IsNullOrWhiteSpace(`$env:CLAUDE_KIMI_MODEL)) { `$env:CLAUDE_KIMI_MODEL } elseif (-not [string]::IsNullOrWhiteSpace(`$env:CLAUDE_KIMI_MODEL_SUBAGENT)) { `$env:CLAUDE_KIMI_MODEL_SUBAGENT } else { '$modelSubagentLiteral' }
+`$env:ANTHROPIC_DEFAULT_OPUS_MODEL = `$kimiModelOpus
+`$env:ANTHROPIC_DEFAULT_SONNET_MODEL = `$kimiModelSonnet
+`$env:ANTHROPIC_DEFAULT_HAIKU_MODEL = `$kimiModelHaiku
+`$env:CLAUDE_CODE_SUBAGENT_MODEL = `$kimiModelSubagent
 $laneBlock
 `$claudeBin = '$claudeBinLiteral'
 if ([string]::IsNullOrWhiteSpace(`$claudeBin)) {

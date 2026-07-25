@@ -69,7 +69,9 @@ Official Skills CLI paths for the Imsight-supported coding agents:
 | Claude Code | `claude-code` | `.claude/skills/` | `~/.claude/skills/` |
 | Codex CLI | `codex` | `.agents/skills/` | `~/.codex/skills/` |
 | Gemini CLI | `gemini-cli` | `.agents/skills/` | `~/.gemini/skills/` |
-| Kimi Code CLI | `kimi-cli` | `.agents/skills/` | `~/.config/agents/skills/` |
+| Kimi Code CLI | `kimi-code-cli` | `.agents/skills/` | `~/.config/agents/skills/` |
+
+The Skills CLI agent id for Kimi Code CLI was renamed from `kimi-cli` to `kimi-code-cli`; the scripts still accept `kimi-cli` as a legacy alias.
 
 Project scope is the default for `npx skills add`. Codex CLI, Gemini CLI, and Kimi Code CLI all respect `.agents/skills/` in project scope, so do not copy or symlink those project skills into tool-specific project dirs. Claude Code uses `.claude/skills/`.
 
@@ -88,7 +90,7 @@ Common examples:
 ```bash
 <skill-root>/scripts/install-tavily-skills.sh --agent claude-code --scope project
 <skill-root>/scripts/install-tavily-skills.sh --agent gemini-cli --scope project
-<skill-root>/scripts/install-tavily-skills.sh --agent kimi-cli --scope project
+<skill-root>/scripts/install-tavily-skills.sh --agent kimi-code-cli --scope project
 <skill-root>/scripts/install-tavily-skills.sh --agent codex --scope global
 ```
 

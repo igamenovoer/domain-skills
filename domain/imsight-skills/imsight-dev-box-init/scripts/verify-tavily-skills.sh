@@ -8,8 +8,8 @@ Usage: verify-tavily-skills.sh [options]
 Verify Tavily agent skills for one supported coding agent.
 
 Options:
-  --agent NAME       Agent id: claude-code, codex, gemini-cli, kimi-cli.
-                    Default: codex.
+  --agent NAME       Agent id: claude-code, codex, gemini-cli, kimi-code-cli
+                    (legacy alias: kimi-cli). Default: codex.
   --scope SCOPE      project or global. Default: project.
   --manual           Verify manual filesystem install instead of npx skills metadata.
   --help             Show this help.
@@ -54,8 +54,13 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
+# Legacy alias: the Skills CLI agent id was renamed from kimi-cli to kimi-code-cli.
+if [ "$agent" = "kimi-cli" ]; then
+  agent="kimi-code-cli"
+fi
+
 case "$agent" in
-  claude-code|codex|gemini-cli|kimi-cli) ;;
+  claude-code|codex|gemini-cli|kimi-code-cli) ;;
   *)
     echo "Unsupported --agent: $agent" >&2
     exit 2
@@ -81,14 +86,14 @@ fi
 if [ "$scope" = "project" ]; then
   case "$agent" in
     claude-code) target_root=".claude/skills" ;;
-    codex|gemini-cli|kimi-cli) target_root=".agents/skills" ;;
+    codex|gemini-cli|kimi-code-cli) target_root=".agents/skills" ;;
   esac
 else
   case "$agent" in
     claude-code) target_root="$HOME/.claude/skills" ;;
     codex) target_root="${CODEX_HOME:-$HOME/.codex}/skills" ;;
     gemini-cli) target_root="$HOME/.gemini/skills" ;;
-    kimi-cli) target_root="$HOME/.config/agents/skills" ;;
+    kimi-code-cli) target_root="$HOME/.config/agents/skills" ;;
   esac
 fi
 
