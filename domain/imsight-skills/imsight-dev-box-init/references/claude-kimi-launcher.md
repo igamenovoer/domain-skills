@@ -7,7 +7,8 @@ Use this reference when the user wants a local `claude-kimi` launcher that runs 
 1. Resolve API-key handling under **Required Input** without printing or hard-coding the key.
 2. Apply the platform-specific paths in **Defaults** and choose the lane from **Using Kimi Platform API** or **Using Kimi Coding Plan**.
 3. Create the launcher and preserve **Runtime Argument Contract**.
-4. Run every applicable check in **Verification**.
+4. Put the launcher directory on PATH for new shells under **Ensure Launcher Directory On PATH**; skipping this leaves `claude-kimi` unresolvable in fresh terminals.
+5. Run every applicable check in **Verification**.
 
 If the task does not map cleanly to these steps, plan only from this page's inputs, defaults, launcher contract, and verification rules; keep credentials out of commands and responses.
 
@@ -107,6 +108,32 @@ The generator derives `ANTHROPIC_API_KEY` auth and the compact window from the m
 
 Use the bundled scripts from this skill. Resolve `<skill-dir>` to the `imsight-dev-box-init` skill directory that contains this reference.
 
+If the installed skill copy lost the script's execute bit, invoke it through the interpreter instead of failing on `Permission denied`: `bash <skill-dir>/scripts/create-claude-kimi-launcher.sh ...` (or `pwsh -File ...ps1` on Windows).
+
+## Ensure Launcher Directory On PATH
+
+A launcher that is not on PATH fails with `command not found` in new terminals. After creating the launcher, make its directory resolvable in the user's everyday shell, not only in login shells.
+
+On Unix, `~/.profile` typically adds `$HOME/.local/bin` for login shells only. Most terminal emulators start non-login interactive shells that read `~/.bashrc` (bash) or `~/.zshrc` (zsh) and never see that entry, so `claude-kimi` is missing from fresh terminals until the rc file adds it. Check a fresh interactive shell first:
+
+```bash
+bash -ic 'command -v claude-kimi'   # zsh: zsh -ic 'command -v claude-kimi'
+```
+
+If the check fails, append a guarded block to the matching rc file (`~/.bashrc`, or `~/.zshrc` for zsh):
+
+```bash
+# User-local launchers (e.g. claude-kimi)
+case ":$PATH:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) [ -d "$HOME/.local/bin" ] && PATH="$HOME/.local/bin:$PATH" ;;
+esac
+```
+
+If the launcher was written to a non-default `--output` directory, substitute that directory. Already-open terminals pick up the change only after `source ~/.bashrc` or a new window.
+
+On Windows, add `%LOCALAPPDATA%\Programs\kimi-launchers` to the user PATH so the `.cmd` shim resolves from `cmd.exe`, PowerShell, and other launchers.
+
 ## Runtime Argument Contract
 
 `claude-kimi` runtime arguments are Claude Code arguments by default. The launcher may observe arguments only to avoid injecting duplicate defaults, such as not adding its default `--model` when the user already passed `--model`. It must not consume, rename, reorder, or reinterpret underlying Claude CLI arguments.
@@ -149,6 +176,7 @@ Verify the Unix launcher exists:
 
 ```bash
 command -v claude-kimi
+bash -ic 'command -v claude-kimi'   # must also resolve in a fresh non-login terminal; fix PATH per **Ensure Launcher Directory On PATH** if not
 test -x "$HOME/.local/bin/claude-kimi"
 ls -l "$HOME/.local/bin/claude-kimi"
 test -f "$HOME/.local/bin/kimi-api-key" || echo "key file will be created on first run"
