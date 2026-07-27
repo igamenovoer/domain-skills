@@ -1,6 +1,6 @@
 interface:
   display_name: "imsight-dev-box-network"
-  short_description: "Set up dev-box networking, remote access, and NVIDIA console VNC"
-  default_prompt: "Use $imsight-dev-box-network use help to see Imsight networking, proxy, tunnel, remote browser, and headless NVIDIA VNC subcommands."
+  short_description: "Set up dev-box networking and NVIDIA VNC/RDP hybrid access"
+  default_prompt: "Use $imsight-dev-box-network use help to see Imsight networking, proxy, tunnel, remote browser, and headless NVIDIA VNC/RDP hybrid subcommands."
 policy:
   allow_implicit_invocation: false

@@ -1,20 +1,20 @@
 ---
 name: imsight-agent-skill-handling
-description: Manual invocation only; Imsight-authored command skill for analyzing, deep-inspecting, designing, creating, refactor-migrating, testing, hardening, or formatting agent skills. Use only when the user explicitly invokes imsight-agent-skill-handling or asks to use this exact skill. Its subcommands are help, analyze, deep-inspect, design, create, refactor-migrate, test, harden, and format. Do not invoke implicitly for generic skill creation, skill audits, skill updates, skill-format work, routing from another skill, generic coding tasks, or ordinary use of a domain skill.
+description: Use when the user explicitly invokes imsight-agent-skill-handling to analyze, deep-inspect, design, create, modify, refactor-migrate, test, harden, or format an agent skill. Do not invoke implicitly for generic skill creation, audits, updates, formatting, routing, coding tasks, or ordinary domain-skill use.
 ---
 
 # Imsight Agent Skill Handling
 
 ## Overview
 
-Use this skill as the manual entrypoint for analyzing, deep-inspecting, designing, creating, refactor-migrating, testing, hardening, and formatting agent skills. It reconstructs a skill's operational logic and durable outputs, writes analysis report sets, generates self-contained skill-process design documents for existing skills, designs new skills from user tasks before any files are created, creates new skills from user requests, migrates or refactors source skill logic into target skills with provenance, runs pressure scenarios to baseline or verify skills, hardens discipline skills against rationalization, and revises skills so their structure and descriptions conform to the bundled style guide.
+Use this skill as the manual entrypoint for analyzing, deep-inspecting, designing, creating, modifying, refactor-migrating, testing, hardening, and formatting agent skills. It reconstructs a skill's operational logic and durable outputs, writes analysis report sets, generates self-contained skill-process design documents for existing skills, designs new skills from user tasks before any files are created, creates new skills from user requests, amends format-conforming skills, migrates or refactors source skill logic into target skills with provenance, runs pressure scenarios to baseline or verify skills, hardens discipline skills against rationalization, and revises skills so their structure and descriptions conform to the bundled style guide.
 
 ## Workflow
 
 When this skill is invoked, execute the following steps in order.
 
 1. **Select the subcommand** from the **Subcommands** table. If no subcommand or actionable task is present, handle `help`.
-2. **Resolve the target skill folder, source skill folder, or task input** when the subcommand is `analyze`, `deep-inspect`, `create`, `refactor-migrate`, `test`, `harden`, or `format`, or capture the user's task description when the subcommand is `design`. See **Target Skill Folder** for folder resolution; see `references/design.md` for intent capture and `references/refactor-migrate.md` for source-target resolution.
+2. **Resolve the target skill folder, source skill folder, or task input** when the subcommand is `analyze`, `deep-inspect`, `create`, `modify`, `refactor-migrate`, `test`, `harden`, or `format`, or capture the user's task description when the subcommand is `design`. See **Target Skill Folder** for folder resolution; see `references/design.md` for intent capture and `references/refactor-migrate.md` for source-target resolution.
 3. **Load the selected reference** and follow its `## Workflow`.
 4. **Produce the requested result** following the selected subcommand's workflow and output contract.
 
@@ -36,6 +36,7 @@ If the user's task does not map cleanly to these steps, use your native planning
 | `deep-inspect` | Generate one self-contained skill-process design document for a given skill, with concepts, high-level process, skill call graph, formal process, explanation, and evidence handoffs | `references/deep-inspect.md` |
 | `design` | Generate a self-contained design overview document for a proposed skill from a user task, defaulting to a multi-subcommand skill with `help`; intended for human review before `create` | `references/design.md` |
 | `create` | Create a new skill from a user request; pressure testing is handled by the explicit `test` subcommand | `references/create.md` |
+| `modify` | Amend an existing format-conforming skill; requires consent before formatting a nonconforming target unless the user delegates unattended judgment | `references/modify.md` |
 | `refactor-migrate` | Migrate or refactor skill logic from a source skill path into a target skill path, including in-place self-migration, while preserving source provenance and rewriting runtime instructions into Imsight style | `references/refactor-migrate.md` |
 | `test` | Run pressure scenarios with subagents to baseline or verify a skill | `references/test.md` |
 | `harden` | Add rationalization tables, red flags, and explicit counters to a discipline skill | `references/harden.md` |

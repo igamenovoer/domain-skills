@@ -1,6 +1,6 @@
 ---
 name: imsight-dev-box-network
-description: Use when explicitly invoking imsight-dev-box-network, routing from another Imsight skill, or using Imsight context to configure, audit, repair, or document dev-box networking, SSH tunnels, proxy access, relay access, exposed ports, remote Playwright browser control, headless NVIDIA console VNC, systemd user tunnel services, or host-to-host access. Do not use for generic networking tasks without Imsight context.
+description: Use when explicitly invoking imsight-dev-box-network, routing from another Imsight skill, or using Imsight context to configure, audit, repair, or document dev-box networking, SSH tunnels, proxy access, relay access, exposed ports, remote Playwright browser control, headless NVIDIA VNC/RDP hybrid consoles, systemd user tunnel services, or host-to-host access. Do not use for generic networking tasks without Imsight context.
 ---
 
 # Imsight Dev Box Network
@@ -14,7 +14,7 @@ Use this skill as the entrypoint for development box networking tasks. Keep `SKI
 - Use for an explicit `imsight-dev-box-network` invocation or route from another Imsight skill.
 - Use when `imsight` context requests supported proxy, tunnel, relay, port, systemd, or host-access work.
 - Use when an Imsight dev box must host a visible Chrome instance for control by a remote Playwright client.
-- Use when an NVIDIA-backed Ubuntu server needs a monitorless VNC console that begins at the GDM login screen and mirrors the same local desktop after login.
+- Use when an NVIDIA-backed Ubuntu server needs a monitorless VNC bootstrap at the physical GDM login screen and explicitly switchable VNC or GNOME Desktop Sharing RDP access to the same local desktop after login.
 - Do not use for generic networking, proxy, tunnel, or dev-box tasks without Imsight context.
 
 ## Workflow
@@ -24,7 +24,7 @@ Use this skill as the entrypoint for development box networking tasks. Keep `SKI
 3. Select any second-level operation from that page.
 4. For `proxy-scan`, obtain the port range, run the bundled scanner, and persist candidates only when requested.
 5. For `chrome-start-for-remote-control`, gather the local runtime and port plus the remote transport inputs, then keep the Playwright endpoint private to loopback and print the exact remote handoff instructions.
-6. For `setup-vnc-server`, confirm the NVIDIA/GDM/Xorg scope, choose the connector and exposure policy, preserve current configuration, then require a clean-boot greeter and hardware-rendering verification before completion.
+6. For `setup-vnc-rdp-hybrid`, confirm the NVIDIA/GDM/Xorg scope, choose distinct bootstrap VNC, desktop VNC, and RDP ports plus an exposure policy, preserve current configuration, then require clean-boot and both-mode verification before completion.
 7. For `via-ssh`, distinguish dynamic SOCKS5 from forwarding an existing proxy before choosing commands or units.
 8. For vague tunnel requests, ask for the required details; inspect current services and ports before changes.
 9. Prefer user systemd for persistent tunnels unless tmux or foreground operation is requested, and apply the non-blocking unit rules below.
@@ -59,19 +59,22 @@ This contract does not replace intentional operational destinations such as copi
 | `proxy-setup` | Set up proxy access, install proxy environment scripts, or scan proxy candidates | `references/proxy-setup.md` |
 | `chrome-start-for-remote-control` | Launch visible local Chrome through a native Playwright endpoint and prepare secure remote client access | `commands/chrome-start-for-remote-control.md` |
 | `chrome-attach-for-remote-control` | Attach a local Playwright client or CLI to a remotely run Chrome instance | `commands/chrome-attach-for-remote-control.md` |
-| `setup-vnc-server` | Configure a shared, GPU-accelerated NVIDIA console VNC server that exposes GDM before desktop login and works without a monitor | `commands/setup-vnc-server.md` |
+| `setup-vnc-rdp-hybrid` | Configure GDM bootstrap VNC plus mutually exclusive desktop VNC/RDP access to the GPU-rendered physical console on a headless NVIDIA host | `commands/setup-vnc-rdp-hybrid.md` |
 
 ## Bundled Scripts
 
-Use the bundled scripts instead of rewriting tunnel loops:
+Use the bundled scripts instead of rewriting persistent transport loops or scanners:
 
 - `scripts/setup-ssh-reverse-tunnel.sh`
 - `scripts/setup-ssh-forward-tunnel.sh`
 - `scripts/scan-proxy-candidates.py`
 - `scripts/setup-proxy.sh`
 - `scripts/unset-proxy.sh`
+- `scripts/x11vnc-gdm-bootstrap-loop.sh`
+- `scripts/x11vnc-hybrid-desktop-loop.sh`
+- `scripts/remote-desktop-mode.sh`
 
-The headless NVIDIA VNC workflow also owns `assets/vnc-console-edid.bin.base64`,
+The headless NVIDIA hybrid workflow also owns `assets/vnc-console-edid.bin.base64`,
 the validated synthetic-monitor EDID that its command installs after decoding.
 
 Copy them to the target dev box when missing or stale, make them executable, then create or update the matching user systemd service.
@@ -84,6 +87,7 @@ Copy them to the target dev box when missing or stale, make them executable, the
 - Do not embed credentials or private keys in service files or docs.
 - Do not expose an unencrypted VNC listener beyond a trusted network or authenticated tunnel.
 - Do not replace a GPU-backed shared console with a TigerVNC, Xvnc, or other separate virtual desktop when the request requires the GDM login path, local-console mirroring, or hardware rendering.
+- Do not use one x11vnc process or supervisor to migrate between GDM and the logged-in GNOME X11 server. Use separate bootstrap and desktop processes, separate ports, a stable-shell delay, and an explicit mutually exclusive desktop VNC/RDP mode switch.
 - Use `BatchMode=yes` for non-interactive connectivity checks.
 - For systemd tunnel services, use foreground `--block` under `Type=simple`; do not use `network-online.target`, `ExecStartPre` connectivity checks, readiness waits, `--background`, or `nohup`; keep shutdown fast with `TimeoutStopSec=1`, `KillMode=control-group`, `KillSignal=SIGKILL`, and `SendSIGKILL=yes`.
 - Do not create tunnel units that can delay boot, shutdown, or reboot while waiting for SSH readiness or graceful disconnect.
@@ -95,4 +99,4 @@ Copy them to the target dev box when missing or stale, make them executable, the
 - DO NOT expose SSH login tunnels publicly without an explicit request.
 - DO NOT create systemd units that block startup or shutdown.
 - DO NOT remove a working reverse SSH access tunnel while cleaning unrelated forwarding.
-- DO NOT claim a headless VNC deployment is complete before verifying the actual GDM greeter, NVIDIA OpenGL renderer, and no fresh NVIDIA Xid/GSP fault after a clean boot.
+- DO NOT claim a headless hybrid deployment is complete before verifying the actual GDM greeter, both mutually exclusive desktop modes, the NVIDIA OpenGL renderer, and no fresh NVIDIA Xid/GSP fault after a clean boot.
