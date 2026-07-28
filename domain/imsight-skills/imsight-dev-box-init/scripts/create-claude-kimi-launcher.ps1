@@ -115,7 +115,8 @@ switch (`$kimiModel) {
     'fable'  { `$kimiStartupResolved = `$kimiModelFable }
 }
 if (`$kimiStartupResolved -eq 'k3' -or `$kimiStartupResolved -like 'k3-*' -or `$kimiStartupResolved -eq 'k3[1m]') {
-    # Only K3 supports CLAUDE_CODE_EFFORT_LEVEL, and only max.
+    # Only K3 supports CLAUDE_CODE_EFFORT_LEVEL (low/high/max).
+    # Preserve an explicit caller choice; otherwise keep this launcher's max default.
     if ([string]::IsNullOrWhiteSpace(`$env:CLAUDE_CODE_EFFORT_LEVEL)) {
         `$env:CLAUDE_CODE_EFFORT_LEVEL = 'max'
     }

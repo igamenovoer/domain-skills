@@ -230,7 +230,8 @@ case \"\$KIMI_MODEL\" in
 esac
 case \"\$_kimi_startup_resolved\" in
   k3|k3-*|'k3[1m]')
-    # Only K3 supports CLAUDE_CODE_EFFORT_LEVEL, and only max.
+    # Only K3 supports CLAUDE_CODE_EFFORT_LEVEL (low/high/max).
+    # Preserve an explicit caller choice; otherwise keep this launcher's max default.
     export CLAUDE_CODE_EFFORT_LEVEL=\"\${CLAUDE_CODE_EFFORT_LEVEL:-max}\"
     ;;
 esac"

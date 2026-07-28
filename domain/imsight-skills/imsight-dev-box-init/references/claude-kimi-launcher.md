@@ -219,7 +219,72 @@ Pick tier models by membership tier:
 | Moderato | `k3` or `kimi-for-coding` | `262144` |
 | Allegretto and above | `k3[1m]`, `kimi-for-coding`, `kimi-for-coding-highspeed` | `1048576` for `k3[1m]`, `262144` for the K2.7 Code series |
 
-Thinking: K3 models think by default. `kimi-for-coding` (K2.7 Code) requires Thinking enabled in Claude Code (Option+T on macOS, Alt+T on Windows/Linux); without it, requests fall back to K2.6.
+Thinking: K3 models support `low`, `high`, and `max` effort and default to
+`high` when the Coding Plan request omits an effort. `kimi-for-coding` (K2.7
+Code) is always-thinking but does not expose those effort levels; keep Thinking
+enabled in Claude Code (Option+T on macOS, Alt+T on Windows/Linux), or requests
+fall back to K2.6.
+
+### Set Coding Plan Thinking Effort
+
+Apply an explicit effort only to K3 models (`k3` and `k3-256k`):
+
+| Effort | Use |
+| --- | --- |
+| `low` | Lower-latency, lower-reasoning work |
+| `high` | Balanced default for normal coding and memory processing |
+| `max` | Hard problems where extra reasoning latency and quota use are acceptable |
+
+For the generated Claude Code launcher, set the effort for one invocation:
+
+```bash
+CLAUDE_CODE_EFFORT_LEVEL=low claude-kimi
+CLAUDE_CODE_EFFORT_LEVEL=high claude-kimi
+CLAUDE_CODE_EFFORT_LEVEL=max claude-kimi
+```
+
+The launcher preserves a caller-provided `CLAUDE_CODE_EFFORT_LEVEL`; when it
+starts a K3 model without one, it currently pins `max`. Do not set this variable
+for `kimi-for-coding`.
+
+In Kimi Code CLI, switch the active session directly:
+
+```text
+/effort low
+/effort high
+/effort max
+```
+
+`/thinking` is an alias. `/effort` without an argument opens the selector:
+Left/Right changes the level, Enter applies it, and Alt+S applies it to the
+current session only. Kimi Code intentionally does not persist the highest
+declared level (`max`) as the global default; it applies `max` to the current
+session and lets later sessions return to the model default (`high`).
+
+For Kimi-native or OpenAI-compatible Coding Plan clients, match Kimi Code's
+wire format by sending a top-level `thinking` object:
+
+```json
+{
+  "model": "k3-256k",
+  "thinking": {
+    "type": "enabled",
+    "effort": "high"
+  }
+}
+```
+
+Kimi Code constructs this as
+`thinking: {type: "enabled", effort: "low"|"high"|"max"}`. Do not assume a
+generic client's `reasoning_effort` setting is translated to this Kimi-specific
+field. For wrappers that expose an OpenAI `extra_body`, put `thinking` there.
+For example, Hindsight accepts:
+
+```bash
+HINDSIGHT_API_LLM_EXTRA_BODY='{"thinking":{"type":"enabled","effort":"high"}}'
+```
+
+If no explicit `thinking.effort` reaches the Coding Plan API, K3 uses `high`.
 
 Generate for this lane by passing the coding-plan endpoint, for example Allegretto and above:
 
@@ -240,6 +305,8 @@ The generator derives `ANTHROPIC_API_KEY` auth, the tier defaults, and the compa
   - The page also includes a pre-first-launch Node script that sets `penguinModeOrgEnabled` and `hasCompletedOnboarding` and removes stale model entries from `~/.claude/settings.json`.
 - Kimi Code provider docs: `https://www.kimi.com/code/docs/en/kimi-code-cli/configuration/providers.html`
   - Confirms Kimi Code's provider endpoint shape: `https://api.kimi.com/coding/v1` for Kimi-native provider configuration.
+- Kimi Code model docs: `https://www.kimi.com/code/docs/en/kimi-code/models.html`
+  - Confirms K3 and K3-256K support `low`, `high`, and `max`, with `high` as the Coding Plan default.
 - Kimi Code environment variable docs: `https://www.kimi.com/code/docs/en/kimi-code-cli/configuration/environment-variables.html`
   - Use for Kimi CLI's own `KIMI_*` variables. Do not substitute these for Claude Code's `ANTHROPIC_*` variables.
 - Claude Code model configuration: `https://code.claude.com/docs/en/model-config` and `https://code.claude.com/docs/en/settings`
