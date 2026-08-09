@@ -1,20 +1,20 @@
 ---
 name: imsight-agent-skill-handling
-description: Use when the user explicitly invokes imsight-agent-skill-handling to analyze, deep-inspect, design, create, modify, refactor-migrate, test, harden, or format an agent skill. Do not invoke implicitly for generic skill creation, audits, updates, formatting, routing, coding tasks, or ordinary domain-skill use.
+description: Use when the user explicitly invokes imsight-agent-skill-handling to analyze, deep-inspect, design, create, modify, refactor-migrate, test, harden, or format an agent skill, or to install, link, inventory, or uninstall skills with asm (agent-skill-manager). Do not invoke implicitly for generic skill creation, audits, updates, formatting, routing, coding tasks, or ordinary domain-skill use.
 ---
 
 # Imsight Agent Skill Handling
 
 ## Overview
 
-Use this skill as the manual entrypoint for analyzing, deep-inspecting, designing, creating, modifying, refactor-migrating, testing, hardening, and formatting agent skills. It reconstructs a skill's operational logic and durable outputs, writes analysis report sets, generates self-contained skill-process design documents for existing skills, designs new skills from user tasks before any files are created, creates new skills from user requests, amends format-conforming skills, migrates or refactors source skill logic into target skills with provenance, runs pressure scenarios to baseline or verify skills, hardens discipline skills against rationalization, and revises skills so their structure and descriptions conform to the bundled style guide.
+Use this skill as the manual entrypoint for analyzing, deep-inspecting, designing, creating, modifying, refactor-migrating, testing, hardening, and formatting agent skills, and for managing skill installations with asm (agent-skill-manager). It reconstructs a skill's operational logic and durable outputs, writes analysis report sets, generates self-contained skill-process design documents for existing skills, designs new skills from user tasks before any files are created, creates new skills from user requests, amends format-conforming skills, migrates or refactors source skill logic into target skills with provenance, runs pressure scenarios to baseline or verify skills, hardens discipline skills against rationalization, revises skills so their structure and descriptions conform to the bundled style guide, and installs, links, inventories, or uninstalls skills across agent providers.
 
 ## Workflow
 
 When this skill is invoked, execute the following steps in order.
 
 1. **Select the subcommand** from the **Subcommands** table. If no subcommand or actionable task is present, handle `help`.
-2. **Resolve the target skill folder, source skill folder, or task input** when the subcommand is `analyze`, `deep-inspect`, `create`, `modify`, `refactor-migrate`, `test`, `harden`, or `format`, or capture the user's task description when the subcommand is `design`. See **Target Skill Folder** for folder resolution; see `references/design.md` for intent capture and `references/refactor-migrate.md` for source-target resolution.
+2. **Resolve the target skill folder, source skill folder, or task input** when the subcommand is `analyze`, `deep-inspect`, `create`, `modify`, `refactor-migrate`, `test`, `harden`, or `format`, capture the user's task description when the subcommand is `design`, or resolve the skill source, provider, and scope when the subcommand is `skill-management`. See **Target Skill Folder** for folder resolution; see `references/design.md` for intent capture, `references/refactor-migrate.md` for source-target resolution, and `references/skill-management.md` for source and provider resolution.
 3. **Load the selected reference** and follow its `## Workflow`.
 4. **Produce the requested result** following the selected subcommand's workflow and output contract.
 
@@ -41,6 +41,7 @@ If the user's task does not map cleanly to these steps, use your native planning
 | `test` | Run pressure scenarios with subagents to baseline or verify a skill | `references/test.md` |
 | `harden` | Add rationalization tables, red flags, and explicit counters to a discipline skill | `references/harden.md` |
 | `format` | Revise a given skill so its structure conforms to the bundled style guide and its description is optimized for discovery | `references/format.md` |
+| `skill-management` | Install, link (symlink for development), inventory, and uninstall skills across agent providers using asm (`agent-skill-manager`) via `npx -y agent-skill-manager` | `references/skill-management.md` |
 
 ## Target Skill Folder
 
