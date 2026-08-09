@@ -6,7 +6,7 @@ Use this reference to install, link, inventory, and uninstall agent skills with 
 
 1. **Select the operation** from the **Operations** table based on the user's task.
 2. **Resolve the skill source** when the operation installs or links. See **Skill Sources**.
-3. **Resolve the target provider and scope**. See **Providers and Scopes**. Ask the user when neither the request nor the context identifies a provider.
+3. **Resolve the target provider and scope**. See **Providers and Scopes**. Fall back to the `agents` provider when the user's tool is not an asm provider; ask the user only when the provider or scope stays ambiguous after that fallback.
 4. **Run the asm command** with non-interactive flags (`--yes`, `--json` where supported). See **Command Form**. When the task exceeds what this page covers, consult **Upstream Reference**.
 5. **Verify the result**. See **Verification**.
 6. **Report the outcome** following **Output Contract**.
@@ -102,6 +102,8 @@ Each provider maps to a global and a project skill directory. Common providers:
 | `cursor` | `~/.cursor/rules/` | `.cursor/rules/` |
 
 More providers (`opencode`, `gemini`, `amp`, `windsurf`, and others) are enabled by default; run `npx -y agent-skill-manager config show` for the full list.
+
+When the user's CLI tool is not an asm provider, assume it supports the generic `.agents/skills/` lookup and use the `agents` provider (`-p agents`). Do not hunt for a provider-specific path or decline the task; `~/.agents/skills/` (global) and `.agents/skills/` (project) are the fallback install locations for any unsupported tool.
 
 - Omit `-s` or pass `-s global` to install into the user-level directory.
 - Pass `-s project` and run from the project root to install into the project-local directory.
