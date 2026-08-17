@@ -27,12 +27,18 @@ If the task does not map cleanly to these steps, write the smallest useful miles
 
 Prefer these sections: `# <Feature Name> Milestones`, `## Overview`, then one `## Milestone M<N> - <Title>` section per milestone, and `## Open Questions` when relevant.
 
+The **Overview** holds a milestone checklist: one `- [ ] M<N> - <Title>` line per milestone, so progress can be tracked by ticking milestones off.
+
 Each milestone section includes:
 
 - **Goal**: one or two sentences on the stage's intent.
-- **Enables**: bullet list of capabilities that must work after the milestone, phrased as observable behavior.
+- **Enables**: checklist of capabilities that must work after the milestone, phrased as observable behavior.
 - **Depends On**: earlier milestones or external prerequisites; omit when none.
-- **Done When**: a short bullet list of verifiable outcomes that mark the milestone complete.
+- **Done When**: a short checklist of verifiable outcomes that mark the milestone complete.
+
+## Tickbox Rule
+
+Render every item that represents a completable, trackable unit of work as a Markdown checkbox (`- [ ]`): the milestone lines in the overview and the `Enables` and `Done When` items inside each milestone. Keep prose content plain: goals, dependency notes, and open questions are not todo items and do not get checkboxes. When updating an existing `feature-milestones.md`, preserve the checked or unchecked state of items the change does not touch.
 
 ## Guardrails
 
