@@ -1,0 +1,18 @@
+# <FEATURE_NAME> Milestones
+
+## Overview
+
+<MILESTONE_PLAN_SUMMARY>
+
+## Milestone M1 - <MILESTONE_TITLE>
+
+- Goal: <MILESTONE_GOAL>
+- Enables:
+  - <CAPABILITY_ENABLED_AFTER_THIS_MILESTONE>
+- Depends On: <PRIOR_MILESTONES_OR_EXTERNAL_PREREQUISITES>
+- Done When:
+  - <VERIFIABLE_OUTCOME>
+
+## Open Questions
+
+- <OPEN_QUESTION>
