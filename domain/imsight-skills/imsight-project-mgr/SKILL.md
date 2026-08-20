@@ -1,18 +1,19 @@
 ---
 name: imsight-project-mgr
-description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes a supported project-foundation, project-development, or GitHub release operation to it. Covers Pixi/Python project initialization and structure, automatic or interactive project-rule setup, universal project rules, clean Git worktrees, isolated implementation, and project releases. Do not invoke implicitly for generic project tasks or from Imsight context alone.
+description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes a supported project-foundation, external-resource setup, project-development, or GitHub release operation to it. Covers Pixi/Python project structure, bootstrap-managed external-resource directories, project rules, clean Git worktrees, isolated implementation, and project releases. Do not invoke implicitly for generic project tasks or from Imsight context alone.
 ---
 
 # Imsight Project Manager
 
 ## Overview
 
-Use this skill as the manually invoked or internally routed entrypoint for Imsight project-foundation and project-development operations. It preserves the established public operations without absorbing project exploration, feature design, automation, host setup, networking, or miscellaneous infrastructure.
+Use this skill as the manually invoked or internally routed entrypoint for Imsight project-foundation and project-development operations. This includes on-demand setup of bootstrap-managed external-resource directories without coupling that operation to project initialization. It preserves the established public operations without absorbing project exploration, feature design, automation, host setup, networking, or miscellaneous infrastructure.
 
 ## When to Use
 
 - Use only when the user explicitly invokes `imsight-project-mgr` or another loaded skill routes a supported operation here.
 - Use for the project-foundation and isolated-development operations in **Subcommands**.
+- Use to create or reconcile a documented, bootstrap-managed project directory for machine-local or third-party resources when requested independently of project initialization.
 - Use to install relevant shared rules in coding-agent project instruction files, either automatically or through rule-by-rule approval.
 - Use for an explicit request to prepare and publish a project release on GitHub.
 - Do not activate implicitly for generic project work or from Imsight context alone.
@@ -53,6 +54,7 @@ This contract does not replace intentional project-foundation edits in the targe
 | --- | --- | --- |
 | `init-pixi-project` | Perform first-time Pixi/Python initialization, then reconcile the standard project structure | `commands/init-pixi-project.md` |
 | `structure-pixi-project` | Initialize, scaffold, review, or normalize a Pixi-managed Python project | `commands/structure-pixi-project.md` |
+| `setup-external-ref-dir` | Create or reconcile a documented, bootstrap-managed home for external resources independently of project initialization | `commands/setup-external-ref-dir.md` |
 | `setup-project-rules` | Inspect a project and add relevant rules to coding-agent instruction files automatically or through rule-by-rule approval | `commands/setup-project-rules.md` |
 | `declare-universal-rules` | Add or refresh Imsight universal rules in a coding-agent project context file | `commands/declare-universal-rules.md` |
 | `create-worktree` | Create a clean Git worktree and safely reuse eligible local state | `commands/create-worktree.md` |
