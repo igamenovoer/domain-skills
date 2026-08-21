@@ -1,0 +1,6 @@
+interface:
+  display_name: "imsight-paper-reading"
+  short_description: "Read papers into structured citation-grounded notes"
+  default_prompt: "Use $imsight-paper-reading use make-note to read <paper> and produce the structured reading note."
+policy:
+  allow_implicit_invocation: false
