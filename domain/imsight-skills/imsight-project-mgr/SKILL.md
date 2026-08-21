@@ -1,19 +1,30 @@
 ---
 name: imsight-project-mgr
-description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes a supported project-foundation, external-resource setup, project-development, or GitHub release operation to it. Covers Pixi/Python project structure, bootstrap-managed external-resource directories, project rules, clean Git worktrees, isolated implementation, and project releases. Do not invoke implicitly for generic project tasks or from Imsight context alone.
+description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes a supported project-foundation, external-resource setup, project-development, multi-change OpenSpec delivery, or GitHub release operation to it. Do not invoke implicitly for generic project tasks or from Imsight context alone.
+skill_invocation_notation: >
+  Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
+  SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
+  accepted only as legacy input when SKILL-MAIN.md is absent.
+  Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
+  `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
+  `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
+  subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
+  by parent subcommand parent. Intermediate subcommands act as object generators.
+  Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
 ---
 
 # Imsight Project Manager
 
 ## Overview
 
-Use this skill as the manually invoked or internally routed entrypoint for Imsight project-foundation and project-development operations. This includes on-demand setup of bootstrap-managed external-resource directories without coupling that operation to project initialization. It preserves the established public operations without absorbing project exploration, feature design, automation, host setup, networking, or miscellaneous infrastructure.
+Use this skill as the manually invoked or internally routed entrypoint for Imsight project-foundation and project-development operations. This includes on-demand setup of bootstrap-managed external-resource directories without coupling that operation to project initialization, plus evidence-gated multi-change OpenSpec delivery through its bundled subskill. It preserves the established public operations without absorbing project exploration, feature design, automation, host setup, networking, or miscellaneous infrastructure.
 
 ## When to Use
 
 - Use only when the user explicitly invokes `imsight-project-mgr` or another loaded skill routes a supported operation here.
 - Use for the project-foundation and isolated-development operations in **Subcommands**.
 - Use to create or reconcile a documented, bootstrap-managed project directory for machine-local or third-party resources when requested independently of project initialization.
+- Use for ordered implementation of multiple OpenSpec changes when each change needs application-specific evidence before the next begins.
 - Use to install relevant shared rules in coding-agent project instruction files, either automatically or through rule-by-rule approval.
 - Use for an explicit request to prepare and publish a project release on GitHub.
 - Do not activate implicitly for generic project work or from Imsight context alone.
@@ -23,10 +34,10 @@ Use this skill as the manually invoked or internally routed entrypoint for Imsig
 When this skill is invoked, execute the following steps in order.
 
 1. **Confirm invocation eligibility**. Continue only when the user explicitly invoked `imsight-project-mgr` or another loaded skill explicitly routed the operation here. See **Invocation Contract**.
-2. **Select the subcommand** from **Subcommands**. If no subcommand or actionable task is present, handle `help`.
+2. **Select the capability** from **Subcommands** or **Subskills**. If no capability or actionable task is present, handle `help`.
 3. **Resolve the project root** when the selected operation needs one. Use the user-provided project directory, or the current repository root when the task clearly targets it.
-4. **Load the linked command page** and follow its `## Workflow` step by step.
-5. **Report the result** using the selected command's output and safety contract.
+4. **Load the selected capability**. For a subcommand, load the linked command page. For a subskill, load only its `SKILL-MAIN.md` and required local resources. Follow the selected workflow step by step.
+5. **Report the result** using the selected capability's output and safety contract.
 
 If the user's task does not map cleanly to these steps, use your native planning tool to build a step-by-step plan from the subcommands, ownership boundaries, and constraints in this skill, then execute the plan.
 
@@ -34,6 +45,7 @@ If the user's task does not map cleanly to these steps, use your native planning
 
 - Preferred explicit form: `$imsight-project-mgr use <subcommand> to do <task>`.
 - Task-only explicit form: `$imsight-project-mgr <task prompt>` means choose the narrowest applicable subcommand or necessary sequence.
+- Direct subskill form: invoke skill `imsight-project-mgr->impl-multi-openspec-changes` with the ordered or discoverable change set and verification requirements.
 - Routed form: another loaded skill may explicitly route a supported operation to `imsight-project-mgr` with the target and request body.
 - No subcommand and no actionable task means `help`.
 - Do not activate this skill implicitly for generic project work or merely because the prompt or context mentions Imsight.
@@ -64,6 +76,14 @@ This contract does not replace intentional project-foundation edits in the targe
 
 Each operational subcommand is independently invocable; the table order does not impose a lifecycle.
 
+## Subskills
+
+| Subskill | When to Route Here | Entrypoint |
+| --- | --- | --- |
+| `impl-multi-openspec-changes` | Route here when two or more changes must be delivered in dependency order and independently proven against the running application before later changes begin. | `subskills/impl-multi-openspec-changes/SKILL-MAIN.md` |
+
+Load only the selected subskill's `SKILL-MAIN.md` and the local resources it explicitly requires.
+
 ## Ownership Boundaries
 
 - Route requirements exploration and domain-language decisions to `imsight-project-explore`.
@@ -73,6 +93,7 @@ Each operational subcommand is independently invocable; the table order does not
 - Route networking to `imsight-dev-box-network` and miscellaneous infrastructure to `imsight-project-misc`.
 - Within `impl-in-worktree`, this skill owns the isolated branch, worktree, verification, and local-delivery boundary. The native coding workflow or explicitly named domain skill owns implementation logic.
 - Within `github-release`, this skill owns release preparation, changelog maintenance, GitHub release publication through `gh`, and post-publication verification. Repository instructions own project-specific versioning, build, validation, signing, and asset requirements.
+- Within `impl-multi-openspec-changes`, the bundled subskill owns change ordering, between-change artifact reconciliation, application-specific evidence gates, and final cross-change verification. The selected OpenSpec apply workflow owns each individual change's implementation mechanics.
 
 ## Guardrails
 
@@ -80,6 +101,7 @@ Each operational subcommand is independently invocable; the table order does not
 - DO NOT treat the two subcommand categories as required phases.
 - DO NOT rename, hide, or omit `init-pixi-project` or any other public subcommand; these names are part of the command contract.
 - DO NOT mutate the original checkout after `impl-in-worktree` creates an isolated worktree.
+- DO NOT bypass the bundled subskill's per-change evidence gate when delivering multiple OpenSpec changes.
 
 ## Maintenance
 

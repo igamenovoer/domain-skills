@@ -1,0 +1,6 @@
+interface:
+  display_name: "Implement Multiple OpenSpec Changes"
+  short_description: "Deliver dependent OpenSpec changes with per-change proof"
+  default_prompt: "Use $imsight-project-mgr to route to impl-multi-openspec-changes, implement the requested OpenSpec changes in order, and verify each with application-specific evidence."
+policy:
+  allow_implicit_invocation: false
