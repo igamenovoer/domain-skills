@@ -1,72 +1,74 @@
 ---
 name: imsight-dev-box-init
-description: Use when explicitly invoking imsight-dev-box-init, routing from another Imsight skill, or using Imsight context to install software, bootstrap a development box, configure Codex CLI or third-party providers, install Tavily or Houmao tooling, or create Claude-Kimi launchers and specialists. Do not use for generic setup tasks without Imsight context.
+description: Use when explicitly invoking imsight-dev-box-init, routing from another Imsight skill, or using Imsight context to configure coding agents, Houmao systems, Hermes Agent with Kimi, Hindsight, or Feishu, Tavily, Context7, or related development-host tooling. Do not use for generic setup tasks without Imsight context.
+metadata:
+  skill_invocation_notation: >
+    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
+    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
+    accepted only as legacy input when SKILL-MAIN.md is absent.
+    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
+    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
+    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
+    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
+    by parent subcommand parent. Intermediate subcommands act as object generators.
+    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
 ---
 
 # Imsight Dev Box Init
 
 ## Overview
 
-Use this skill as the first routing point for development host setup and installation tasks. Keep detailed, task-specific installation procedures in `references/` files and load only the reference needed for the user's requested setup.
-
-Prefer installation processes listed here over generic package-manager habits, upstream quickstarts, or web search results. Follow another method only when the user explicitly asks for it or no matching setup reference exists yet.
-
-## When to Use
-
-- Use for an explicit `imsight-dev-box-init` invocation or route from another Imsight skill.
-- Use when `imsight` context requests supported host setup, installation, CLI configuration, Tavily, Houmao, or Claude-Kimi work.
-- Do not use for generic installation or dev-box setup tasks that do not mention Imsight.
+Use this skill as the parent router for Imsight development-host setup. Detailed procedures and their resources are owned by the selected subskill.
 
 ## Workflow
 
-1. If no subcommand or actionable task is present, handle `help`.
-2. If the request names a subcommand, load its reference file; otherwise choose the applicable setup subcommand from the task.
-3. When the selected page has second-level subcommands, choose the applicable one there.
-4. Follow the reference's prerequisites, install commands, and verification steps.
-5. If no matching reference exists, use normal engineering judgment for the installation and consider adding a focused reference.
-6. If the user requests another installation method, follow it and note the difference from the preferred Imsight process.
+1. Select a subskill from **Subskills** based on the requested setup domain.
+2. Load the selected subskill's `SKILL-MAIN.md`.
+3. Select and execute the applicable subcommand from that subskill.
+4. Follow the selected procedure's prerequisites, approval boundaries, and verification steps.
+5. Report changed host state, validation results, and any remaining user action.
 
-If the task does not map cleanly to these steps, use your native planning tool with the existing setup references, scripts, output contract, and user constraints; do not expose credentials or overwrite unrelated configuration.
+If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the available subskills, constraints, and user request, then execute the plan.
 
 ## Invocation Contract
 
-- Preferred explicit form: `$imsight-dev-box-init use <subcommand> to do <task>`.
-- Codex CLI setup second-level form: `$imsight-dev-box-init use codex-cli-setup <subcommand> to do <task>`.
-- Task-only form: `$imsight-dev-box-init <task prompt>` means choose the applicable setup subcommand from the task.
-- No subcommand and no task means `help`.
-- `help` summarizes this skill and lists the subcommands below.
+- Invoke `imsight-dev-box-init` with no child route to summarize the available subskills.
+- Invoke a subskill with a bare object path, such as `imsight-dev-box-init->coding-agent`.
+- Invoke a subskill command with a parenthesized command component, such as `imsight-dev-box-init->coding-agent->claude-kimi-launcher()`.
+- Invoke `imsight-dev-box-init->help()` to list the routes below.
 
-## Output Contract
+## Subskills
 
-When this skill writes setup notes, manifests, reports, downloaded source packs, or other skill-owned artifacts, choose the output directory in this order:
-
-1. Use the output location explicitly provided by the user.
-2. Otherwise, use `IMSIGHT_SKILL_OUTPUT_DIR` when set; relative values are resolved from the current project directory and absolute values are used as-is.
-3. Otherwise, use `<project-dir>/.imsight-arts/dev-box-init/`.
-
-This contract does not replace intentional install destinations such as tool homes, project overlays, `$HOME/.local/bin`, or agent skill homes requested by the selected setup workflow.
+| Subskill | When to Route Here | Load |
+| --- | --- | --- |
+| `coding-agent` | Choose this branch for coding-client configuration that runs through Codex CLI or a Claude Code launcher. | `subskills/coding-agent/SKILL-MAIN.md` |
+| `houmao-system` | Choose this branch whenever Houmao owns the installed system skills, project overlay, credentials, or specialist. | `subskills/houmao-system/SKILL-MAIN.md` |
+| `hermes-mgr` | Choose this branch for Hermes model routing, Feishu gateway integration and approval callbacks, a Kimi-backed local Hindsight server, persistent memory integration, or memory lifecycle operations. | `subskills/hermes-mgr/SKILL-MAIN.md` |
+| `misc` | Choose this branch for standalone search and documentation utilities, currently Tavily and Context7. | `subskills/misc/SKILL-MAIN.md` |
 
 ## Subcommands
 
-| Subcommand | Use For | Load |
-| --- | --- | --- |
-| `help` | Explain this dev-box setup skill and list available subcommands | This entrypoint |
-| `houmao-setup` | Install `houmao`, verify `houmao-mgr`, or install Houmao system skills for Codex/Claude/Gemini | `references/houmao-skills-and-manager.md` |
-| `tavily-setup` | Install Tavily CLI (`tvly`), authenticate it, or install Tavily third-party skills into an agent skill home | `references/tavily-cli-and-skills.md` |
-| `context7-setup` | Install Context7 CLI (`ctx7`) and the `context7-cli` skill for an agent; CLI-based, not MCP | `references/context7-cli-setup.md` |
-| `claude-kimi-launcher` | Create or repair the `claude-kimi` launcher, or configure Kimi Coding Plan thinking effort | `references/claude-kimi-launcher.md` |
-| `houmao-claude-kimi-specialist` | Create a Houmao specialist that uses Claude Code with Kimi credentials | `references/houmao-claude-kimi-specialist.md` |
-| `codex-cli-setup` | Configure Codex CLI according to Imsight preferences | `references/codex-cli-setup.md` |
-| `codex-cli-3rd-party` | Configure Codex CLI model providers for third-party OpenAI-compatible APIs. Second-level cases: `responses-api` (Yunwu), `chat-completions-only` (SiliconFlow, DeepSeek direct) | `references/codex-cli-3rd-party.md` |
+| Subcommand | Use For |
+| --- | --- |
+| `help` | Explain this parent skill and list its subskill routes. |
+
+## Output Contract
+
+When a selected workflow writes setup notes, manifests, reports, downloaded source packs, or other skill-owned artifacts, choose the output directory in this order:
+
+1. Use the output location explicitly provided by the user.
+2. Otherwise, use `IMSIGHT_SKILL_OUTPUT_DIR` when set; resolve relative values from the current project directory.
+3. Otherwise, use `<project-dir>/.imsight-arts/dev-box-init/`.
+
+This contract does not replace intentional install destinations such as tool homes, project overlays, user-local launchers, or agent skill homes requested by a selected workflow.
 
 ## Maintenance
 
-Name new setup references after the install target, keep each file self-contained, and avoid duplicating detailed commands in this index.
-Place reusable helper scripts owned by this skill in `<skill-dir>/scripts/` and have references call those scripts instead of embedding long generated-script bodies inline.
+Keep this parent entrypoint as a small router. Place detailed procedures and private resources under their owning subskill.
 
 ## Guardrails
 
-- DO NOT apply a generic install method before checking the maintained Imsight reference.
-- DO NOT skip a reference's prerequisites or verification steps.
+- DO NOT apply a generic install method before checking the selected subskill's maintained procedure.
+- DO NOT skip a selected procedure's prerequisites or verification steps.
 - DO NOT hard-code, print, or commit credentials handled by a setup workflow.
 - DO NOT overwrite unrelated configuration while changing one requested setting.

@@ -9,7 +9,7 @@ Use this reference to install Houmao itself, verify `houmao-mgr`, and install Ho
 3. Install the requested system skills using the preferred path or documented alternate installer.
 4. Apply **Home Resolution Notes** and run **Verification**.
 
-If the task does not map cleanly to these steps, plan only from the existing install paths, agent homes, and verification rules; do not invent an unsupported destination.
+If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the documented install paths, agent homes, verification rules, and user request, then execute the plan without inventing an unsupported destination.
 
 ## Prerequisites
 

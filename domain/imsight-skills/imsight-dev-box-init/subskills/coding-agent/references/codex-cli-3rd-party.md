@@ -1,3 +1,17 @@
+---
+metadata:
+  skill_invocation_notation: >
+    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
+    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
+    accepted only as legacy input when SKILL-MAIN.md is absent.
+    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
+    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
+    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
+    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
+    by parent subcommand parent. Intermediate subcommands act as object generators.
+    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
+---
+
 # Codex CLI Third-Party API Providers
 
 Use this reference as the entrypoint for configuring Codex CLI to call third-party OpenAI-compatible APIs.
@@ -10,18 +24,18 @@ Never bake API keys into this skill, generated documentation, git-tracked config
 
 ## Workflow
 
-1. Select `responses-api` or `chat-completions-only` from the provider routing table, testing `/v1/responses` when the provider is unlisted.
+1. Select `responses-api` or `chat-completions-only` from **Subcommands**, testing `/v1/responses` when the provider is unlisted.
 2. Follow the selected provider procedure without embedding API keys.
 3. Preserve unrelated Codex configuration and launcher settings.
 4. Run **Validation** and report the configured route.
 
-If the task does not map cleanly to these steps, plan only from the existing provider categories, configuration rules, and validation checks; ask for provider details rather than inventing compatibility.
+If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the declared provider commands, configuration rules, validation checks, and user request, then execute the plan without inventing compatibility.
 
-## Subcommand: codex-cli-3rd-party
+## Subcommands
 
-Use this top-level subcommand to add or repair a Codex CLI third-party provider configuration. The second-level argument selects the provider category.
+Terminal invocation of `imsight-dev-box-init->coding-agent->codex-cli-3rd-party()` selects or summarizes a provider category.
 
-| Second-level argument | Category | Procedure |
+| Subcommand | Category | Procedure |
 | --- | --- | --- |
 | `responses-api` | Providers that natively support `/v1/responses` | [Responses API compatible providers](#responses-api-compatible-providers) |
 | `chat-completions-only` | Providers that only support `/v1/chat/completions` | [Chat-Completions-only providers](#chat-completions-only-providers) |

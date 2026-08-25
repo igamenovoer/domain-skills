@@ -12,7 +12,7 @@ Use this reference when the user wants a local `claude-kimi` launcher that runs 
 6. Put the launcher directory on PATH for new shells under **Ensure Launcher Directory On PATH**; skipping this leaves `claude-kimi` unresolvable in fresh terminals.
 7. Run every applicable check in **Verification**.
 
-If the task does not map cleanly to these steps, plan only from this page's inputs, defaults, launcher contract, and verification rules; keep credentials out of commands and responses.
+If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's inputs, defaults, launcher contract, verification rules, and user constraints, then execute the plan without exposing credentials.
 
 ## Required Input
 
@@ -188,13 +188,13 @@ This is the fallback lane when no key is available or the key is an open-platfor
 Generate for this lane with the defaults:
 
 ```bash
-<skill-dir>/scripts/create-claude-kimi-launcher.sh
+<coding-agent-subskill-dir>/scripts/create-claude-kimi-launcher.sh
 ```
 
 Or explicitly, with a custom tier mapping:
 
 ```bash
-<skill-dir>/scripts/create-claude-kimi-launcher.sh \
+<coding-agent-subskill-dir>/scripts/create-claude-kimi-launcher.sh \
   --base-url https://api.moonshot.ai/anthropic \
   --model opus --model-opus kimi-k3 --model-sonnet kimi-k2.7-code --model-haiku kimi-k2.6
 ```
@@ -289,7 +289,7 @@ If no explicit `thinking.effort` reaches the Coding Plan API, K3 uses `high`.
 Generate for this lane by passing the coding-plan endpoint, for example Allegretto and above:
 
 ```bash
-<skill-dir>/scripts/create-claude-kimi-launcher.sh \
+<coding-agent-subskill-dir>/scripts/create-claude-kimi-launcher.sh \
   --base-url https://api.kimi.com/coding/ --model opus --model-opus k3-256k --model-fable k3
 ```
 
@@ -314,9 +314,9 @@ The generator derives `ANTHROPIC_API_KEY` auth, the tier defaults, and the compa
 
 ## Create The Launcher
 
-Use the bundled scripts from this skill. Resolve `<skill-dir>` to the `imsight-dev-box-init` skill directory that contains this reference.
+Use the bundled scripts from this subskill. Resolve `<coding-agent-subskill-dir>` to the `subskills/coding-agent/` directory whose `references/` folder contains this page.
 
-If the installed skill copy lost the script's execute bit, invoke it through the interpreter instead of failing on `Permission denied`: `bash <skill-dir>/scripts/create-claude-kimi-launcher.sh ...` (or `pwsh -File ...ps1` on Windows).
+If the installed skill copy lost the script's execute bit, invoke it through the interpreter instead of failing on `Permission denied`: `bash <coding-agent-subskill-dir>/scripts/create-claude-kimi-launcher.sh ...` (or `pwsh -File ...ps1` on Windows).
 
 ## Ensure Launcher Directory On PATH
 
@@ -353,13 +353,13 @@ If a future launcher needs its own runtime flags, use launcher-prefixed names su
 Create the launcher and, when available, seed the shared key file:
 
 ```bash
-<skill-dir>/scripts/create-claude-kimi-launcher.sh --api-key "$KIMI_API_KEY"
+<coding-agent-subskill-dir>/scripts/create-claude-kimi-launcher.sh --api-key "$KIMI_API_KEY"
 ```
 
 If no key is available during setup, omit `--api-key`; the generated launcher will prompt for the key the first time it runs:
 
 ```bash
-<skill-dir>/scripts/create-claude-kimi-launcher.sh
+<coding-agent-subskill-dir>/scripts/create-claude-kimi-launcher.sh
 ```
 
 The script also accepts `--output`, `--key-file`, `--base-url`, `--model`, `--model-opus`, `--model-sonnet`, `--model-haiku`, `--model-fable`, `--model-subagent`, `--compact-window`, and `--claude-bin` when the user wants non-default values.
@@ -369,13 +369,13 @@ The script also accepts `--output`, `--key-file`, `--base-url`, `--model`, `--mo
 The PowerShell script creates a `.ps1` launcher and adjacent `.cmd` shim in a common `kimi-launchers` directory. The `.cmd` shim lets users run `claude-kimi` from `cmd.exe`, PowerShell, or other launchers when the directory is on `PATH`.
 
 ```powershell
-& <skill-dir>\scripts\create-claude-kimi-launcher.ps1 -ApiKey $env:KIMI_API_KEY
+& <coding-agent-subskill-dir>\scripts\create-claude-kimi-launcher.ps1 -ApiKey $env:KIMI_API_KEY
 ```
 
 If no key is available during setup, omit `-ApiKey`; the generated launcher will prompt for the key the first time it runs:
 
 ```powershell
-& <skill-dir>\scripts\create-claude-kimi-launcher.ps1
+& <coding-agent-subskill-dir>\scripts\create-claude-kimi-launcher.ps1
 ```
 
 The script also accepts `-OutputPath`, `-KeyFilePath`, `-BaseUrl`, `-Model`, `-ModelOpus`, `-ModelSonnet`, `-ModelHaiku`, `-ModelFable`, `-ModelSubagent`, `-CompactWindow`, and `-ClaudeBin` for non-default values.
@@ -418,7 +418,7 @@ Inside Claude Code, `/status` should show Base URL `https://api.moonshot.ai/anth
 
 - Store the Kimi key in the shared `kimi-api-key` file next to the launcher, not in the launcher script itself.
 - The shared key file is intentionally named generically so future launchers such as `codex-kimi` and `opencode-kimi` can live in the same directory and read the same file directly.
-- Keep launcher generator scripts in `<skill-dir>/scripts/`; do not place generated helper scripts in `references/`.
+- Keep launcher generator scripts in `<coding-agent-subskill-dir>/scripts/`; do not place generated helper scripts in `references/`.
 - Prefer `ANTHROPIC_AUTH_TOKEN` on the **Using Kimi Platform API** lane and clear `ANTHROPIC_API_KEY` and `CLAUDE_CODE_OAUTH_TOKEN` so Claude Code does not choose an older auth lane. On the **Using Kimi Coding Plan** lane (`api.kimi.com`), the generated launcher uses `ANTHROPIC_API_KEY` instead and clears `ANTHROPIC_AUTH_TOKEN`.
 - The default startup model is `opus`. Override it with `CLAUDE_KIMI_MODEL=<model> claude-kimi ...` or an explicit Claude Code `--model`; `CLAUDE_KIMI_MODEL` is the single knob that resets the startup model and every tier at once. Per-tier runtime overrides are `CLAUDE_KIMI_MODEL_OPUS`, `CLAUDE_KIMI_MODEL_SONNET`, `CLAUDE_KIMI_MODEL_HAIKU`, `CLAUDE_KIMI_MODEL_FABLE`, and `CLAUDE_KIMI_MODEL_SUBAGENT`.
 - If `claude` is not on `PATH`, install Claude Code first before testing the launcher.

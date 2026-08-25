@@ -9,11 +9,11 @@ Use this reference when the user wants a Houmao specialist that launches Claude 
 3. Apply **Defaults**, **Preconditions**, and the Claude onboarding configuration.
 4. Create the specialist and run every applicable check in **Verification**.
 
-If the task does not map cleanly to these steps, plan only from this page's credential, proxy, specialist, and verification rules; ask for required input rather than weakening secret handling.
+If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's credential, proxy, specialist, verification, and user constraints, then execute the plan without weakening secret handling.
 
 ## Required Input
 
-You need a Kimi API key. Prefer `KIMI_API_KEY` or `ANTHROPIC_API_KEY` when already set by the user. If a `claude-kimi` launcher already exists from `references/claude-kimi-launcher.md`, prefer reading the shared `kimi-api-key` file next to that launcher. Never print the key.
+You need a Kimi API key. Prefer `KIMI_API_KEY` or `ANTHROPIC_API_KEY` when already set by the user. If a `claude-kimi` launcher already exists from `../../coding-agent/references/claude-kimi-launcher.md`, prefer reading the shared `kimi-api-key` file next to that launcher. Never print the key.
 
 On Windows, check `%LOCALAPPDATA%\Programs\kimi-launchers\kimi-api-key`. On Unix, check `$HOME/.local/bin/kimi-api-key`.
 
@@ -43,7 +43,7 @@ Explain that this copies only currently set proxy env records such as `HTTP_PROX
 - System prompt: omit unless the user requests one.
 - Default lane: **Using Kimi Platform API** with model `kimi-k3`. Use **Using Kimi Coding Plan** when the user has a Kimi membership and asks for the coding-plan endpoint, or when the user wants help choosing between the lanes.
 
-These defaults keep the Kimi key in Houmao's Claude credential bundle while matching the lane configuration in `references/claude-kimi-launcher.md`.
+These defaults keep the Kimi key in Houmao's Claude credential bundle while matching the lane configuration in `../../coding-agent/references/claude-kimi-launcher.md`.
 
 ## Using Kimi Platform API
 

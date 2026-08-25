@@ -1,0 +1,23 @@
+name: hermes-hindsight
+
+services:
+  hindsight:
+    image: ghcr.io/vectorize-io/hindsight:0.8.5
+    container_name: hermes-hindsight
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:18888:8888"
+      - "127.0.0.1:19999:9999"
+    environment:
+      HINDSIGHT_API_LLM_PROVIDER: openai
+      HINDSIGHT_API_LLM_BASE_URL: https://api.kimi.com/coding/v1
+      HINDSIGHT_API_LLM_MODEL: k3-256k
+      HINDSIGHT_API_LLM_API_KEY: ${KIMI_CODING_API_KEY:?KIMI_CODING_API_KEY is not set}
+      HINDSIGHT_API_LLM_TEMPERATURE: none
+      HINDSIGHT_API_WORKER_ID: hermes-hindsight
+    volumes:
+      - hindsight-data:/home/hindsight/.pg0
+
+volumes:
+  hindsight-data:
+    name: hermes-hindsight-data

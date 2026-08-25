@@ -1,25 +1,39 @@
+---
+metadata:
+  skill_invocation_notation: >
+    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
+    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
+    accepted only as legacy input when SKILL-MAIN.md is absent.
+    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
+    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
+    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
+    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
+    by parent subcommand parent. Intermediate subcommands act as object generators.
+    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
+---
+
 # Codex CLI Setup
 
 Use this reference for Imsight-preferred Codex CLI configuration tasks.
 
 ## Workflow
 
-1. Select a second-level subcommand from **Second-Level Subcommands**.
+1. Select a child command from **Subcommands**.
 2. Follow that operation's configuration procedure while preserving unrelated settings.
 3. Run its **Verification** checks.
 4. Report changed configuration and any remaining user action.
 
-If the task does not map cleanly to these steps, plan only from the existing second-level subcommands and their constraints; do not invent or apply unrelated Codex settings.
+If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the declared child commands, constraints, and user request, then execute the plan without inventing unrelated Codex settings.
 
-## Second-Level Subcommands
+## Subcommands
 
-Use these subcommands under `codex-cli-setup`, for example: `$imsight-dev-box-init use codex-cli-setup disable-codex-apps to disable Codex apps globally`.
+Terminal invocation of `imsight-dev-box-init->coding-agent->codex-cli-setup()` lists these child commands. For example, invoke `imsight-dev-box-init->coding-agent->codex-cli-setup()->disable-codex-apps()` to disable Codex apps globally.
 
-| Subcommand | Use For | Load |
+| Subcommand | Use For | Detail |
 | --- | --- | --- |
-| `disable-codex-apps` | Disable Codex CLI apps and app/MCP exposure globally, then clear app metadata caches | This page |
-| `disable-codex-plugins` | Disable Codex CLI plugin loading globally and optionally remove requested marketplace plugins | This page |
-| `install-skip-all-launcher` | Install a `codex-skip-all` launcher that disables approval, sandbox, and hook-trust prompts | This page |
+| `disable-codex-apps` | Disable Codex CLI apps and app/MCP exposure globally, then clear app metadata caches | [Subcommand: disable-codex-apps](#subcommand-disable-codex-apps) |
+| `disable-codex-plugins` | Disable Codex CLI plugin loading globally and optionally remove requested marketplace plugins | [Subcommand: disable-codex-plugins](#subcommand-disable-codex-plugins) |
+| `install-skip-all-launcher` | Install a `codex-skip-all` launcher that disables approval, sandbox, and hook-trust prompts | [Subcommand: install-skip-all-launcher](#subcommand-install-skip-all-launcher) |
 
 ## Subcommand: install-skip-all-launcher
 
@@ -81,8 +95,7 @@ Expected results:
 - DO NOT make `codex-skip-all` the default `codex` command or silently alias
   `codex` to it.
 - DO NOT use the launcher in an untrusted repository or with untrusted hooks.
-- The launcher disables both command approvals and Codex sandboxing; commands
-  can read, modify, or delete any host data permitted to the invoking user.
+- DO NOT use the launcher unless unrestricted host access is acceptable; it disables command approvals and Codex sandboxing.
 
 ## Subcommand: disable-codex-apps
 

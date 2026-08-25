@@ -10,7 +10,7 @@ Use this reference to install Tavily CLI (`tvly`), authenticate it, and install 
 4. Resolve the requested agent home and install Tavily skills using the maintained method.
 5. Run **Verify** and **Test**, applying **Pitfalls** when needed.
 
-If the task does not map cleanly to these steps, plan only from the documented install, authentication, agent-path, and verification choices; keep credentials private.
+If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the documented install, authentication, agent-path, verification choices, and user request, then execute the plan while keeping credentials private.
 
 ## Prerequisites
 
@@ -79,25 +79,25 @@ For global scope, use each agent's official global path. Do not assume `.agents/
 
 ## Install Tavily Skills
 
-Use the bundled script so the install logic stays consistent. Resolve `<skill-root>` to the `imsight-dev-box-init` skill directory that contains this reference.
+Use the bundled script so the install logic stays consistent. Resolve `<misc-subskill-dir>` to the `subskills/misc/` directory whose `references/` folder contains this page.
 
 ```bash
-<skill-root>/scripts/install-tavily-skills.sh --agent codex --scope project
+<misc-subskill-dir>/scripts/install-tavily-skills.sh --agent codex --scope project
 ```
 
 Common examples:
 
 ```bash
-<skill-root>/scripts/install-tavily-skills.sh --agent claude-code --scope project
-<skill-root>/scripts/install-tavily-skills.sh --agent gemini-cli --scope project
-<skill-root>/scripts/install-tavily-skills.sh --agent kimi-code-cli --scope project
-<skill-root>/scripts/install-tavily-skills.sh --agent codex --scope global
+<misc-subskill-dir>/scripts/install-tavily-skills.sh --agent claude-code --scope project
+<misc-subskill-dir>/scripts/install-tavily-skills.sh --agent gemini-cli --scope project
+<misc-subskill-dir>/scripts/install-tavily-skills.sh --agent kimi-code-cli --scope project
+<misc-subskill-dir>/scripts/install-tavily-skills.sh --agent codex --scope global
 ```
 
 If the user asks for a subset, repeat `--skill`:
 
 ```bash
-<skill-root>/scripts/install-tavily-skills.sh --agent codex --scope project --skill tavily-search --skill tavily-extract
+<misc-subskill-dir>/scripts/install-tavily-skills.sh --agent codex --scope project --skill tavily-search --skill tavily-extract
 ```
 
 The script prefers:
@@ -113,13 +113,13 @@ When `npx` is unavailable, the script falls back to a temporary git clone and co
 For installs performed through `npx skills`, verify with Skills CLI metadata:
 
 ```bash
-<skill-root>/scripts/verify-tavily-skills.sh --agent codex --scope project
+<misc-subskill-dir>/scripts/verify-tavily-skills.sh --agent codex --scope project
 ```
 
 For manual fallback installs only, verify filesystem content:
 
 ```bash
-<skill-root>/scripts/verify-tavily-skills.sh --agent codex --scope project --manual
+<misc-subskill-dir>/scripts/verify-tavily-skills.sh --agent codex --scope project --manual
 ```
 
 Expected skill names include:

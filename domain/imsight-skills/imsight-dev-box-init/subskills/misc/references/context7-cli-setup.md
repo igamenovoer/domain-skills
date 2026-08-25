@@ -9,6 +9,8 @@ Use this reference to install the Context7 CLI (`ctx7`) and its agent skill. Do 
 3. Install the `context7-cli` skill for the requested agent.
 4. Run **Verify**.
 
+If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the documented CLI, skill-install, and verification rules plus the user request, then execute the plan without configuring Context7 MCP.
+
 ## Prerequisites
 
 - Node.js 18+ and `npm` for the CLI install.
