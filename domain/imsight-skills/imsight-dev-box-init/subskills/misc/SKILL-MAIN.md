@@ -1,6 +1,6 @@
 ---
 name: misc
-description: Use when an Imsight dev-box task installs supported utilities outside the coding-agent and Houmao domains, currently Tavily CLI and skills or Context7 CLI and its agent skill.
+description: Use when an Imsight dev-box task installs supported utilities outside the coding-agent and Houmao domains, currently Tavily CLI and skills, Context7 CLI and its agent skill, or BaiduPCS-Go Netdisk CLI.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -41,11 +41,12 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | --- | --- | --- |
 | `tavily-setup` | Install and authenticate Tavily CLI or install Tavily agent skills. | `references/tavily-cli-and-skills.md` |
 | `context7-setup` | Install Context7 CLI and its agent skill without configuring Context7 MCP. | `references/context7-cli-setup.md` |
+| `baidupcs-go-setup` | Install and configure BaiduPCS-Go, build static binary, and perform headless QR authentication with Playwright. | `references/baidupcs-go-setup.md` |
 | `help` | Explain this subskill and list its commands. | This entrypoint |
 
 ## Resource Ownership
 
-This subskill owns the Tavily and Context7 references plus Tavily skill installation and verification scripts.
+This subskill owns the Tavily, Context7, and BaiduPCS-Go references plus Tavily skill installation/verification scripts and the BaiduPCS-Go Playwright login helper script.
 
 ## Guardrails
 

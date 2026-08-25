@@ -1,6 +1,6 @@
 ---
 name: imsight-dev-box-init
-description: Use when explicitly invoking imsight-dev-box-init, routing from another Imsight skill, or using Imsight context to configure coding agents, Houmao systems, Hermes Agent with Kimi, Hindsight, or Feishu, Tavily, Context7, or related development-host tooling. Do not use for generic setup tasks without Imsight context.
+description: Use when explicitly invoking imsight-dev-box-init, routing from another Imsight skill, or using Imsight context to configure coding agents, Houmao systems, Hermes Agent with Kimi, Hindsight, or Feishu, Tavily, Context7, BaiduPCS-Go, or related development-host tooling. Do not use for generic setup tasks without Imsight context.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -33,8 +33,8 @@ If the task does not map cleanly to these steps, use the native planning tool to
 ## Invocation Contract
 
 - Invoke `imsight-dev-box-init` with no child route to summarize the available subskills.
-- Invoke a subskill with a bare object path, such as `imsight-dev-box-init->coding-agent`.
-- Invoke a subskill command with a parenthesized command component, such as `imsight-dev-box-init->coding-agent->claude-kimi-launcher()`.
+- Invoke a subskill with a bare object path, such as `imsight-dev-box-init->coding-agent` or `imsight-dev-box-init->misc`.
+- Invoke a subskill command with a parenthesized command component, such as `imsight-dev-box-init->misc->baidupcs-go-setup()`.
 - Invoke `imsight-dev-box-init->help()` to list the routes below.
 
 ## Subskills
@@ -44,7 +44,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | `coding-agent` | Choose this branch for coding-client configuration that runs through Codex CLI or a Claude Code launcher. | `subskills/coding-agent/SKILL-MAIN.md` |
 | `houmao-system` | Choose this branch whenever Houmao owns the installed system skills, project overlay, credentials, or specialist. | `subskills/houmao-system/SKILL-MAIN.md` |
 | `hermes-mgr` | Choose this branch for Hermes model routing, Feishu gateway integration and approval callbacks, a Kimi-backed local Hindsight server, persistent memory integration, or memory lifecycle operations. | `subskills/hermes-mgr/SKILL-MAIN.md` |
-| `misc` | Choose this branch for standalone search and documentation utilities, currently Tavily and Context7. | `subskills/misc/SKILL-MAIN.md` |
+| `misc` | Choose this branch for standalone search, documentation, and cloud storage utilities, currently Tavily, Context7, and BaiduPCS-Go. | `subskills/misc/SKILL-MAIN.md` |
 
 ## Subcommands
 
