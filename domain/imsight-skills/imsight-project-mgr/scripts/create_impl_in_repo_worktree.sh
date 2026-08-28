@@ -6,7 +6,7 @@ automation_root_rel=".imsight-arts/impl-branches"
 
 print_usage() {
     cat <<'EOF'
-Usage: create_impl_worktree.sh [--repo PATH] [--topic TOPIC_SLUG] [--kind feature|fix] [--branch NAME] [--impl-home PATH] [--path WORKTREE_PATH] [--link-dir RELATIVE_DIR]
+Usage: create_impl_in_repo_worktree.sh [--repo PATH] [--topic TOPIC_SLUG] [--kind feature|fix] [--branch NAME] [--impl-home PATH] [--path WORKTREE_PATH] [--link-dir RELATIVE_DIR]
 
 Create a new local implementation branch from the current repository state,
 including uncommitted tracked and untracked changes, then create a separate
@@ -42,6 +42,10 @@ ensure_impl_gitignored() {
     local repo_root="$1"
     local gitignore_path="$repo_root/.gitignore"
     local last_char=""
+
+    if git -C "$repo_root" check-ignore --quiet --no-index -- "$automation_root_rel/.ignore-probe"; then
+        return 0
+    fi
 
     if gitignore_has_impl_entry "$gitignore_path"; then
         return 0
@@ -130,6 +134,30 @@ resolve_worktree_path() {
     esac
 }
 
+validate_in_repo_path() {
+    local repo_root="$1"
+    local candidate_path="$2"
+    local label="$3"
+    local rel_path=""
+
+    case "$candidate_path" in
+        "$repo_root"/*)
+            ;;
+        *)
+            echo "error: $label must be inside repository: $candidate_path" >&2
+            exit 1
+            ;;
+    esac
+
+    rel_path="${candidate_path#"$repo_root"/}"
+    case "$rel_path" in
+        extern/trees|extern/trees/*)
+            echo "error: extern/trees is reserved for persistent sibling worktree links" >&2
+            exit 1
+            ;;
+    esac
+}
+
 is_pixi_project() {
     local repo_root="$1"
     local pyproject_path="$repo_root/pyproject.toml"
@@ -152,12 +180,26 @@ has_tracked_files_in_worktree() {
     git -C "$worktree_path" ls-files -- "$rel_path" | grep -q .
 }
 
-add_unique_dir() {
+validate_link_dir() {
     local dir_name="$1"
 
     if [[ -z "$dir_name" ]]; then
-        return
+        echo "error: link directory cannot be empty" >&2
+        exit 2
     fi
+
+    case "$dir_name" in
+        /*|..|../*|*/../*|*/..)
+            echo "error: link directory must remain repository-relative: $dir_name" >&2
+            exit 2
+            ;;
+    esac
+}
+
+add_unique_dir() {
+    local dir_name="$1"
+
+    validate_link_dir "$dir_name"
 
     if [[ -z "${seen_link_dirs[$dir_name]+x}" ]]; then
         seen_link_dirs["$dir_name"]=1
@@ -182,8 +224,12 @@ symlink_dir_if_safe() {
         return
     fi
 
+    if [[ -e "$target_path" || -L "$target_path" ]]; then
+        skipped_conflicting_dirs+=("$rel_path")
+        return
+    fi
+
     mkdir -p "$(dirname "$target_path")"
-    rm -rf "$target_path"
     ln -s "$source_path" "$target_path"
     linked_dirs+=("$rel_path")
 }
@@ -245,12 +291,16 @@ while (($# > 0)); do
     esac
 done
 
+for dir_name in "${extra_link_dirs[@]}"; do
+    validate_link_dir "$dir_name"
+done
+
 if ! validate_branch_kind "$branch_kind"; then
     echo "error: --kind must be 'feature' or 'fix'" >&2
     exit 2
 fi
 
-repo_root="$(resolve_repo_root "$repo_arg")"
+repo_root="$(realpath "$(resolve_repo_root "$repo_arg")")"
 automation_root_path="$repo_root/$automation_root_rel"
 automation_root_was_present=0
 
@@ -294,8 +344,10 @@ if git -C "$repo_root" show-ref --verify --quiet "refs/heads/$impl_branch"; then
     exit 1
 fi
 
-impl_home="$(resolve_impl_home "$repo_root" "$branch_kind" "$topic_slug" "$requested_impl_home")"
-worktree_path="$(resolve_worktree_path "$repo_root" "$impl_home" "$requested_path")"
+impl_home="$(realpath -m "$(resolve_impl_home "$repo_root" "$branch_kind" "$topic_slug" "$requested_impl_home")")"
+worktree_path="$(realpath -m "$(resolve_worktree_path "$repo_root" "$impl_home" "$requested_path")")"
+validate_in_repo_path "$repo_root" "$impl_home" "implementation home"
+validate_in_repo_path "$repo_root" "$worktree_path" "implementation worktree"
 
 if [[ -e "$worktree_path" ]]; then
     echo "error: worktree path already exists: $worktree_path" >&2
@@ -335,6 +387,7 @@ declare -a link_dirs=()
 declare -a linked_dirs=()
 declare -a skipped_tracked_dirs=()
 declare -a skipped_missing_dirs=()
+declare -a skipped_conflicting_dirs=()
 
 for dir_name in \
     .claude \
@@ -354,14 +407,17 @@ for dir_name in "${extra_link_dirs[@]}"; do
     add_unique_dir "$dir_name"
 done
 
+pixi_mode="none"
 if is_pixi_project "$repo_root" && [[ -e "$repo_root/.pixi" || -L "$repo_root/.pixi" ]]; then
     add_unique_dir ".pixi"
+    pixi_mode="shared"
 fi
 
 for dir_name in "${link_dirs[@]}"; do
     symlink_dir_if_safe "$repo_root" "$worktree_path" "$dir_name"
 done
 
+echo "WORKTREE_KIND=in-repo-temporary-implementation"
 echo "REPO_ROOT=$repo_root"
 echo "SOURCE_HEAD=$parent_commit"
 echo "BRANCH_KIND=$branch_kind"
@@ -371,6 +427,7 @@ echo "SNAPSHOT_COMMIT=$snapshot_commit"
 echo "IMPL_HOME=$impl_home"
 echo "WORKTREE=$worktree_path"
 echo "COMMIT=$(git -C "$worktree_path" rev-parse HEAD)"
+echo "PIXI_MODE=$pixi_mode"
 
 for dir_name in "${linked_dirs[@]}"; do
     echo "LINKED=$dir_name"
@@ -382,4 +439,8 @@ done
 
 for dir_name in "${skipped_missing_dirs[@]}"; do
     echo "SKIPPED_MISSING=$dir_name"
+done
+
+for dir_name in "${skipped_conflicting_dirs[@]}"; do
+    echo "SKIPPED_CONFLICT=$dir_name"
 done

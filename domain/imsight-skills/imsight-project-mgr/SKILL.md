@@ -1,6 +1,6 @@
 ---
 name: imsight-project-mgr
-description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes a supported project-foundation, external-resource setup, project-development, multi-change OpenSpec delivery, or GitHub release operation to it. Do not invoke implicitly for generic project tasks or from Imsight context alone.
+description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes project foundation, external-resource setup, temporary in-repo or persistent sibling Git worktrees, project development, multi-change OpenSpec delivery, or GitHub release operations to it. Do not invoke implicitly for generic project tasks or from Imsight context alone.
 skill_invocation_notation: >
   Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
   SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
@@ -17,12 +17,15 @@ skill_invocation_notation: >
 
 ## Overview
 
-Use this skill as the manually invoked or internally routed entrypoint for Imsight project-foundation and project-development operations. This includes on-demand setup of bootstrap-managed external-resource directories without coupling that operation to project initialization, plus evidence-gated multi-change OpenSpec delivery through its bundled subskill. It preserves the established public operations without absorbing project exploration, feature design, automation, host setup, networking, or miscellaneous infrastructure.
+Use this skill as the manually invoked or internally routed entrypoint for Imsight project-foundation and project-development operations. This includes temporary in-repo worktrees, persistent sibling worktrees exposed through a documented external-project layout, on-demand setup of bootstrap-managed external-resource directories, and evidence-gated multi-change OpenSpec delivery through its bundled subskill. It preserves the established public operations without absorbing project exploration, feature design, automation, host setup, networking, or miscellaneous infrastructure.
 
 ## When to Use
 
 - Use only when the user explicitly invokes `imsight-project-mgr` or another loaded skill routes a supported operation here.
 - Use for the project-foundation and isolated-development operations in **Subcommands**.
+- Use to create or reconcile a documented `extern/` taxonomy for tracked dependencies, local-only checkouts, and linked project worktrees.
+- Use temporary in-repo worktrees for one feature, fix, inspection, or other bounded task that normally ends with explicit retirement.
+- Use persistent sibling worktrees for long-running parallel workers that deliver several features over time and repeatedly synchronize with the primary checkout.
 - Use to create or reconcile a documented, bootstrap-managed project directory for machine-local or third-party resources when requested independently of project initialization.
 - Use for ordered implementation of multiple OpenSpec changes when each change needs application-specific evidence before the next begins.
 - Use to install relevant shared rules in coding-agent project instruction files, either automatically or through rule-by-rule approval.
@@ -58,19 +61,23 @@ When this skill writes skill-owned notes, reports, or manifests, resolve the out
 2. Otherwise, use `IMSIGHT_SKILL_OUTPUT_DIR` when set; resolve relative values from the project root and use absolute values as-is.
 3. Otherwise, use `<project-root>/.imsight-arts/project-mgr/`.
 
-This contract does not replace intentional project-foundation edits in the target repository. Clean worktrees remain under `<project-root>/.imsight-arts/worktrees/` by default, and isolated implementation homes remain under `<project-root>/.imsight-arts/impl-branches/` by default.
+This contract does not replace intentional project-foundation edits in the target repository. Temporary clean worktrees remain under `<project-root>/.imsight-arts/worktrees/` by default, isolated implementation homes remain under `<project-root>/.imsight-arts/impl-branches/` by default, and persistent sibling worktrees remain direct children of `<project-root>/..` by default.
 
 ## Subcommands
 
 | Subcommand | Use For | Detail |
 | --- | --- | --- |
 | `init-pixi-project` | Perform first-time Pixi/Python initialization, then reconcile the standard project structure | `commands/init-pixi-project.md` |
-| `structure-pixi-project` | Initialize, scaffold, review, or normalize a Pixi-managed Python project | `commands/structure-pixi-project.md` |
+| `structure-pixi-project` | Initialize, scaffold, review, or normalize a Pixi-managed Python project, including its documented external-project layout | `commands/structure-pixi-project.md` |
 | `setup-external-ref-dir` | Create or reconcile a documented, bootstrap-managed home for external resources independently of project initialization | `commands/setup-external-ref-dir.md` |
 | `setup-project-rules` | Inspect a project and add relevant rules to coding-agent instruction files automatically or through rule-by-rule approval | `commands/setup-project-rules.md` |
 | `declare-universal-rules` | Add or refresh Imsight universal rules in a coding-agent project context file | `commands/declare-universal-rules.md` |
-| `create-worktree` | Create a clean Git worktree and safely reuse eligible local state | `commands/create-worktree.md` |
-| `impl-in-worktree` | Implement and verify a change on a fresh local branch in an isolated worktree | `commands/impl-in-worktree.md` |
+| `create-in-repo-worktree` | Create a temporary clean Git worktree inside the repository and safely reuse eligible local state | `commands/create-in-repo-worktree.md` |
+| `impl-in-repo-worktree` | Implement and verify one change on a fresh isolated branch in a temporary in-repo worktree | `commands/impl-in-repo-worktree.md` |
+| `create-sibling-worktree` | Create or reconcile a persistent sibling worker with its own branch, project-local goal, Pixi policy, and `extern/trees/` view | `commands/create-sibling-worktree.md` |
+| `inspect-worktrees` | Report registered worktrees, lifecycle kind, branch state, divergence, Pixi mode, and external-link health without modifying them | `commands/inspect-worktrees.md` |
+| `sync-sibling-worktree` | Synchronize a persistent sibling worker with the primary checkout in one explicit direction | `commands/sync-sibling-worktree.md` |
+| `retire-worktree` | Safely retire a temporary or persistent worktree while preserving unintegrated work and cleaning owned links | `commands/retire-worktree.md` |
 | `github-release` | Prepare the project changelog and publish a verified GitHub release with an explicit change list | `commands/github-release.md` |
 | `help` | Explain this skill, its invocation restriction, categories, and public subcommands | This entrypoint |
 
@@ -91,7 +98,8 @@ Load only the selected subskill's `SKILL-MAIN.md` and the local resources it exp
 - Route maintained one-pass development automation to `imsight-project-automation`.
 - Route development-host setup and installation to `imsight-dev-box-init`.
 - Route networking to `imsight-dev-box-network` and miscellaneous infrastructure to `imsight-project-misc`.
-- Within `impl-in-worktree`, this skill owns the isolated branch, worktree, verification, and local-delivery boundary. The native coding workflow or explicitly named domain skill owns implementation logic.
+- Within `impl-in-repo-worktree`, this skill owns the isolated branch, temporary worktree, verification, and local-delivery boundary. The native coding workflow or explicitly named domain skill owns implementation logic.
+- Within persistent sibling-worktree operations, this skill owns placement, worker identity, local environment policy, `extern/trees/` exposure, Git synchronization preflight, and explicit retirement. Repository instructions and the selected implementation workflow own feature logic and integration requirements.
 - Within `github-release`, this skill owns release preparation, changelog maintenance, GitHub release publication through `gh`, and post-publication verification. Repository instructions own project-specific versioning, build, validation, signing, and asset requirements.
 - Within `impl-multi-openspec-changes`, the bundled subskill owns change ordering, between-change artifact reconciliation, application-specific evidence gates, and final cross-change verification. The selected OpenSpec apply workflow owns each individual change's implementation mechanics.
 
@@ -99,8 +107,11 @@ Load only the selected subskill's `SKILL-MAIN.md` and the local resources it exp
 
 - DO NOT activate this skill for an ordinary project request that did not name it or was not routed from another skill.
 - DO NOT treat the two subcommand categories as required phases.
-- DO NOT rename, hide, or omit `init-pixi-project` or any other public subcommand; these names are part of the command contract.
-- DO NOT mutate the original checkout after `impl-in-worktree` creates an isolated worktree.
+- DO NOT rename, hide, or omit a public subcommand unless the user explicitly requests a command-contract migration; update every internal caller and example when such a migration is authorized.
+- DO NOT expose temporary in-repo worktrees through `extern/trees/`; reserve that index for persistent sibling workers.
+- DO NOT mutate the original checkout after `impl-in-repo-worktree` creates an isolated worktree.
+- DO NOT treat completion of one feature as authorization to retire a persistent sibling worktree.
+- DO NOT synchronize in both directions implicitly; resolve one source, one target, and the intended commits before changing refs.
 - DO NOT bypass the bundled subskill's per-change evidence gate when delivering multiple OpenSpec changes.
 
 ## Maintenance

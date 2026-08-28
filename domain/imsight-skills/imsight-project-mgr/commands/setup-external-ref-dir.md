@@ -27,6 +27,7 @@ Respect the existing `extern/` taxonomy:
 
 - Use `extern/tracked/<repo>/` for a pinned third-party checkout that belongs in Git as a submodule.
 - Use `extern/orphan/<repo>/` for a disposable or local-only checkout whose contents and setup metadata need not be committed.
+- Use `extern/trees/<name>` only for an ignored symlink to a persistent sibling Git worktree created or reconciled through `create-sibling-worktree`. It is not a temporary worktree, managed resource home, or runtime dependency.
 - Prefer `extern/resources/<name>/` or another dedicated managed directory when the project must commit resource documentation and bootstrap logic while ignoring the resource itself.
 
 If the selected managed directory is already ignored in full, do not silently place committed control files there. Report the conflict and either use a trackable managed directory or adjust the ignore policy when the user explicitly chooses that design.
@@ -73,6 +74,8 @@ Ask for a missing value only when choosing it could point at the wrong source, o
 ## Documentation Contract
 
 The top-level `README.md` must identify the directory as a home for external, third-party, or machine-local resources. It must index every managed reference with its local path, source, project use, expected `source-data`, derived artifacts, and bootstrap entrypoint.
+
+When the managed directory is an immediate child of `extern/`, create or reconcile `extern/README.md` and the managed directory's `README.md` according to `../references/external-project-layout.md`. Preserve other indexed subdirectories and entries.
 
 Each per-reference `README.md` must document:
 
@@ -161,6 +164,7 @@ If an external source is unavailable, validate the control plane and report mate
 - DO NOT let `--yes` or `--clean` delete external source data.
 - DO NOT perform network access, authentication, license acceptance, or large downloads unless the user requested materialization or bootstrap execution.
 - DO NOT claim reproducibility without a pinned revision, version, checksum, or an explicit note that the upstream source is unpinned.
+- DO NOT place temporary worktrees, managed resource data, or runtime dependencies under `extern/trees/`; that directory is reserved for ignored links to persistent sibling workers.
 
 ## Example Prompts
 

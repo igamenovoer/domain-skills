@@ -1,6 +1,6 @@
 # Structure Pixi Python Project
 
-Use this command to initialize, scaffold, review, or normalize a Pixi-managed Python project. Adapt names and details to the existing repository while preserving compatible project choices.
+Use this command to initialize, scaffold, review, or normalize a Pixi-managed Python project. Adapt names and details to the existing repository while preserving compatible project choices, including a documented external-project layout.
 
 ## Workflow
 
@@ -9,7 +9,7 @@ When this command is invoked, execute the following steps in order.
 1. **Resolve the project root**. Work from the Python project root, not a mega-workspace parent.
 2. **Inspect existing Pixi state**. Check `pixi.lock`, `pixi.toml`, and `[tool.pixi]` in `pyproject.toml` before changing files.
 3. **Choose the manifest and package names**. Preserve the existing manifest form and package name; otherwise prefer `pyproject.toml` and derive the package name from the project name.
-4. **Create or reconcile the project structure**. Follow **Directory Structure**, **Directory Roles**, and **Standard Files** without overwriting compatible existing content.
+4. **Create or reconcile the project structure**. Follow **Directory Structure**, **Directory Roles**, **Standard Files**, and `../references/external-project-layout.md` without overwriting compatible existing content.
 5. **Initialize or reconcile Pixi**. Follow **Pixi Initialization**, preserve existing dependency constraints, and add only missing requested dependencies.
 6. **Validate the result**. Apply the **Review Checklist** and use `pixi run ...` for project commands when available.
 7. **Report changes**. List created or updated files, preserved choices, commands run, validation results, and unresolved project decisions.
@@ -29,9 +29,14 @@ If the user's task does not map cleanly to these steps, use your native planning
 |   `-- <package_name>/
 |       `-- __init__.py
 |-- extern/
+|   |-- README.md
 |   |-- .gitignore
 |   |-- tracked/
-|   `-- orphan/
+|   |   `-- README.md
+|   |-- orphan/
+|   |   `-- README.md
+|   `-- trees/
+|       `-- README.md
 |-- scripts/
 |-- tests/
 |   |-- unit/
@@ -53,8 +58,10 @@ If the user's task does not map cleanly to these steps, use your native planning
 
 - `.github/workflows/`: CI, documentation deployment, automated tests, and package build workflows.
 - `src/<package_name>/`: importable package code.
+- `extern/`: documented index of external code and related worktrees. Its README explains the taxonomy and points to every immediate subdirectory.
 - `extern/tracked/`: pinned third-party code, typically Git submodules tracked through `.gitmodules`.
-- `extern/orphan/`: local-only clones or checkouts that must not be committed.
+- `extern/orphan/`: local-only clones or checkouts that must not be committed or become runtime dependencies.
+- `extern/trees/`: ignored symlinks to persistent sibling Git worktrees that developers and agents may browse from the current project. Linked workers remain independent worktrees and are not project dependencies. Temporary in-repo worktrees do not appear here.
 - `scripts/`: command-line helpers and project automation.
 - `tests/unit/`: fast deterministic tests, mirroring source modules where useful.
 - `tests/integration/`: filesystem, service, multi-component, or slower integration checks.
@@ -76,7 +83,11 @@ Create `src/<package_name>/__init__.py` with a short module docstring. Add `exte
 ```gitignore
 orphan/*
 !orphan/README.md
+trees/*
+!trees/README.md
 ```
+
+Create or reconcile `extern/README.md` and one `README.md` in every immediate `extern/<subdir>/`, including `tracked/`, `orphan/`, and `trees/`. Follow the inventory and tracking-status contract in `../references/external-project-layout.md`. The README retains the directory in Git, so do not add a new `.gitkeep` beside it.
 
 Ensure the project `.gitignore` includes:
 
@@ -112,8 +123,10 @@ For an existing project, inspect the manifest first and add only missing request
 - Pixi configuration exists in the selected manifest format.
 - Package name and `src/<package_name>` agree.
 - Tests use unit, integration, and manual homes when those categories exist.
-- External dependency folders distinguish tracked submodules from local-only clones.
-- `.pixi/`, `tmp/`, and `extern/orphan/*` are ignored.
+- External dependency folders distinguish tracked submodules, local-only clones, and linked worktrees.
+- `extern/README.md` indexes every immediate external subdirectory, and each `extern/<subdir>/README.md` explains its contents, purpose, tracking policy, and reconstruction or cleanup method.
+- `extern/trees/` is reserved for ignored links to persistent sibling Git worktrees and is excluded from runtime dependencies and broad project operations.
+- `.pixi/`, `tmp/`, `extern/orphan/*`, and `extern/trees/*` are ignored while their external-layout README files remain trackable.
 - Documentation and AI context have distinct homes.
 - `context/` contains the `plans/`, `features/`, `design/`, `summaries/`, and `archived/` homes with no project knowledge placed in an ambiguous catch-all location.
 - Each `context/` subdirectory contains a `README.md` describing its purpose.

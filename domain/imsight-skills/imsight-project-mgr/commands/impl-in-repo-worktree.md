@@ -1,29 +1,32 @@
-# Implement in Worktree
+# Implement in In-Repo Worktree
 
-Implement a change in an isolated worktree without disturbing the active checkout. Carry the current repository state into a new local branch, bridge required local-only state, and perform implementation, verification, and local commits from inside that worktree.
+Implement one change in a temporary in-repo worktree without disturbing the active checkout. Carry the current repository state into a new local branch, bridge required local-only state, and perform implementation, verification, and local commits from inside that worktree. Use a persistent sibling worker when the same physical worktree will deliver several features over time.
 
 ## Workflow
 
 When this command is invoked, execute the following steps in order.
 
 1. **Resolve the target and branch naming**. Follow **Target and Branch Contract**, including the OpenSpec special case.
-2. **Create the isolated branch and worktree**. Use the bundled helper from **Helper Invocation**; never reuse or overwrite a conflicting branch or path silently.
-3. **Bridge local resources**. Follow `../references/worktree-local-state-policy.md` and add only the narrowest safe links needed for execution.
+2. **Create the isolated branch and in-repo worktree**. Use the bundled helper from **Helper Invocation**; never reuse or overwrite a conflicting branch or path silently.
+3. **Bridge temporary local resources**. Follow `../references/worktree-local-state-policy.md` and add only the narrowest safe links needed for execution. Share an eligible `.pixi` by default.
 4. **Move into the worktree and stay there**. Perform all subsequent reads, edits, builds, tests, and OpenSpec commands inside the returned `WORKTREE`.
 5. **Implement and verify the requested change**. Use repository-native workflows; for an OpenSpec target, follow **OpenSpec Target Contract**.
 6. **Commit locally**. After relevant verification passes, create one or more local commits on the implementation branch without pushing.
-7. **Report the result**. Report the worktree, branch, final commit, verification commands, linked resources, assumptions, and local-only status.
+7. **Report the result**. Report the temporary worktree, branch, final commit, verification commands, linked resources, assumptions, local-only status, and explicit retirement requirement.
 
-If the user's task does not map cleanly to these steps, use your native planning tool to build a step-by-step plan from the isolation, implementation, verification, commit, and safety constraints in this command, then execute the plan.
+If the user's task does not map cleanly to these steps, use your native planning tool to build a step-by-step plan from the isolation, implementation, verification, commit, lifecycle, and safety constraints in this command, then execute the plan.
 
 ## Defaults
 
+- Lifecycle kind: temporary in-repo implementation worktree.
 - Topic slug: derive from the target, normalize to hyphen-case, and keep it stable.
 - Branch kind: `fix` for broken behavior, regressions, failing tests, or repairs; otherwise `feature`.
 - Implementation branch: `<branch-kind>/<topic-slug>`.
 - Implementation home: `<repo-root>/.imsight-arts/impl-branches/<branch-kind>/<topic-slug>`.
 - Worktree: `<impl-home>/repo`.
+- Pixi mode: `shared` when the repository is Pixi-managed and the source `.pixi` exists; otherwise `none`.
 - Extra link directories: none.
+- External tree exposure: prohibited.
 - Final delivery: one or more verified local commits; do not push.
 
 If this command creates `.imsight-arts/impl-branches/`, add it to `.gitignore`. If `.gitignore` already has a commented entry for that path, do not add an active rule automatically.
@@ -40,13 +43,13 @@ If this command creates `.imsight-arts/impl-branches/`, add it to `.gitignore`. 
 ## Helper Invocation
 
 ```bash
-bash <skill-dir>/scripts/create_impl_worktree.sh --topic TOPIC_SLUG --kind feature
+bash <skill-dir>/scripts/create_impl_in_repo_worktree.sh --topic TOPIC_SLUG --kind feature
 ```
 
 Use `--kind fix` for repair work. Optional arguments are:
 
 ```bash
-bash <skill-dir>/scripts/create_impl_worktree.sh \
+bash <skill-dir>/scripts/create_impl_in_repo_worktree.sh \
   --repo PATH \
   --topic TOPIC_SLUG \
   --kind feature \
@@ -71,7 +74,8 @@ The helper snapshots tracked and untracked source state through a temporary Git 
 ## Guardrails
 
 - DO NOT switch branches or continue implementation in the original checkout after the isolated worktree exists.
-- DO NOT push, open a pull request, or delete the branch or worktree unless the user explicitly asks.
+- DO NOT expose this temporary worktree through `extern/trees/`.
+- DO NOT push, open a pull request, delete the branch, or retire the worktree unless the user explicitly asks.
 - DO NOT copy the repository manually.
 - DO NOT treat a missing local resource as a product defect before checking whether a safe link can bridge it.
 - DO NOT bypass OpenSpec CLI discovery by hard-coding artifact layouts for OpenSpec targets.
@@ -79,6 +83,6 @@ The helper snapshots tracked and untracked source state through a temporary Git 
 
 ## Example Prompts
 
-- `Use $imsight-project-mgr impl-in-worktree to implement this feature on a fresh local branch without disturbing my checkout.`
-- `Use $imsight-project-mgr impl-in-worktree to fix the failing runtime bug, run relevant tests, and leave the branch local for review.`
-- `Use $imsight-project-mgr impl-in-worktree on openspec/changes/<change-name> and use $openspec-apply-change inside the worktree.`
+- `Use $imsight-project-mgr impl-in-repo-worktree to implement this feature on a fresh local branch without disturbing my checkout.`
+- `Use $imsight-project-mgr impl-in-repo-worktree to fix the failing runtime bug, run relevant tests, and leave the branch local for review.`
+- `Use $imsight-project-mgr impl-in-repo-worktree on openspec/changes/<change-name> and use $openspec-apply-change inside the worktree.`

@@ -4,10 +4,10 @@ set -euo pipefail
 
 print_usage() {
     cat <<'EOF'
-Usage: create_worktree.sh [--repo PATH] [--branch REF] [--path TARGET_PATH] [--link-dir NAME]
+Usage: create_in_repo_worktree.sh [--repo PATH] [--branch REF] [--path TARGET_PATH] [--link-dir NAME]
 
-Create a clean git worktree from a repository and symlink selected untracked
-local-state directories into it.
+Create a temporary clean git worktree inside a repository and symlink selected
+untracked local-state directories into it.
 
 Options:
   --repo PATH        Repository path. Default: current working tree.
@@ -49,6 +49,34 @@ resolve_target_path() {
     esac
 }
 
+validate_in_repo_target() {
+    local repo_root="$1"
+    local worktree_path="$2"
+    local rel_path=""
+
+    case "$worktree_path" in
+        "$repo_root"/*)
+            ;;
+        *)
+            echo "error: in-repo worktree target must be inside repository: $worktree_path" >&2
+            exit 1
+            ;;
+    esac
+
+    rel_path="${worktree_path#"$repo_root"/}"
+    case "$rel_path" in
+        extern/trees|extern/trees/*)
+            echo "error: extern/trees is reserved for persistent sibling worktree links" >&2
+            exit 1
+            ;;
+    esac
+
+    if ! git -C "$repo_root" check-ignore --quiet --no-index -- "$rel_path"; then
+        echo "error: in-repo worktree target is not ignored: $rel_path" >&2
+        exit 1
+    fi
+}
+
 is_local_branch() {
     local repo_root="$1"
     local ref_name="$2"
@@ -88,12 +116,26 @@ is_pixi_project() {
     return 1
 }
 
-add_unique_dir() {
+validate_link_dir() {
     local dir_name="$1"
 
     if [[ -z "$dir_name" ]]; then
-        return
+        echo "error: link directory cannot be empty" >&2
+        exit 2
     fi
+
+    case "$dir_name" in
+        /*|..|../*|*/../*|*/..)
+            echo "error: link directory must remain repository-relative: $dir_name" >&2
+            exit 2
+            ;;
+    esac
+}
+
+add_unique_dir() {
+    local dir_name="$1"
+
+    validate_link_dir "$dir_name"
 
     if [[ -z "${seen_link_dirs[$dir_name]+x}" ]]; then
         seen_link_dirs["$dir_name"]=1
@@ -118,7 +160,12 @@ symlink_dir_if_safe() {
         return
     fi
 
-    rm -rf "$target_path"
+    if [[ -e "$target_path" || -L "$target_path" ]]; then
+        skipped_conflicting_dirs+=("$rel_path")
+        return
+    fi
+
+    mkdir -p "$(dirname "$target_path")"
     ln -s "$source_path" "$target_path"
     linked_dirs+=("$rel_path")
 }
@@ -162,7 +209,11 @@ while (($# > 0)); do
     esac
 done
 
-repo_root="$(resolve_repo_root "$repo_arg")"
+for dir_name in "${extra_link_dirs[@]}"; do
+    validate_link_dir "$dir_name"
+done
+
+repo_root="$(realpath "$(resolve_repo_root "$repo_arg")")"
 
 if [[ -z "$source_ref" ]]; then
     source_ref="$(git -C "$repo_root" branch --show-current)"
@@ -174,7 +225,8 @@ if [[ -z "$source_ref" ]]; then
 fi
 
 source_commit="$(git -C "$repo_root" rev-parse --verify "$source_ref^{commit}")"
-worktree_path="$(resolve_target_path "$repo_root" "$requested_path")"
+worktree_path="$(realpath -m "$(resolve_target_path "$repo_root" "$requested_path")")"
+validate_in_repo_target "$repo_root" "$worktree_path"
 
 mkdir -p "$(dirname "$worktree_path")"
 
@@ -191,6 +243,7 @@ declare -a link_dirs=()
 declare -a linked_dirs=()
 declare -a skipped_tracked_dirs=()
 declare -a skipped_missing_dirs=()
+declare -a skipped_conflicting_dirs=()
 
 for dir_name in \
     .claude \
@@ -210,19 +263,23 @@ for dir_name in "${extra_link_dirs[@]}"; do
     add_unique_dir "$dir_name"
 done
 
+pixi_mode="none"
 if is_pixi_project "$repo_root" && [[ -e "$repo_root/.pixi" || -L "$repo_root/.pixi" ]]; then
     add_unique_dir ".pixi"
+    pixi_mode="shared"
 fi
 
 for dir_name in "${link_dirs[@]}"; do
     symlink_dir_if_safe "$repo_root" "$worktree_path" "$dir_name"
 done
 
+echo "WORKTREE_KIND=in-repo-temporary"
 echo "WORKTREE=$worktree_path"
 echo "SOURCE_REF=$source_ref"
 echo "CHECKOUT_MODE=$checkout_mode"
 echo "COMMIT=$(git -C "$worktree_path" rev-parse HEAD)"
 echo "BRANCH=$(git -C "$worktree_path" branch --show-current)"
+echo "PIXI_MODE=$pixi_mode"
 
 for dir_name in "${linked_dirs[@]}"; do
     echo "LINKED=$dir_name"
@@ -234,4 +291,8 @@ done
 
 for dir_name in "${skipped_missing_dirs[@]}"; do
     echo "SKIPPED_MISSING=$dir_name"
+done
+
+for dir_name in "${skipped_conflicting_dirs[@]}"; do
+    echo "SKIPPED_CONFLICT=$dir_name"
 done
