@@ -10,10 +10,10 @@ When this command is invoked, execute the following steps in order.
 2. **Reconcile the local control plane**. Read `../references/external-project-layout.md` and `../references/worktree-local-state-policy.md`. Ensure `extern/README.md`, `extern/trees/README.md`, the narrow external-link ignore policy, and local handling for `.proj-local/` and `.pixi/` exist before creating the worker. Preserve established documentation.
 3. **Inspect conflicts and existing state**. Confirm the sibling path is a direct child of the repository parent, the branch is not checked out elsewhere, and any existing target is the registered worktree expected for this worker. Stop on a conflicting path, branch, or link.
 4. **Create or reuse the persistent worker**. Run the bundled helper from **Helper Invocation**. Create an attached worker branch; never use detached HEAD for this lifecycle kind.
-5. **Initialize the worker environment**. Apply the resolved local-state policy. Use an independent Pixi environment by default. Initialize registered submodules when required by the repository, obtaining authorization before network access when it is not already in scope.
+5. **Initialize the worker environment**. Apply the resolved local-state policy. Use an independent Pixi environment by default. Initialize registered submodules when required by the repository, obtaining authorization before network access when it is not already in scope. Apply the isolation decision from **Submodule Isolation**.
 6. **Create the project-local goal**. Ensure `<worktree>/.proj-local/goal.md` records the worker purpose, anchor branch, base ref, lifetime, Pixi mode, synchronization policy, and current feature focus when known. Keep `.proj-local/` local unless repository policy intentionally tracks it.
 7. **Expose and document the worker**. Verify that `extern/trees/<worker-name>` is a relative symlink to the exact sibling worktree. Reconcile `extern/README.md` and `extern/trees/README.md` with its logical name, purpose, branch convention, recreation command, and removal command. Do not write the machine-specific absolute target into committed documentation.
-8. **Verify and report**. Report whether the worktree was created or reused, its branch and commit, goal path, Pixi mode and installation result, linked local state, external-tree link, and any skipped submodule or environment setup.
+8. **Verify and report**. Report whether the worktree was created or reused, its branch and commit, goal path, Pixi mode and installation result, linked local state, external-tree link, and the submodule mode with initialized submodules, their dedicated branches, or skipped setup.
 
 If the user's task does not map cleanly to these steps, use your native planning tool to build a step-by-step plan from the placement, branch, environment, external-layout, synchronization, and lifecycle constraints in this command, then execute the plan.
 
@@ -27,6 +27,7 @@ If the user's task does not map cleanly to these steps, use your native planning
 - Target path: `<repo-parent>/<repo-name>-<worker-name>`.
 - Pixi mode: `isolated` for a Pixi-managed repository.
 - Pixi installation: run `pixi install` after creation unless the user requests deferred installation.
+- Submodule isolation: `leave-alone`; submodules stay on the gitlink commits recorded by the base ref unless a trigger from **Submodule Isolation** applies.
 - External tree exposure: required at `extern/trees/<worker-name>`.
 - Retirement: explicit only; completion of one feature does not retire the worker.
 
@@ -66,10 +67,28 @@ The helper may reuse an existing target only when Git already registers it as th
 - Keep `.proj-local/goal.md` stable across topic-branch switches.
 - Use `sync-sibling-worktree` for deliberate movement of commits between the primary checkout and the worker.
 
+## Submodule Isolation
+
+Submodules default to `leave-alone`: initialize them only when the repository requires them, keep them on the exact gitlink commits recorded by the base ref, and create no branches inside them.
+
+Switch to `isolated` when the user asks for it, with wording such as "isolate submodule", "create branch for submodule", or "we will modify submodules as part of work", or when the worker goal shows that tracked submodule content is very likely part of the work, such as kernel or framework changes inside `extern/tracked/`. State the evidence when making this decision without explicit user wording.
+
+When the mode is `isolated`:
+
+- Initialize each in-scope tracked submodule after worktree creation, obtaining authorization before network access when it is not already in scope.
+- Create or reuse a dedicated attached branch `worker/<worker-name>` inside each isolated submodule, matching the worker anchor branch. Never leave an isolated submodule on a detached HEAD.
+- Reuse an existing `worker/<worker-name>` submodule branch only when its identity matches this worker, and stop when that branch is checked out at another path.
+- Record the submodule mode and each isolated submodule's branch in `<worktree>/.proj-local/goal.md`.
+
+Isolation changes only the submodule's checked-out branch. Worktree creation never commits or pushes inside a submodule and never updates superproject gitlinks.
+
 ## Guardrails
 
 - DO NOT create this worktree inside the repository, under `extern/`, or outside the repository parent without a separate explicit design.
 - DO NOT use detached HEAD or silently attach a branch checked out elsewhere.
+- DO NOT create branches inside submodules unless the user requested submodule isolation or the worker goal clearly requires modifying tracked submodule content.
+- DO NOT leave an isolated submodule on a detached HEAD, and do not silently reuse a submodule branch checked out at another path.
+- DO NOT commit or push submodule changes or update superproject gitlinks merely because worktree creation was requested.
 - DO NOT snapshot uncommitted source-checkout changes into the sibling worker; report that only committed base state transfers.
 - DO NOT share `.pixi` unless the effective Pixi mode is explicitly `shared`.
 - DO NOT replace an existing `extern/trees/<worker-name>` entry unless it already resolves to this exact worktree.
