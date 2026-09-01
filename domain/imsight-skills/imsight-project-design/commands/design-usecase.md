@@ -8,7 +8,7 @@ When the user asks to propose, brainstorm, or list candidate use cases without c
 
 When this subcommand is invoked, execute these steps in order.
 
-1. **Resolve the feature design directory** and read `README.md`, `feature-requirement.md`, `design/README.md`, relevant `design/*.md`, `usecases/README.md`, and existing `usecases/uc-*.md` files.
+1. **Resolve the feature design directory** and read `README.md`, `feature-requirement.md`, `design/README.md`, relevant `design/*.md`, `usecases/README.md`, and existing `usecases/uc-*.md` files. When the feature design directory is inside an OpenSpec change, treat the change's `proposal.md`, `design.md`, `tasks.md`, and `specs/` as the equivalent baseline and read them as well; `feature-requirement.md` may not exist there.
 2. **Gather feature context**. Incorporate the request, relevant prior conversation, referenced files, nearby feature docs, existing use cases, design docs, and host-project evidence. Flag terminology conflicts before writing.
 3. **Select mode**. Use **Create Mode** when drafting a new use case. Use **Clarify And Refine Mode** when updating a matched use case or when the user asks to review, refine, or improve use cases.
 4. **Run a coverage scan** using **Use Case Coverage Scan**. Keep the raw scan internal unless it identifies a blocker that needs user input.

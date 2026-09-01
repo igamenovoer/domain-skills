@@ -6,8 +6,8 @@ Use this subcommand to propose new use case candidates for a feature in chat wit
 
 When this subcommand is invoked, execute these steps in order.
 
-1. **Resolve the feature design directory** and read `README.md`, `feature-requirement.md`, `usecases/README.md`, existing `usecases/uc-*.md` files, and relevant `design/` docs.
-2. **Check predecessor artifacts**. `feature-requirement.md` must exist with substantive content. If it is missing or still a scaffold placeholder, refuse to propose and tell the user to run `define-feature` first.
+1. **Resolve the feature design directory** and read `README.md`, `feature-requirement.md`, `usecases/README.md`, existing `usecases/uc-*.md` files, and relevant `design/` docs. When the feature design directory is inside an OpenSpec change, treat the change's `proposal.md`, `design.md`, `tasks.md`, and `specs/` as the equivalent baseline and read them as well; `feature-requirement.md` may not exist there.
+2. **Check predecessor artifacts**. A substantive requirements baseline must exist: `feature-requirement.md`, or, inside an OpenSpec change, the change's own artifacts (`proposal.md`, `design.md`, `tasks.md`, `specs/`). If no substantive baseline exists or it is still a scaffold placeholder, refuse to propose and tell the user to run `define-feature` first.
 3. **Gather feature context** following the context-gathering rules in `commands/design-usecase.md`: the request, prior conversation, referenced files, nearby feature docs, existing use cases, design docs, and host-project evidence.
 4. **Determine the proposal count**. Use the count the user stated, such as "propose 3 new usecases". When no count is given, propose 3 candidates or state the count you chose and why.
 5. **Run the coverage scan** defined in `commands/design-usecase.md` to find uncovered actors, workflows, and exception flows. Keep the raw scan internal unless it identifies a blocker that needs user input.

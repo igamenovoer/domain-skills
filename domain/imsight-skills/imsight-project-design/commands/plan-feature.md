@@ -6,8 +6,8 @@ Use this subcommand to create or update `<feature-dir>/feature-milestones.md`, a
 
 When this subcommand is invoked, execute these steps in order.
 
-1. **Resolve the feature design directory** and read `README.md`, `feature-requirement.md`, relevant `usecases/uc-*.md`, `design/` docs, and any existing `feature-milestones.md`.
-2. **Check predecessor artifacts**. `feature-requirement.md` must exist with substantive content. If it is missing or still a scaffold placeholder, refuse to plan and tell the user to run `define-feature` first.
+1. **Resolve the feature design directory** and read `README.md`, `feature-requirement.md`, relevant `usecases/uc-*.md`, `design/` docs, and any existing `feature-milestones.md`. When the feature design directory is inside an OpenSpec change, treat the change's `proposal.md`, `design.md`, `tasks.md`, and `specs/` as the equivalent baseline and read them as well; `feature-requirement.md` may not exist there.
+2. **Check predecessor artifacts**. A substantive requirements baseline must exist: `feature-requirement.md`, or, inside an OpenSpec change, the change's own artifacts (`proposal.md`, `design.md`, `tasks.md`, `specs/`). If no substantive baseline exists or it is still a scaffold placeholder, refuse to plan and tell the user to run `define-feature` first.
 3. **Derive the milestone sequence** from the feature goal, functional requirements, use cases, and interface designs. Follow **Milestone Principles**.
 4. **Create or update `feature-milestones.md`** following **Milestones Format**. Use the template at `assets/templates/feature/feature-milestones.md` when creating a new file. Preserve settled milestones when updating and revise only affected ones.
 5. **Update the feature `README.md`** artifact map and current stage when they do not mention the milestone plan.

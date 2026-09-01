@@ -10,8 +10,8 @@ When the user asks to propose, brainstorm, or list candidate gates without commi
 
 When this subcommand is invoked, execute these steps in order.
 
-1. **Resolve the feature design directory** and read `README.md`, `feature-requirement.md`, relevant `usecases/uc-*.md`, `design/` docs, any existing `feature-milestones.md`, and any existing `gates/*.md` files.
-2. **Check predecessor artifacts**. `feature-requirement.md` must exist with substantive content. If it is missing or still a scaffold placeholder, refuse to design gates and tell the user to run `define-feature` first.
+1. **Resolve the feature design directory** and read `README.md`, `feature-requirement.md`, relevant `usecases/uc-*.md`, `design/` docs, any existing `feature-milestones.md`, and any existing `gates/*.md` files. When the feature design directory is inside an OpenSpec change, treat the change's `proposal.md`, `design.md`, `tasks.md`, and `specs/` as the equivalent baseline and read them as well; `feature-requirement.md` may not exist there.
+2. **Check predecessor artifacts**. A substantive requirements baseline must exist: `feature-requirement.md`, or, inside an OpenSpec change, the change's own artifacts (`proposal.md`, `design.md`, `tasks.md`, `specs/`). If no substantive baseline exists or it is still a scaffold placeholder, refuse to design gates and tell the user to run `define-feature` first.
 3. **Gather feature context**. Incorporate the request, relevant prior conversation, referenced files, nearby feature docs, existing use cases, design docs, and host-project evidence. Flag terminology conflicts before writing.
 4. **Select mode**. Use **Create Mode** when drafting new gates. Use **Clarify And Refine Mode** when updating matched gates or when the user asks to review, refine, or improve the gate set.
 5. **Run a coverage scan** using **Gate Coverage Scan**. Keep the raw scan internal unless it identifies a blocker that needs user input.
