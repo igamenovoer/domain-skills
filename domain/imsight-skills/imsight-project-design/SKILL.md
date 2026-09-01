@@ -1,6 +1,6 @@
 ---
 name: imsight-project-design
-description: Use when explicitly asked to use Imsight project design, Imsight SOP, this exact skill, or an Imsight-authored process to scaffold or revise feature planning, define a feature, design use cases, design interfaces or agent skills, design optional verification gates, plan high-level feature milestones, manually refine recorded design decisions, or write an implementation handoff.
+description: Use when explicitly asked to use Imsight project design, Imsight SOP, this exact skill, or an Imsight-authored process to scaffold or revise feature planning, define a feature, propose or design use cases, design interfaces or agent skills, propose or design optional verification gates, plan high-level feature milestones, manually refine recorded design decisions, or write an implementation handoff.
 ---
 
 # Imsight Project Design
@@ -39,9 +39,11 @@ If the task does not map cleanly to the currently supported feature-planning wor
 | --- | --- | --- |
 | `scaffold` | Create a feature design directory and placeholder planning skeleton | `commands/scaffold.md` |
 | `define-feature` | Create or update `<feature-dir>/feature-requirement.md` | `commands/define-feature.md` |
+| `propose-usecase` | Propose new use case candidates in chat without writing files until the user confirms a selection or delegates the decision | `commands/propose-usecase.md` |
 | `design-usecase` | Create or update one matched use case under `<feature-dir>/usecases/` | `commands/design-usecase.md` |
 | `design-interface` | Create or update interface and contract docs under `<feature-dir>/design/` | `commands/design-interface.md` |
 | `design-skill` | Generate a skill design overview under `<feature-dir>/design/<slug>/` for agent-skill features | `commands/design-skill.md` |
+| `propose-gates` | Propose verification gate candidates in chat without writing files until the user confirms a selection or delegates the decision | `commands/propose-gates.md` |
 | `design-gates` | Create or update optional verification gates under `<feature-dir>/gates/` | `commands/design-gates.md` |
 | `plan-feature` | Create or update `<feature-dir>/feature-milestones.md` as a high-level milestone plan | `commands/plan-feature.md` |
 | `design-agent-task` | Create or update `<feature-dir>/agent-task.md` as an implementation handoff | `commands/design-agent-task.md` |
@@ -120,6 +122,8 @@ Use placeholder templates from `assets/templates/feature/` when creating new fil
   - If you are ignoring the Imsight output contract, then resolve the feature design directory by explicit user location first, then `IMSIGHT_SKILL_OUTPUT_DIR`, then `.imsight-arts/feature-design/`.
 - Creating duplicate use cases for the same workflow
   - If you are creating duplicate use cases for the same workflow, then match existing use case titles, slugs, actors, goals, and summaries before choosing the next identifier.
+- Writing use case files when the user asked only for proposals
+  - If you are writing use case files when the user asked only for proposals, then route to `propose-usecase` and keep candidates in chat until the user confirms a selection or delegates the decision.
 - Designing interfaces without reading use cases
   - If you are designing interfaces without reading use cases, then derive commands, routes, schemas, files, events, storage contracts, or service boundaries from actual use case flows.
 - Making `agent-task.md` too broad
@@ -130,6 +134,8 @@ Use placeholder templates from `assets/templates/feature/` when creating new fil
   - If you are using `design-interface` to design an agent skill, then invoke `design-skill` instead because `design-interface` writes non-skill interface and contract artifacts.
 - Scaffolding gates by default
   - If you are scaffolding gates by default, then leave `gates/` out of the skeleton because gates are optional and only `design-gates` creates them when asked.
+- Writing gate files when the user asked only for proposals
+  - If you are writing gate files when the user asked only for proposals, then route to `propose-gates` and keep candidates in chat until the user confirms a selection or delegates the decision.
 - Writing execution results into gates
   - If you are writing execution results into gates, then remove run verdicts, run identifiers, and evidence links because `design-gates` writes planning-stage specs and execution updates status and evidence later.
 - Updating one artifact without propagating a recorded refinement to other affected design documents

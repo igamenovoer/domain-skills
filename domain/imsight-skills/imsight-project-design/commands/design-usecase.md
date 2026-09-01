@@ -2,6 +2,8 @@
 
 Use this subcommand to design one feature use case as an actor-system or system-system workflow under `<feature-dir>/usecases/`.
 
+When the user asks to propose, brainstorm, or list candidate use cases without committing to files, route to `propose-usecase` first and return here only after the user confirms which candidates to persist or delegates the decision.
+
 ## Workflow
 
 When this subcommand is invoked, execute these steps in order.

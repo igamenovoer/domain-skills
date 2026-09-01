@@ -4,6 +4,8 @@ Use this subcommand to design verification gates for a feature as an ordered gat
 
 Gates are an optional part of a feature design directory. Create or update them only when the user asks; `scaffold` does not create `gates/`.
 
+When the user asks to propose, brainstorm, or list candidate gates without committing to files, route to `propose-gates` first and return here only after the user confirms which candidates to persist or delegates the decision.
+
 ## Workflow
 
 When this subcommand is invoked, execute these steps in order.
