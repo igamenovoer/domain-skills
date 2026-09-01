@@ -15,7 +15,8 @@ Usage: install-to-agents.sh [options]
 Install the local imsight-* skills into a supported agent skills directory.
 
 Options:
-  --target TARGET   Agent target: claude-code, generic, kimi-code, codex.
+  --target TARGET   Agent target: claude-code, generic, kimi-code, codex,
+                    agy (or antigravity, gemini).
                     Default: generic.
   --mode MODE       Install mode: copy or symlink. Default: copy.
   --scope SCOPE     Install scope: global (under $HOME) or project (under cwd).
@@ -24,11 +25,12 @@ Options:
   -h, --help        Show this help.
 
 Target paths:
-  claude-code  global: ~/.claude/skills         project: .claude/skills
-  kimi-code    global: ~/.kimi-code/skills      project: .kimi-code/skills
-  codex        global: $CODEX_HOME/skills       project: .codex/skills
-               (CODEX_HOME defaults to ~/.codex)
-  generic      global: ~/.agents/skills         project: .agents/skills
+  claude-code      global: ~/.claude/skills          project: .claude/skills
+  kimi-code        global: ~/.kimi-code/skills       project: .kimi-code/skills
+  codex            global: $CODEX_HOME/skills        project: .codex/skills
+                   (CODEX_HOME defaults to ~/.codex)
+  agy/antigravity  global: ~/.gemini/config/skills   project: .agents/skills
+  generic          global: ~/.agents/skills          project: .agents/skills
 
 In either mode, any pre-existing imsight-* entries in the destination are
 removed first. Symlinks are unlinked without following them, so the source
@@ -79,7 +81,7 @@ while [ "$#" -gt 0 ]; do
 done
 
 case "$target" in
-  claude-code|generic|kimi-code|codex) ;;
+  claude-code|generic|kimi-code|codex|agy|antigravity|gemini) ;;
   *)
     echo "Unsupported --target: $target" >&2
     usage >&2
@@ -107,17 +109,19 @@ esac
 
 if [ "$scope" = "global" ]; then
   case "$target" in
-    claude-code) dest_root="$HOME/.claude/skills" ;;
-    kimi-code)   dest_root="$HOME/.kimi-code/skills" ;;
-    codex)       dest_root="${CODEX_HOME:-$HOME/.codex}/skills" ;;
-    generic)     dest_root="$HOME/.agents/skills" ;;
+    claude-code)             dest_root="$HOME/.claude/skills" ;;
+    kimi-code)               dest_root="$HOME/.kimi-code/skills" ;;
+    codex)                   dest_root="${CODEX_HOME:-$HOME/.codex}/skills" ;;
+    agy|antigravity|gemini)  dest_root="$HOME/.gemini/config/skills" ;;
+    generic)                 dest_root="$HOME/.agents/skills" ;;
   esac
 else
   case "$target" in
-    claude-code) dest_root=".claude/skills" ;;
-    kimi-code)   dest_root=".kimi-code/skills" ;;
-    codex)       dest_root=".codex/skills" ;;
-    generic)     dest_root=".agents/skills" ;;
+    claude-code)             dest_root=".claude/skills" ;;
+    kimi-code)               dest_root=".kimi-code/skills" ;;
+    codex)                   dest_root=".codex/skills" ;;
+    agy|antigravity|gemini)  dest_root=".agents/skills" ;;
+    generic)                 dest_root=".agents/skills" ;;
   esac
 fi
 

@@ -8,7 +8,7 @@
     skills by copy or symlink.
 
 .PARAMETER Target
-    Agent target: claude-code, generic, kimi-code, codex. Default: generic.
+    Agent target: claude-code, generic, kimi-code, codex, agy, antigravity, gemini. Default: generic.
 
 .PARAMETER Mode
     Install mode: copy or symlink. Default: copy.
@@ -25,12 +25,12 @@
     # Installs with defaults: generic, copy, project scope.
 
 .EXAMPLE
-    .\install-to-agents.ps1 -Target kimi-code -Mode symlink -Scope global -Yes
-    # Symlinks all imsight skills into ~/.kimi-code/skills without prompting.
+    .\install-to-agents.ps1 -Target agy -Mode symlink -Scope global -Yes
+    # Symlinks all imsight skills into ~/.gemini/config/skills without prompting.
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet("claude-code", "generic", "kimi-code", "codex")]
+    [ValidateSet("claude-code", "generic", "kimi-code", "codex", "agy", "antigravity", "gemini")]
     [string]$Target = "generic",
 
     [ValidateSet("copy", "symlink")]
@@ -54,6 +54,9 @@ if ($Scope -eq "global") {
             $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }
             $destRoot = Join-Path $codexHome "skills"
         }
+        { $_ -in @("agy", "antigravity", "gemini") } {
+            $destRoot = Join-Path $HOME ".gemini" "config" "skills"
+        }
         "generic"     { $destRoot = Join-Path $HOME ".agents" "skills" }
     }
 } else {
@@ -61,6 +64,9 @@ if ($Scope -eq "global") {
         "claude-code" { $destRoot = Join-Path $PWD ".claude" "skills" }
         "kimi-code"   { $destRoot = Join-Path $PWD ".kimi-code" "skills" }
         "codex"       { $destRoot = Join-Path $PWD ".codex" "skills" }
+        { $_ -in @("agy", "antigravity", "gemini") } {
+            $destRoot = Join-Path $PWD ".agents" "skills"
+        }
         "generic"     { $destRoot = Join-Path $PWD ".agents" "skills" }
     }
 }
