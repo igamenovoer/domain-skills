@@ -1,0 +1,6 @@
+interface:
+  display_name: "VS Code Workspace Configuration"
+  short_description: "Scope VS Code file watching and Python analysis to first-party trees"
+  default_prompt: "Use $imsight-project-mgr to route to vscode-config, classify the project's trees by intent, and reconcile watcher and Python-analysis exclusions in the workspace settings."
+policy:
+  allow_implicit_invocation: false

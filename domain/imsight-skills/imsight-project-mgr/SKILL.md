@@ -1,6 +1,6 @@
 ---
 name: imsight-project-mgr
-description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes project foundation, external-resource setup, temporary in-repo or persistent sibling Git worktrees, project development, multi-change OpenSpec delivery, or GitHub release operations to it. Do not invoke implicitly for generic project tasks or from Imsight context alone.
+description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes project foundation, external-resource setup, temporary in-repo or persistent sibling Git worktrees, project development, multi-change OpenSpec delivery, VS Code workspace watcher or Python analysis scoping, or GitHub release operations to it. Do not invoke implicitly for generic project tasks or from Imsight context alone.
 skill_invocation_notation: >
   Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
   SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
@@ -17,7 +17,7 @@ skill_invocation_notation: >
 
 ## Overview
 
-Use this skill as the manually invoked or internally routed entrypoint for Imsight project-foundation and project-development operations. This includes temporary in-repo worktrees, persistent sibling worktrees exposed through a documented external-project layout, on-demand setup of bootstrap-managed external-resource directories, and evidence-gated multi-change OpenSpec delivery through its bundled subskill. It preserves the established public operations without absorbing project exploration, feature design, automation, host setup, networking, or miscellaneous infrastructure.
+Use this skill as the manually invoked or internally routed entrypoint for Imsight project-foundation and project-development operations. This includes temporary in-repo worktrees, persistent sibling worktrees exposed through a documented external-project layout, on-demand setup of bootstrap-managed external-resource directories, evidence-gated multi-change OpenSpec delivery through its bundled subskill, and VS Code workspace watcher and Python analysis scoping through its bundled vscode-config subskill. It preserves the established public operations without absorbing project exploration, feature design, automation, host setup, networking, or miscellaneous infrastructure.
 
 ## When to Use
 
@@ -28,6 +28,7 @@ Use this skill as the manually invoked or internally routed entrypoint for Imsig
 - Use persistent sibling worktrees for long-running parallel workers that deliver several features over time and repeatedly synchronize with the primary checkout.
 - Use to create or reconcile a documented, bootstrap-managed project directory for machine-local or third-party resources when requested independently of project initialization.
 - Use for ordered implementation of multiple OpenSpec changes when each change needs application-specific evidence before the next begins.
+- Use to scope a project's VS Code workspace so file watching and Python language-server analysis cover only the trees the editor must react to.
 - Use to install relevant shared rules in coding-agent project instruction files, either automatically or through rule-by-rule approval.
 - Use for an explicit request to prepare and publish a project release on GitHub.
 - Do not activate implicitly for generic project work or from Imsight context alone.
@@ -48,7 +49,7 @@ If the user's task does not map cleanly to these steps, use your native planning
 
 - Preferred explicit form: `$imsight-project-mgr use <subcommand> to do <task>`.
 - Task-only explicit form: `$imsight-project-mgr <task prompt>` means choose the narrowest applicable subcommand or necessary sequence.
-- Direct subskill form: invoke skill `imsight-project-mgr->impl-multi-openspec-changes` with the ordered or discoverable change set and verification requirements.
+- Direct subskill form: invoke skill `imsight-project-mgr->impl-multi-openspec-changes` with the ordered or discoverable change set and verification requirements, or skill `imsight-project-mgr->vscode-config` with the target project and the watcher/analysis scoping request.
 - Routed form: another loaded skill may explicitly route a supported operation to `imsight-project-mgr` with the target and request body.
 - No subcommand and no actionable task means `help`.
 - Do not activate this skill implicitly for generic project work or merely because the prompt or context mentions Imsight.
@@ -88,6 +89,7 @@ Each operational subcommand is independently invocable; the table order does not
 | Subskill | When to Route Here | Entrypoint |
 | --- | --- | --- |
 | `impl-multi-openspec-changes` | Route here when two or more changes must be delivered in dependency order and independently proven against the running application before later changes begin. | `subskills/impl-multi-openspec-changes/SKILL-MAIN.md` |
+| `vscode-config` | Route here when a workspace's read-only-intended trees (dependencies, build outputs, caches, data, vendored code, runtime state) must leave the editor's watch and analysis budget through classification-driven settings reconciliation. | `subskills/vscode-config/SKILL-MAIN.md` |
 
 Load only the selected subskill's `SKILL-MAIN.md` and the local resources it explicitly requires.
 
@@ -102,6 +104,7 @@ Load only the selected subskill's `SKILL-MAIN.md` and the local resources it exp
 - Within persistent sibling-worktree operations, this skill owns placement, worker identity, local environment policy, `extern/trees/` exposure, Git synchronization preflight, and explicit retirement. Repository instructions and the selected implementation workflow own feature logic and integration requirements.
 - Within `github-release`, this skill owns release preparation, changelog maintenance, GitHub release publication through `gh`, and post-publication verification. Repository instructions own project-specific versioning, build, validation, signing, and asset requirements.
 - Within `impl-multi-openspec-changes`, the bundled subskill owns change ordering, between-change artifact reconciliation, application-specific evidence gates, and final cross-change verification. The selected OpenSpec apply workflow owns each individual change's implementation mechanics.
+- Within `vscode-config`, the bundled subskill owns workspace directory classification and the reconciliation of the project `.vscode/settings.json`. Host-level watch-limit or kernel changes belong to `imsight-dev-box-init`; the subskill recommends but never performs them.
 
 ## Guardrails
 
