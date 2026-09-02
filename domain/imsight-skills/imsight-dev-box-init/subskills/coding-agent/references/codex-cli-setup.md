@@ -34,7 +34,7 @@ Terminal invocation of `imsight-dev-box-init->coding-agent->codex-cli-setup()` l
 | `configure-context-window` | Inspect and adjust Codex CLI context and auto-compaction limits globally, by profile, or for one invocation | [Subcommand: configure-context-window](#subcommand-configure-context-window) |
 | `disable-codex-apps` | Disable Codex CLI apps and app/MCP exposure globally, then clear app metadata caches | [Subcommand: disable-codex-apps](#subcommand-disable-codex-apps) |
 | `disable-codex-plugins` | Disable Codex CLI plugin loading globally and optionally remove requested marketplace plugins | [Subcommand: disable-codex-plugins](#subcommand-disable-codex-plugins) |
-| `install-skip-all-launcher` | Install a `codex-skip-all` launcher that disables approval, sandbox, and hook-trust prompts | [Subcommand: install-skip-all-launcher](#subcommand-install-skip-all-launcher) |
+| `install-skip-all-launcher` | Install `codex-skip-all` and `codex-skip-all-large-ctx` full-trust launchers with `CODEX_HOME`-aware credential isolation | [Subcommand: install-skip-all-launcher](#subcommand-install-skip-all-launcher) |
 
 ## Subcommand: configure-context-window
 
@@ -154,13 +154,38 @@ Then run one small request and inspect `/status` after the first response. Check
 
 ## Subcommand: install-skip-all-launcher
 
-Use this subcommand to install a full-trust Codex launcher at
-`/home/huangzhe/.local/bin/codex-skip-all`.
+Use this subcommand to install full-trust Codex launchers at
+`/home/huangzhe/.local/bin/codex-skip-all` and
+`/home/huangzhe/.local/bin/codex-skip-all-large-ctx`.
 
-The launcher grants Codex unrestricted host access. Install or use it only
-when the user explicitly requests approval-free, unsandboxed operation.
+The launchers grant Codex unrestricted host access. Install or use them only
+when the user explicitly requests approval-free, unsandboxed operation. They
+do not bypass hook trust; enabled hooks still prompt separately.
 
-## Install The Launcher
+These instructions were verified on 2026-09-03 with `codex-cli 0.150.1`.
+Record the installed version and verification date in the setup report when
+reusing them.
+
+## Codex Home Isolation
+
+Both launchers honor the `CODEX_HOME` environment variable. When it is set,
+for example to a project-local `.codex/` directory, Codex reads and writes
+credentials (`auth.json`), configuration, and session state there instead of
+`~/.codex`, so a project-scoped `codex login` does not disturb the global
+login. Codex refuses to start when `CODEX_HOME` points to a missing
+directory, so each launcher creates the directory before exec'ing Codex.
+
+Launch with a project-local Codex home like this:
+
+```bash
+CODEX_HOME="$PWD/.codex" codex-skip-all login
+CODEX_HOME="$PWD/.codex" codex-skip-all
+```
+
+Add `.codex/` to the project's ignore rules before logging in so that
+credentials are never committed.
+
+## Install The Launchers
 
 Create `/home/huangzhe/.local/bin/codex-skip-all` with:
 
@@ -168,51 +193,147 @@ Create `/home/huangzhe/.local/bin/codex-skip-all` with:
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Full-trust Codex launcher: no approval prompts, no sandbox, and no
-# separate trust prompt for enabled hooks. All arguments are passed through.
-exec codex \
-  --dangerously-bypass-approvals-and-sandbox \
-  --dangerously-bypass-hook-trust \
-  "$@"
+codex_bin="$(command -v codex || true)"
+if [[ -z "$codex_bin" ]]; then
+  echo "codex-skip-all: codex binary not found" >&2
+  exit 127
+fi
+
+# Honor CODEX_HOME (e.g. a project-local .codex/ for isolated credentials).
+# Codex exits if CODEX_HOME points to a missing directory, so create it first.
+if [[ -n "${CODEX_HOME:-}" ]]; then
+  mkdir -p "$CODEX_HOME"
+fi
+
+# Runtime args belong to Codex; the launcher only injects its fixed defaults.
+exec "$codex_bin" --dangerously-bypass-approvals-and-sandbox --search "$@"
 ```
 
-Make it executable:
+Create `/home/huangzhe/.local/bin/codex-skip-all-large-ctx` with:
 
 ```bash
-chmod 0755 /home/huangzhe/.local/bin/codex-skip-all
+#!/usr/bin/env bash
+set -euo pipefail
+
+codex_bin="$(command -v codex || true)"
+if [[ -z "$codex_bin" ]]; then
+  echo "codex-skip-all-large-ctx: codex binary not found" >&2
+  exit 127
+fi
+
+# Honor CODEX_HOME (e.g. a project-local .codex/ for isolated credentials).
+# Codex exits if CODEX_HOME points to a missing directory, so create it first.
+codex_home="${CODEX_HOME:-$HOME/.codex}"
+mkdir -p "$codex_home"
+
+# The large-ctx profile is layered from $CODEX_HOME/<profile>.config.toml.
+# Ensure it exists in whichever Codex home is active. Never overwrite an
+# existing same-name file silently: identical content is left alone, and
+# differing content requires interactive confirmation.
+profile_file="$codex_home/large-ctx.config.toml"
+profile_content='model_context_window = 372000
+model = "gpt-5.6-sol"
+model_reasoning_effort = "max"
+service_tier = "default"
+'
+
+if [[ -f "$profile_file" ]]; then
+  if ! printf '%s' "$profile_content" | cmp -s - "$profile_file"; then
+    if [[ ! -t 0 ]]; then
+      echo "codex-skip-all-large-ctx: $profile_file exists with different content; cannot prompt without a terminal, leaving it untouched" >&2
+      exit 2
+    fi
+    echo "codex-skip-all-large-ctx: $profile_file already exists with different content (- default, + existing):" >&2
+    diff -u <(printf '%s' "$profile_content") "$profile_file" >&2 || true
+    read -r -p "Overwrite with the default large-ctx profile? [y/N] " answer
+    case "$answer" in
+      y|Y|yes|YES)
+        printf '%s' "$profile_content" > "$profile_file"
+        ;;
+      *)
+        echo "codex-skip-all-large-ctx: keeping existing $profile_file" >&2
+        ;;
+    esac
+  fi
+else
+  printf '%s' "$profile_content" > "$profile_file"
+fi
+
+# Runtime args belong to Codex; the launcher only injects its fixed defaults.
+exec "$codex_bin" --profile large-ctx --dangerously-bypass-approvals-and-sandbox --search "$@"
 ```
 
-The wrapper preserves the current working directory and forwards prompts,
+The `large-ctx` variant activates the `large-ctx` profile, which Codex CLI
+0.134.0 or later layers from `<codex-home>/large-ctx.config.toml` on top of
+the base configuration. The launcher ensures the profile file exists in the
+active Codex home, whether that is `~/.codex` or a redirected `CODEX_HOME`:
+
+- A missing profile file is created with the default large-context settings.
+- An identical existing file is left untouched.
+- An existing file with different content is never overwritten silently; the
+  launcher shows a diff and prompts before overwriting. Answering no keeps
+  the existing file and continues the launch. Without an interactive
+  terminal, the launcher exits with status 2 instead of choosing.
+
+The embedded profile defaults are dated values captured on 2026-09-03; see
+`configure-context-window` for how to re-derive `model_context_window` from
+the active model catalog.
+
+Make both launchers executable:
+
+```bash
+chmod 0700 /home/huangzhe/.local/bin/codex-skip-all \
+           /home/huangzhe/.local/bin/codex-skip-all-large-ctx
+```
+
+The wrappers preserve the current working directory and forward prompts,
 subcommands, and other CLI arguments unchanged.
 
-`/home/huangzhe/.local/bin` must be present in `PATH` to invoke the launcher
+`/home/huangzhe/.local/bin` must be present in `PATH` to invoke the launchers
 by name.
 
 ## Skip-All Verification
 
-Validate the script and executable mode:
+Validate the scripts and executable modes:
 
 ```bash
 bash -n /home/huangzhe/.local/bin/codex-skip-all
+bash -n /home/huangzhe/.local/bin/codex-skip-all-large-ctx
 test -x /home/huangzhe/.local/bin/codex-skip-all
+test -x /home/huangzhe/.local/bin/codex-skip-all-large-ctx
 command -v codex-skip-all
+command -v codex-skip-all-large-ctx
 codex-skip-all --version
+```
+
+Validate the profile bootstrap with a temporary Codex home:
+
+```bash
+tmp_home="$(mktemp -d)"
+CODEX_HOME="$tmp_home" codex-skip-all-large-ctx --version
+test -f "$tmp_home/large-ctx.config.toml"
+rm -rf "$tmp_home"
 ```
 
 Expected results:
 
-- Shell syntax validation succeeds.
-- `command -v` resolves to
-  `/home/huangzhe/.local/bin/codex-skip-all`.
-- The launcher prints the installed Codex CLI version without requesting
+- Shell syntax validation succeeds for both scripts.
+- `command -v` resolves both names under `/home/huangzhe/.local/bin`.
+- The launchers print the installed Codex CLI version without requesting
   approval.
+- The `large-ctx` launcher creates `large-ctx.config.toml` in a fresh
+  `CODEX_HOME` before starting Codex.
 
 ## Skip-All Guardrails
 
-- DO NOT make `codex-skip-all` the default `codex` command or silently alias
-  `codex` to it.
-- DO NOT use the launcher in an untrusted repository or with untrusted hooks.
-- DO NOT use the launcher unless unrestricted host access is acceptable; it disables command approvals and Codex sandboxing.
+- DO NOT make `codex-skip-all` or `codex-skip-all-large-ctx` the default
+  `codex` command or silently alias `codex` to them.
+- DO NOT use the launchers in an untrusted repository or with untrusted hooks.
+- DO NOT use the launchers unless unrestricted host access is acceptable; they
+  disable command approvals and Codex sandboxing.
+- DO NOT overwrite an existing divergent `large-ctx.config.toml`
+  non-interactively; the launcher must prompt first or exit.
+- DO NOT commit a project-local `.codex/` directory; it holds credentials.
 
 ## Subcommand: disable-codex-apps
 
