@@ -1,6 +1,6 @@
 # OpenSpec Subtask Planning
 
-Use this subcommand to add a concise execution reminder to an OpenSpec change's `tasks.md` so the task-executing agent creates task-specific plan documents and tracks progress in them.
+Use this subcommand to add a concise execution reminder to an OpenSpec change's `tasks.md` so the task-executing agent creates task-specific plan documents and tracks implementation progress with checkbox todo lists.
 
 ## Workflow
 
@@ -10,7 +10,7 @@ When this subcommand is invoked, execute these steps in order.
 2. **Check for an existing task-plan reminder** near the start of `tasks.md`.
 3. **Determine the note variant** from **Note Contract**. Include subagent planning only when the user explicitly requests it.
 4. **Add or update one reminder** near the start of `tasks.md`. Preserve every task, section, and checkbox state.
-5. **Verify the result**. Confirm that the reminder is concise, the referenced plan path is scoped to the change, and no duplicate reminder remains.
+5. **Verify the result**. Confirm that the reminder requires a checkbox todo list, the referenced plan path is scoped to the change, and no duplicate reminder remains.
 6. **Report the edit** with the changed `tasks.md` path and whether the optional subagent sentence was included.
 
 If the task does not map cleanly to these steps, use your native planning tool only with the target-resolution, note, preservation, and optional-subagent constraints in this command; do not broaden the edit beyond the OpenSpec task checklist.
@@ -19,7 +19,7 @@ If the task does not map cleanly to these steps, use your native planning tool o
 
 Use this reminder by default:
 
-> Execution reminder: Before executing each numbered task, create `<openspec-change-dir>/subtasks/taskplan-<task-number>-<task-slug>.md`. Use that task-specific plan to track progress throughout the task.
+> Execution reminder: Before executing each numbered task, create `<openspec-change-dir>/subtasks/taskplan-<task-number>-<task-slug>.md` with a todo list of Markdown checkboxes (`- [ ]`). Use that task-specific plan to track implementation progress by marking completed items (`- [x]`).
 
 When the user explicitly requests planning with a subagent, append this sentence to the same reminder:
 
