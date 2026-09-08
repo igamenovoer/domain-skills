@@ -1,0 +1,6 @@
+interface:
+  display_name: "imsight-inject-mentality"
+  short_description: "Route and compose named Imsight mentalities"
+  default_prompt: "Use $imsight-inject-mentality to list available mentalities or control a named mentality such as Brooks."
+policy:
+  allow_implicit_invocation: false
