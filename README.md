@@ -28,12 +28,15 @@ domain/
   cuda/                # CUDA kernel optimization skills
     krnopt-cuda-coding/
     ...
+  model-inference/     # Model-serving estimation and audit skills
+    ig-infer-perf-estimate/
 ```
 
 ## Domains
 
 - `domain/imsight-skills/` — Skills for Imsight-style agent operations, including project management, documentation, information gathering, and direct API usage (for example, Semantic Scholar).
 - `domain/cuda/` — Skills for CUDA kernel optimization and profiling.
+- `domain/model-inference/` — Skills for estimating and auditing model-serving memory, latency, throughput, scaling, capacity, and SLO feasibility.
 
 ## License
 

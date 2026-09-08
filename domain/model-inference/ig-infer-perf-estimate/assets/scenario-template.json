@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "scenario_id": "replace-with-specific-scenario-id",
+  "units": {
+    "bytes": "decimal",
+    "rates": "per_second",
+    "time": "milliseconds"
+  },
+  "evidence": {
+    "IMPORTANT": {
+      "class": "assumed",
+      "status": "placeholder-do-not-publish",
+      "note": "Every number below is synthetic. Replace it and record a source, revision, applicability, and range before using results."
+    }
+  },
+  "hardware": {
+    "compute": {
+      "peak_flops_per_s": 100000000000000,
+      "default_efficiency": 0.4
+    },
+    "hbm": {
+      "bandwidth_bytes_per_s": 1000000000000,
+      "default_efficiency": 0.6
+    },
+    "conversion": {
+      "values_per_s": 500000000000,
+      "default_efficiency": 0.5
+    }
+  },
+  "deployment": {
+    "replicas": 1,
+    "concurrent_users": 4,
+    "devices": [
+      {
+        "id": "stage-0-rank-0",
+        "hbm_bytes": 80000000000,
+        "max_fraction": 0.9,
+        "runtime_reserve_bytes": 6000000000
+      }
+    ]
+  },
+  "logical_state": {
+    "components": [
+      {
+        "id": "weights-on-stage",
+        "fixed_bytes": 40000000000,
+        "bytes_per_request": 0
+      },
+      {
+        "id": "request-cache-on-stage",
+        "fixed_bytes": 0,
+        "bytes_per_request": 4000000000
+      }
+    ]
+  },
+  "placement": [
+    {
+      "component_id": "weights-on-stage",
+      "device_id": "stage-0-rank-0",
+      "multiplier": 1
+    },
+    {
+      "component_id": "request-cache-on-stage",
+      "device_id": "stage-0-rank-0",
+      "multiplier": 1
+    }
+  ],
+  "operators": [
+    {
+      "id": "decode-core",
+      "flops": 1000000000000,
+      "hbm_bytes": 50000000000,
+      "conversion_values": 0,
+      "fixed_ms": 0.05,
+      "composition": "fused"
+    },
+    {
+      "id": "attention-and-cache",
+      "flops": 200000000000,
+      "hbm_bytes": 10000000000,
+      "conversion_values": 1000000000,
+      "fixed_ms": 0.02,
+      "composition": "sequential"
+    }
+  ],
+  "events": [
+    {
+      "id": "core",
+      "operator_id": "decode-core",
+      "depends_on": []
+    },
+    {
+      "id": "attention",
+      "operator_id": "attention-and-cache",
+      "depends_on": [
+        "core"
+      ]
+    }
+  ],
+  "serving": {
+    "emitted_output_tokens_per_user_step": 1,
+    "foreground_extra_ms": 0,
+    "background_services": [
+      {
+        "id": "host-to-device-copy-engine",
+        "demand_ms_per_user_step": 0,
+        "parallel_lanes": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Inference Performance Estimator"
+  short_description: "Evidence-led LLM inference capacity and latency estimates"
+  default_prompt: "Use $ig-infer-perf-estimate to build or audit a reproducible LLM inference performance estimate."
+policy:
+  allow_implicit_invocation: true
