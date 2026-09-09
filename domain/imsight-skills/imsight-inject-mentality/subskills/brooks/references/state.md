@@ -6,7 +6,7 @@
 2. Normalize rule selectors according to **Selector Resolution**.
 3. Validate the entire requested change before applying any transition.
 4. Apply the transition and derive the effective rules.
-5. Persist through the requested lane according to `../../../references/runtime-injection.md`.
+5. Persist through the resolved application mode according to `../../../references/runtime-injection.md`; default to the compact project index.
 6. Report changed fields, effective rule IDs, persistence destination, and project representation when applicable.
 
 If the task does not map cleanly to these steps, use the native planning tool to preserve atomic updates, independent enabled state and selection, and honest persistence scope.
@@ -94,7 +94,7 @@ Project persistence and conversation persistence follow `../../../references/run
 - `conversation-scoped` for visible-context-only state;
 - `unset` when no state has been established.
 
-Never write a project file merely because a control command was invoked. Project-rule persistence requires explicit project or repository scope; “remember” and “keep in memory” select conversation persistence.
+A state-changing control command defaults to `project-rule-reference`, even when the user does not mention persistence. Use `project-rule-inline` only for an explicit detail/copy request. “Remember” and “keep in memory” explicitly select conversation persistence instead of the default project file.
 
 ## Guardrails
 

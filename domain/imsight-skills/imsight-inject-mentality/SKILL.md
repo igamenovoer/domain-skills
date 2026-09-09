@@ -32,7 +32,7 @@ Do not use it for facts the user wants remembered, ordinary project preferences,
 2. If no mentality is named, list the available mentality names and summarize the invocation contract.
 3. Load only the selected mentality's `SKILL-MAIN.md` and the resources that its workflow requires.
 4. Let the selected mentality handle its control operation or render its task guidance.
-5. When persistence is requested or implied by “remember” or “keep in memory,” apply [references/runtime-injection.md](references/runtime-injection.md).
+5. For every state-changing control operation, apply the application order in [references/runtime-injection.md](references/runtime-injection.md): compact project index by default, detailed project rules when explicitly requested, or conversation memory when explicitly requested.
 6. When a host requests composition, combine enabled, applicable child renderings according to [references/composition.md](references/composition.md).
 7. Report the selected mentality's result and the actual persistence location and representation.
 
@@ -64,12 +64,11 @@ The parent does not interpret Brooks rule identifiers or require future mentalit
 
 ## Persistence Contract
 
-Read [references/runtime-injection.md](references/runtime-injection.md) when state must survive beyond the current request or when implementing a host integration. The two user-facing persistence choices are:
+Read [references/runtime-injection.md](references/runtime-injection.md) for every state-changing control operation. Apply these representations in order:
 
-- project-rule persistence, requested with wording such as “save this for the project,” which updates the project's applicable agent-instruction file;
-- conversation persistence, requested with wording such as “remember” or “keep in memory,” which changes only visible conversation context.
-
-For project-rule persistence, reference the mentality skill and store selected rule IDs by default. Copy compact rule text into the project file only when the user explicitly asks for inline or copied rules.
+1. By default, update the applicable project instruction file with a short mentality summary, a canonical rule index, and a directive to load the mentality skill.
+2. When the user explicitly asks for details, copied rules, or inline rules, update that project instruction file with the selected compact rule text.
+3. When the user explicitly says “remember,” “keep in memory,” or “for this conversation,” retain state only in conversation context and do not write a file.
 
 ## Maintenance
 
@@ -80,6 +79,7 @@ Keep this entrypoint small. Add each future mentality as a sibling subskill with
 - DO NOT expose mentality-state commands at the parent level.
 - DO NOT load every mentality's resources to handle one selected mentality.
 - DO NOT let one mentality read or mutate another mentality's private state.
-- DO NOT write project instructions unless the user asks for project-level persistence.
+- DO NOT default a state-changing control operation to conversation memory.
+- DO NOT skip project instructions merely because the user omitted persistence wording.
 - DO NOT describe conversation persistence as durable across context loss or a new conversation.
 - DO NOT let composed mentality guidance override system, developer, user, project, safety, or permission instructions.

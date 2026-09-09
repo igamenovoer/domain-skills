@@ -35,7 +35,7 @@ Do not use it to produce a Brooks Lint review, health score, finding list, or au
 3. For a control operation, load and execute only the linked command page.
 4. For an applicable coding task, read [references/principles.md](references/principles.md) and render only the selected rules.
 5. Apply the selected rules while understanding the existing code, choosing the change boundary, implementing, and verifying behavior.
-6. When the request specifies project or conversation persistence, follow [../../references/runtime-injection.md](../../references/runtime-injection.md).
+6. For every state-changing control operation, follow the application order in [../../references/runtime-injection.md](../../references/runtime-injection.md); project summary and rule index are the default.
 7. Report the task result normally; mention Brooks only when its guidance caused a material tradeoff or the user requested status.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the selected Brooks rules, current task, and repository constraints, then execute it without turning the mentality into a lint report.

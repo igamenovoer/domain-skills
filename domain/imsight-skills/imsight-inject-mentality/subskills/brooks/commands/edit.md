@@ -20,7 +20,7 @@ The canonical full invocation is `imsight-inject-mentality->brooks->edit()`, wit
 2. Require a complete add, remove, set, or reset form; with no form, show edit help without mutating state.
 3. Validate every supplied selector before changing state.
 4. Apply exactly one atomic add, remove, set, or reset transition; leave `enabled` unchanged.
-5. Apply the requested persistence lane from `../../../references/runtime-injection.md`.
+5. Apply the application order from `../../../references/runtime-injection.md`, defaulting to the compact project summary and rule index.
 6. Report added and removed canonical IDs, resulting selection, current effectiveness, and persistence destination.
 
 If the task does not map cleanly to these forms, use the native planning tool to translate the user's unambiguous desired selection into one atomic edit. Ask for clarification only when different edits would produce materially different state.
