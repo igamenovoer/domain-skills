@@ -1,0 +1,18 @@
+# Disable All Brooks Rules
+
+## Workflow
+
+1. Resolve current Brooks state from `../references/state.md`.
+2. Remove all twelve canonical Brooks rule IDs from the retained selection.
+3. Leave `enabled` unchanged.
+4. Derive the effective rules from the resulting state.
+5. Apply the requested persistence lane from `../../../references/runtime-injection.md`.
+6. Report removed IDs, the empty selection, enabled state, and persistence destination.
+
+If the task does not map cleanly to these steps, use the native planning tool to perform one idempotent all-rules removal without changing enabled state.
+
+## Guardrails
+
+- DO NOT disable Brooks as a side effect of clearing all rules.
+- DO NOT confuse `disable-all` with `disable`; this command changes selection, not enabled state.
+- DO NOT erase another mentality's selection.

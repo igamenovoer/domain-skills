@@ -1,6 +1,6 @@
 ---
 name: imsight-inject-mentality
-description: Use when an Imsight agent is asked to select or control a named injected mentality such as Brooks, or when a host requests composed guidance from active mentalities. Do not use for ordinary factual memory or generic preference changes.
+description: Use when an Imsight agent is asked to select, control, persist, or compose a named injected mentality such as Brooks. Do not use for ordinary factual memory or generic preference changes unrelated to a mentality.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -18,13 +18,13 @@ metadata:
 
 ## Overview
 
-Use this skill as a thin router and composer for named ways of thinking. Each mentality owns its controls, private state, applicability rules, and injected guidance.
+Use this skill as a thin router and composer for named ways of thinking. It defines the shared control and persistence contracts; each mentality owns its rule catalog, selectors, applicability rules, private state, and injected guidance.
 
 ## When to Use
 
-Use this skill when the user names an injected mentality, asks to change one mentality's state, or a host adapter requests the active mentality composition for a task.
+Use this skill when the user names an injected mentality, asks to change or persist one mentality's state, or a host adapter requests the enabled mentality composition for a task.
 
-Do not use it for facts the user wants remembered, ordinary project preferences, or a coding task that neither activates a mentality nor arrives with active mentality state.
+Do not use it for facts the user wants remembered, ordinary project preferences, or a coding task that neither enables a mentality nor arrives with enabled mentality state. “Remember” and “keep in memory” do route here when their object is a mentality or its rule selection.
 
 ## Workflow
 
@@ -32,8 +32,9 @@ Do not use it for facts the user wants remembered, ordinary project preferences,
 2. If no mentality is named, list the available mentality names and summarize the invocation contract.
 3. Load only the selected mentality's `SKILL-MAIN.md` and the resources that its workflow requires.
 4. Let the selected mentality handle its control operation or render its task guidance.
-5. When a host requests composition, combine active, applicable child renderings according to [references/composition.md](references/composition.md).
-6. Report the selected mentality's result and the actual persistence scope.
+5. When persistence is requested or implied by “remember” or “keep in memory,” apply [references/runtime-injection.md](references/runtime-injection.md).
+6. When a host requests composition, combine enabled, applicable child renderings according to [references/composition.md](references/composition.md).
+7. Report the selected mentality's result and the actual persistence location and representation.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the registered mentalities, composition contract, and user request, then execute the plan without inventing a mentality or state change.
 
@@ -41,9 +42,11 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 - Invoke `imsight-inject-mentality` without a child to list registered mentalities. It does not activate one implicitly.
 - Invoke a mentality with a bare child path, such as `imsight-inject-mentality->brooks`.
-- Invoke a mentality command below the named child, such as `imsight-inject-mentality->brooks->on()` or `imsight-inject-mentality->brooks->rules()->add()`.
-- Natural invocation may use `$imsight-inject-mentality brooks rules add r1 r5`.
+- Invoke a mentality command below the named child, such as `imsight-inject-mentality->brooks->enable()` or `imsight-inject-mentality->brooks->edit()`.
+- Natural invocation may use `$imsight-inject-mentality brooks edit add r1 r5`.
 - The first component after the parent is always a mentality name, never a parent-level state switch.
+
+Rule-backed mentalities use the shared public controls `enable`, `disable`, `enable-all`, `disable-all`, `edit`, `list`, and `status`. `ls` is an accepted alias for `list`; canonical help and output use `list`. The child defines selector meaning and edit semantics; the parent does not interpret its rule IDs.
 
 ## Subskills
 
@@ -55,13 +58,18 @@ An unknown mentality name is an error. List the registered names instead of rout
 
 ## Composition Contract
 
-The parent treats each mentality as an opaque provider with four answers: whether it is active, whether it applies to the task, its compact rendered guidance, and its status summary. See [references/composition.md](references/composition.md).
+The parent treats each mentality as an opaque provider with four answers: whether it is enabled, whether it applies to the task, its compact rendered guidance, and its status summary. See [references/composition.md](references/composition.md).
 
 The parent does not interpret Brooks rule identifiers or require future mentalities to use rule sets. A future mentality belongs beside `brooks` under `subskills/` and owns its own model.
 
 ## Persistence Contract
 
-Read [references/runtime-injection.md](references/runtime-injection.md) when state must survive beyond the current request or when implementing a host integration. Without such an adapter, preserve state only within available conversation context and say that it is session-scoped.
+Read [references/runtime-injection.md](references/runtime-injection.md) when state must survive beyond the current request or when implementing a host integration. The two user-facing persistence choices are:
+
+- project-rule persistence, requested with wording such as “save this for the project,” which updates the project's applicable agent-instruction file;
+- conversation persistence, requested with wording such as “remember” or “keep in memory,” which changes only visible conversation context.
+
+For project-rule persistence, reference the mentality skill and store selected rule IDs by default. Copy compact rule text into the project file only when the user explicitly asks for inline or copied rules.
 
 ## Maintenance
 
@@ -69,8 +77,9 @@ Keep this entrypoint small. Add each future mentality as a sibling subskill with
 
 ## Guardrails
 
-- DO NOT expose `on`, `off`, `rules`, or other mentality-state commands at the parent level.
+- DO NOT expose mentality-state commands at the parent level.
 - DO NOT load every mentality's resources to handle one selected mentality.
 - DO NOT let one mentality read or mutate another mentality's private state.
-- DO NOT claim durable or cross-session persistence without a host adapter that provides it.
+- DO NOT write project instructions unless the user asks for project-level persistence.
+- DO NOT describe conversation persistence as durable across context loss or a new conversation.
 - DO NOT let composed mentality guidance override system, developer, user, project, safety, or permission instructions.
