@@ -77,6 +77,10 @@ When Brooks is enabled and the task changes or designs code:
 
 For injection, render each selected rule as its compact constructive reminder. Do not inject unselected rules, Brooks severity language, scoring, or report templates.
 
+## Rule Catalog
+
+Brooks canonical IDs, compact reminders, examples, and judgment notes live at `references/principles.md` relative to this subskill. Default project-rule persistence names the entrance skill `imsight-inject-mentality` and the selected canonical IDs; after loading, the entrance skill owns routing to this entrypoint and catalog. Wrap the persisted section in the runtime contract's invisible `imsight-skill:imsight-inject-mentality/brooks` managed fence so later control operations replace the same source-owned block.
+
 ## Rationalization Table
 
 | Rationalization | Counter |

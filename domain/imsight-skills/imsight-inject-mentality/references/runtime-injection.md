@@ -4,7 +4,7 @@
 
 Resolve each state-changing mentality command with this application order. Start with the first representation and move to the second or third only when the user explicitly requests that variant:
 
-1. **Project summary and rule index — default:** update one applicable project instruction file with a short mentality summary, the selected canonical rule IDs and names, and a directive to load the mentality skill for their definitions.
+1. **Project summary and rule index — default:** update one applicable project instruction file with a short mentality summary, the selected canonical rule IDs and names, and the installed entrance skill name.
 2. **Detailed project rules — explicit variant:** when the user explicitly asks for details, copied rules, embedded rules, or inline rules, write the selected compact rule text into that project instruction file.
 3. **Conversation memory — explicit variant:** when the user says “remember,” “keep in memory,” “for this chat,” or “for this conversation,” retain state in conversation context and do not write a file.
 
@@ -23,7 +23,7 @@ No persistence wording selects the first mode, not conversation memory. A host-p
 3. Validate the complete state change using the selected mentality's private contract.
 4. Apply it through exactly one representation: compact project index, detailed project rules, or conversation memory.
 5. For an applicable task, inject the compact rendering before planning or editing and keep it in force through verification.
-6. Report the effective rule IDs, destination, and whether the project representation is a skill reference or an inline copy.
+6. Report the effective rule IDs, destination, and whether the project representation is a catalog lookup or an inline copy.
 
 If the task does not map cleanly to these steps, use the native planning tool to preserve the user's requested scope without inventing durable storage.
 
@@ -33,30 +33,57 @@ Treat `AGENTS.md` and `CLAUDE.md` as examples, not fixed destinations. Inspect t
 
 Preserve unrelated instructions and add or update one clearly named mentality section. Store enough state to distinguish enabled from disabled and to retain the selected canonical rule IDs. State-changing commands use this project path by default; they do not require separate “save” or “for this project” wording.
 
-### Default: summary and rule index
+### Invisible managed fence
 
-Unless the user explicitly selects another representation, persist a compact directive like this:
+Wrap every project-persisted mentality section in this exact source-only fence, replacing `<mentality>` with the child's canonical name:
 
 ```markdown
-## Imsight mentalities
-
-- `brooks` is enabled — preventive coding and test-design guidance for resisting structural decay.
-  - Rule index: `r1` (`comprehension`), `r5` (`dependency-direction`), `t1` (`test-intent`).
-  - Before applicable work, load `imsight-inject-mentality->brooks`, find these rules in its catalog by canonical ID, and apply them. Preserve and state the IDs when carrying the selection into a task.
+<!-- imsight-skill:imsight-inject-mentality/<mentality>:start -->
+...managed project instructions...
+<!-- imsight-skill:imsight-inject-mentality/<mentality>:end -->
 ```
 
-Adapt the mentality name, enabled state, applicability wording, and selected IDs from validated state. The directive points the agent to the installed skill; it does not assume this source repository is present in the target project.
+The HTML comments are invisible in standard Markdown previews while identifying the entry skill and the owner of the managed block in source. Keep the markers exact, on their own lines, and outside any code fence in the destination file.
+
+Before inserting a block, search the applicable project instruction file for its exact start and end markers. Replace one well-formed existing block in place. If neither marker exists, add one block in the location that best fits the file's structure. If only one marker exists, the markers are reversed or nested, or several blocks exist for the same mentality, report the malformed or ambiguous state instead of adding another block.
+
+### Default: summary, rule index, and entrance skill
+
+Unless the user explicitly selects another representation, use this structure. Substitute only the validated state, applicability summary, and selected rule index:
+
+```markdown
+<!-- imsight-skill:imsight-inject-mentality/brooks:start -->
+## Project Engineering Rules
+
+### Brooks Code and Test Rules
+
+- State: enabled.
+- Purpose: preventive coding and test-design guidance for resisting structural decay.
+- Selected rule index: `r1` (`comprehension`), `r5` (`dependency-direction`), `t1` (`test-intent`).
+- Required lookup: load the installed entrance skill `imsight-inject-mentality`, remember the selected Brooks rules, and apply them throughout the development process.
+<!-- imsight-skill:imsight-inject-mentality/brooks:end -->
+```
+
+This is a required information template, not fixed prose. Adapt the visible headings and wording to the project instruction file, but do not alter the invisible fence or omit or obscure the entrance skill name or selected canonical IDs and names. Once loaded, the entrance skill owns routing to the selected mentality and its maintained resources.
+
+Before writing the directive, load the selected mentality's entrypoint and rule catalog so the canonical index comes from maintained resources. Do not copy internal routing paths into the project directive; the entrance skill owns them.
 
 ### Explicit variant: detailed project rules
 
 Only when the user explicitly asks for details or to copy, embed, or inline the rules, write each selected canonical ID and its compact constructive reminder directly in the project instruction file:
 
 ```markdown
-## Imsight mentalities
+<!-- imsight-skill:imsight-inject-mentality/brooks:start -->
+## Project Engineering Rules
 
-- `brooks` is enabled with these rules:
+### Brooks Code and Test Rules
+
+- State: enabled.
+- Entrance skill: `imsight-inject-mentality`.
+- Embedded rules:
   - `r1` — Keep the concepts a reader must hold manageable with precise names, cohesive flow, and consistent abstraction levels.
   - `t1` — Make the scenario, action, and expected outcome obvious in the test name and visible setup.
+<!-- imsight-skill:imsight-inject-mentality/brooks:end -->
 ```
 
 Copy the maintained compact reminder, not the long examples, provenance, or lint-report material. Keep the rule ID beside its text so later edits can identify it unambiguously.
@@ -86,6 +113,9 @@ The adapter owns storage and lifecycle hooks. The skill owns meaning, routing, s
 - DO NOT default a state-changing command to conversation memory.
 - DO NOT write a repository, home, or global file for an explicit conversation-memory request.
 - DO NOT copy complete rule text into project instructions without an explicit inline-copy request.
+- DO NOT persist a default directive that omits the installed entrance skill name or selected canonical rule index.
+- DO NOT omit, alter, nest, or duplicate the invisible managed fence around a project-persisted mentality section.
+- DO NOT expose child entrypoint or catalog paths in the project directive when the entrance skill can route internally.
 - DO NOT treat example filenames as mandatory when the project has an applicable purpose-created instruction file.
 - DO NOT imply that a skill invocation alone installs lifecycle hooks.
 - DO NOT reconstruct missing conversation state from guesses after context loss.

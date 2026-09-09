@@ -66,9 +66,11 @@ The parent does not interpret Brooks rule identifiers or require future mentalit
 
 Read [references/runtime-injection.md](references/runtime-injection.md) for every state-changing control operation. Apply these representations in order:
 
-1. By default, update the applicable project instruction file with a short mentality summary, a canonical rule index, and a directive to load the mentality skill.
+1. By default, update the applicable project instruction file with a short mentality summary, a canonical rule index, and the installed entrance skill name.
 2. When the user explicitly asks for details, copied rules, or inline rules, update that project instruction file with the selected compact rule text.
 3. When the user explicitly says “remember,” “keep in memory,” or “for this conversation,” retain state only in conversation context and do not write a file.
+
+For either project-file representation, use the invisible managed fence defined in the runtime-injection reference. Its source markers identify `imsight-inject-mentality` and the selected child while remaining hidden in standard Markdown previews; update an existing well-formed matching block instead of duplicating it.
 
 ## Maintenance
 
@@ -81,5 +83,7 @@ Keep this entrypoint small. Add each future mentality as a sibling subskill with
 - DO NOT let one mentality read or mutate another mentality's private state.
 - DO NOT default a state-changing control operation to conversation memory.
 - DO NOT skip project instructions merely because the user omitted persistence wording.
+- DO NOT omit the entrance skill name from a default project directive.
+- DO NOT write project-persisted mentality guidance outside its invisible managed fence or duplicate a matching fenced block.
 - DO NOT describe conversation persistence as durable across context loss or a new conversation.
 - DO NOT let composed mentality guidance override system, developer, user, project, safety, or permission instructions.
