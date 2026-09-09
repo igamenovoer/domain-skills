@@ -19,7 +19,7 @@ A skill is a self-contained folder. A standalone or host-discoverable skill root
 
 ### `SKILL.md` (required for a top-level skill)
 
-- **Frontmatter** (YAML): `name` and `description`. These are the only fields Codex reads to decide whether to trigger the skill. Imsight skills may add optional keys such as `skill_invocation_notation`; see **Skill Invocation Notation** under **Imsight Local Conventions**.
+- **Frontmatter** (YAML): `name` and `description`. These are the only fields Codex reads to decide whether to trigger the skill. Every Imsight skill and subskill entrypoint also carries `skill_invocation_notation` under the validator-supported `metadata` mapping; see **Skill Invocation Notation** under **Imsight Local Conventions**.
 - **Body** (Markdown): Instructions and guidance. Loaded only after the skill triggers.
 
 ### `agents/openai.yaml` (recommended)
@@ -118,4 +118,4 @@ relative-subcommand-invocation := subcommand-chain
 
 Under this grammar, `X->Y` invokes subskill `Y`, `X->Y()` invokes subcommand `Y` of skill `X`, and `X->parent()->child()` invokes child subcommand `child` of parent subcommand `parent`. Once the first subcommand component appears, every remaining component must also be a parenthesized subcommand.
 
-Any skill or subcommand page that uses these designators must declare the notation in its YAML frontmatter with the `skill_invocation_notation` key. See [imsight-skill-style-guide.md](imsight-skill-style-guide.md) for the rule and the standard frontmatter value.
+Every Imsight `SKILL.md` and `SKILL-MAIN.md` must declare the notation at `metadata.skill_invocation_notation` in its YAML frontmatter. Other Markdown pages must declare it when they use these designators. Keep the generic notation block out of Markdown bodies. See [imsight-skill-style-guide.md](imsight-skill-style-guide.md) for the standard frontmatter value.

@@ -1,6 +1,17 @@
 ---
 name: imsight-agent-skill-handling
 description: Use when the user explicitly invokes imsight-agent-skill-handling to analyze, deep-inspect, design, create, modify, refactor-migrate, test, harden, or format an agent skill, or to install, link, inventory, or uninstall skills with asm (agent-skill-manager). Do not invoke implicitly for generic skill creation, audits, updates, formatting, routing, coding tasks, or ordinary domain-skill use.
+metadata:
+  skill_invocation_notation: >
+    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
+    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
+    accepted only as legacy input when SKILL-MAIN.md is absent.
+    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
+    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
+    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
+    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
+    by parent subcommand parent. Intermediate subcommands act as object generators.
+    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
 ---
 
 # Imsight Agent Skill Handling

@@ -107,22 +107,23 @@ Skills designate skill and subskill invocations with object-style notation. The 
 - Skill-to-subcommand invocation: write "invoke skill subcommand `X->cmd()`" for a subcommand of skill `X`, "invoke skill subcommand `X->Y->cmd()`" for a subcommand of subskill `Y` inside skill `X`, and "invoke subcommand `cmd()`" for a subcommand of the current skill. Prefer keeping the `()` on the subcommand symbol; omit it only when context already makes clear which symbol is the subcommand.
 - Explicit forms: when a symbol appears without enough context to tell a skill from a subcommand, prefer the explicit form, such as `X()` or `X->Y()` for a skill or subskill entrypoint and `X->cmd()` or `X->Y->cmd()` for a subcommand.
 
-Any skill or subcommand page that uses these designators must declare the notation in its YAML frontmatter with the `skill_invocation_notation` key, adding frontmatter when the page has none. Use this standard value:
+Every Imsight skill and subskill entrypoint must declare the notation at `metadata.skill_invocation_notation` in its YAML frontmatter. A subcommand or reference page must also declare it when that page uses the designators. Add frontmatter when such a non-entrypoint page has none. Nesting the custom key under `metadata` keeps top-level `SKILL.md` validation compatible with Codex. Use this standard value:
 
 ```yaml
-skill_invocation_notation: >
-  Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
-  SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
-  accepted only as legacy input when SKILL-MAIN.md is absent. Skill and subskill
-  invocations use object-style notation: `X` or `X->Y->Z` invokes the named
-  skill or subskill entrypoint, `X->cmd()`
-  and `X->Y->cmd()` invoke subcommand `cmd` of skill `X` or of subskill `Y`
-  inside skill `X`, and bare `cmd()` invokes a subcommand of the current
-  skill. The explicit forms `X()` and `X->Y()` are equivalent to the bare
-  paths and appear when context does not make the symbol kind clear.
+metadata:
+  skill_invocation_notation: >
+    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
+    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
+    accepted only as legacy input when SKILL-MAIN.md is absent. Skill and subskill
+    invocations use object-style notation: `X` or `X->Y->Z` invokes the named
+    skill or subskill entrypoint, `X->cmd()`
+    and `X->Y->cmd()` invoke subcommand `cmd` of skill `X` or of subskill `Y`
+    inside skill `X`, and bare `cmd()` invokes a subcommand of the current
+    skill. The explicit forms `X()` and `X->Y()` are equivalent to the bare
+    paths and appear when context does not make the symbol kind clear.
 ```
 
-A skill that never uses these designators does not need the key.
+Keep this generic notation block only in YAML frontmatter; do not repeat or paraphrase it in the Markdown body. Skill-specific invocation forms, examples, and routing contracts may remain in body sections when they help operate that skill.
 
 ## Freeform skills
 

@@ -33,7 +33,8 @@ Apply these checks to the resolved target entrypoint and any subcommand-like Mar
 - Guardrails do not contain positive requirements, operation steps, workflow repetitions, or a second procedural checklist; those instructions appear in substantive skill sections.
 - If the skill bundles subskills under `subskills/`, each subskill has its own `SKILL-MAIN.md` entrypoint, has no sibling `SKILL.md`, follows the same structural rules as a top-level skill, and is listed in the parent's role-canonical entrypoint (in the `## Subcommands` table or a `## Subskills` section).
 - Every direct subskill row has one substantive `When to Route Here` sentence that uses the parent context, distinguishes sibling routes, and is not copied verbatim from the child frontmatter description or agent short description.
-- Any page that uses object-style invocation designators such as `X->Y`, `X->Y->cmd()`, or `X->parent()->child()` declares the `skill_invocation_notation` key in its YAML frontmatter.
+- Every Imsight `SKILL.md` and `SKILL-MAIN.md` declares `metadata.skill_invocation_notation` in its YAML frontmatter; any other page that uses object-style invocation designators such as `X->Y`, `X->Y->cmd()`, or `X->parent()->child()` does the same.
+- The generic invocation-notation guideline exists only in YAML frontmatter, not in the Markdown body; skill-specific invocation examples and routing contracts may remain in the body.
 - Skill and subskill entrypoint designators are bare object paths such as `X` or `X->Y`; they never use `X()` or `X->Y()`.
 - Parentheses appear on every subcommand component, including intermediate object generators such as `parent()` in `X->parent()->child()`, and are never omitted from an object-style subcommand designator.
 - Once a subcommand chain begins, every remaining component is a parenthesized subcommand declared by its immediate parent; the chain never returns to a bare skill or subskill component.

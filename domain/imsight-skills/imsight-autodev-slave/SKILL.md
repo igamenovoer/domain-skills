@@ -1,6 +1,17 @@
 ---
 name: imsight-autodev-slave
 description: Use when a human request, gateway message, mailbox notification, direct command, Imsight route, or relevant Imsight context explicitly names imsight-autodev-slave for maintained Houmao slave operations such as init-openspec or the one-pass OpenSpec lifecycle. Do not use implicitly for ordinary development tasks.
+metadata:
+  skill_invocation_notation: >
+    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
+    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
+    accepted only as legacy input when SKILL-MAIN.md is absent.
+    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
+    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
+    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
+    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
+    by parent subcommand parent. Intermediate subcommands act as object generators.
+    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
 ---
 
 # Imsight Autodev Slave

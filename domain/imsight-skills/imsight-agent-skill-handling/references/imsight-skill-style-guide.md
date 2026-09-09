@@ -132,22 +132,23 @@ relative-subcommand-invocation := subcommand-chain
 
 Forms such as `X()` and `X->Y()` do not invoke skill or subskill entrypoints. Under this grammar, `X->Y()` means subcommand `Y` of skill `X`, and `X->parent()->child()` means child subcommand `child` of parent subcommand `parent`.
 
-Any skill or subcommand page that uses these designators must declare the notation in its YAML frontmatter with the `skill_invocation_notation` key, adding frontmatter when the page has none. Use this standard value:
+Every Imsight skill and subskill entrypoint must declare the notation at `metadata.skill_invocation_notation` in its YAML frontmatter. A subcommand or reference page must also declare it when that page uses the designators. Add frontmatter when such a non-entrypoint page has none. Nesting the custom key under the validator-supported `metadata` field keeps top-level `SKILL.md` validation compatible with Codex. Use this standard value:
 
 ```yaml
-skill_invocation_notation: >
-  Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
-  SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
-  accepted only as legacy input when SKILL-MAIN.md is absent.
-  Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
-  `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
-  `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
-  subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
-  by parent subcommand parent. Intermediate subcommands act as object generators.
-  Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
+metadata:
+  skill_invocation_notation: >
+    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
+    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
+    accepted only as legacy input when SKILL-MAIN.md is absent.
+    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
+    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
+    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
+    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
+    by parent subcommand parent. Intermediate subcommands act as object generators.
+    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
 ```
 
-A skill that never uses these designators does not need the key.
+Keep this generic notation block only in YAML frontmatter; do not repeat or paraphrase it in the Markdown body. Skill-specific invocation forms, examples, and routing contracts may remain in body sections when they help operate that skill.
 
 ## Freeform skills
 

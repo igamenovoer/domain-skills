@@ -1,6 +1,17 @@
 ---
 name: imsight-project-design
 description: Use when explicitly asked to use Imsight project design, Imsight SOP, this exact skill, or an Imsight-authored process to scaffold or revise feature planning, define a feature, propose or design use cases, design interfaces or agent skills, propose or design optional verification gates, plan high-level feature milestones, manually refine recorded design decisions, or write an implementation handoff.
+metadata:
+  skill_invocation_notation: >
+    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
+    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
+    accepted only as legacy input when SKILL-MAIN.md is absent.
+    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
+    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
+    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
+    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
+    by parent subcommand parent. Intermediate subcommands act as object generators.
+    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
 ---
 
 # Imsight Project Design
