@@ -39,7 +39,7 @@ Use `pyproject.toml` by default. If an incompatible `pyproject.toml` already exi
 
 Derive the package name from an explicit package name or the project name by lowercasing and replacing hyphens with underscores. Choose the Python version from established project requirements first; otherwise use one minor version behind the latest stable Python release.
 
-Use `conda-forge` as the default channel. Use the established Imsight PyPI dependency baseline only when the user did not provide another dependency set: `scipy`, `mdutils`, `ruff`, `mkdocs-material`, `mypy`, `attrs`, `omegaconf`, and `imageio`.
+Use `conda-forge` as the default channel. Use the established Imsight PyPI dependency baseline only when the user did not provide another dependency set: `scipy`, `mdutils`, `pytest`, `pytest-xdist`, `ruff`, `mkdocs-material`, `mypy`, `attrs`, `omegaconf`, `hydra-core`, and `imageio`.
 
 If the target root, manifest form, project/package name, or Python version remains ambiguous in a way that could create the wrong project, ask for the smallest missing decision before initialization.
 
@@ -50,7 +50,7 @@ Run from the resolved target root:
 ```bash
 pixi init . --format pyproject -c conda-forge
 pixi add python=<version>
-pixi add --pypi scipy mdutils ruff mkdocs-material mypy attrs omegaconf imageio
+pixi add --pypi scipy mdutils pytest pytest-xdist ruff mkdocs-material mypy attrs omegaconf hydra-core imageio
 pixi install
 ```
 
