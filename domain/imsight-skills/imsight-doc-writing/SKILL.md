@@ -1,6 +1,6 @@
 ---
 name: imsight-doc-writing
-description: Use when explicitly invoking imsight-doc-writing, routing from another Imsight skill, or handling an Imsight-scoped request to draft, revise, structure, review, or polish technical Markdown, project notes, design or usage docs, architecture explanations, or Mermaid diagrams.
+description: Use when explicitly invoking imsight-doc-writing, routing from another Imsight skill, or handling an Imsight-scoped request to draft, revise, structure, review, or polish technical Markdown, project notes, design or usage docs, architecture explanations, annotated source-code explainer webpages, or Mermaid diagrams.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -18,39 +18,46 @@ metadata:
 
 ## Overview
 
-Use this skill as the Imsight entrypoint for documentation work. Keep this file small: route specialized writing and diagramming work to subskills, keep durable style rules in those subskills, and edit the user's requested documentation directly when the target file is clear.
+Use this skill as the Imsight entrypoint for documentation work. Keep this file small: route specialized writing, code explanation, and diagramming work to the owning subskill or subcommand, keep durable guidance with its resource owner, and edit the user's requested documentation directly when the target file is clear.
 
 ## When to Use
 
 - Use for an explicit `imsight-doc-writing` invocation or route from another Imsight skill.
 - Use for Imsight-scoped documentation writing, structure, Markdown deliverables, review, Mermaid graphing, or Mermaid formatting.
-- Use the general documentation pass when no specialized command fits.
+- Use for annotated implementation webpages that align explanations, equations, data shapes, and exact ranges from a source file.
+- Use the general documentation pass when no specialized route fits.
 
 ## Workflow
 
 When this skill is invoked, execute the following steps in order.
 
-1. **Identify the documentation task**. Determine whether the user wants a new document, a revision, a review, a structure proposal, a diagram, or a mixed documentation pass.
-2. **Select the subskill** from the **Subcommands** table. If no subskill fits, use the **General Documentation Pass** rules.
+1. **Identify the documentation task**. Determine whether the user wants a new document, a revision, a review, a structure proposal, an annotated source walkthrough, a diagram, or a mixed documentation pass.
+2. **Select the narrowest route** from **Subskills** or **Subcommands**. If no specialized route fits, use the **General Documentation Pass** rules.
 3. **Resolve the target artifact**. Use the file, directory, or output location provided by the user; otherwise ask only when writing to the wrong place would be risky.
 4. **Read existing context before writing**. Inspect nearby docs, project terminology, linked specs, and existing diagrams before choosing headings, terms, or diagram shapes.
-5. **Execute the selected subskill's workflow**. Load the linked subskill and follow its `## Workflow` section step by step.
+5. **Execute the selected capability's workflow**. Load only the selected subskill's `SKILL-MAIN.md` or subcommand page and the local resources it requires, then follow its `## Workflow` section step by step.
 6. **Return a concise handoff**. Summarize changed files, important writing choices, and any validation or preview limitations.
 
 If the user's task does not map cleanly to these steps, use your native planning tool to build a step-by-step plan from the available subskills, constraints, and requested deliverable, then execute the plan.
 
 ## Invocation Contract
 
-- Preferred explicit form: `$imsight-doc-writing use <subskill> to do <task>`.
-- Task-only form: `$imsight-doc-writing <task prompt>` means choose the applicable subskill or documentation sequence from the request.
-- No subskill and no actionable task means `help`.
-- `help` summarizes this skill and lists the subskills below.
+- Invoke `imsight-doc-writing` with a task prompt to select the applicable route; with no actionable task, summarize its documentation capabilities.
+- Invoke a subskill with a bare object path, such as `imsight-doc-writing->code-explainer`.
+- Invoke a parent-owned command with a parenthesized component, such as `imsight-doc-writing->mermaid-graphing()`.
+- Invoke `imsight-doc-writing->help()` to list the routes below.
+
+## Subskills
+
+| Subskill | When to Route Here | Load |
+| --- | --- | --- |
+| `code-explainer` | Route here when the requested document is an implementation walkthrough that must keep commentary, equations, or data shapes aligned with exact source ranges in a webpage. | [subskills/code-explainer/SKILL-MAIN.md](subskills/code-explainer/SKILL-MAIN.md) |
 
 ## Subcommands
 
-| Subskill | Use For | Load |
+| Subcommand | Use For | Load |
 | --- | --- | --- |
-| `help` | Explain this documentation-writing skill and list available subskills | This entrypoint |
+| `help` | Explain this documentation-writing skill and list available subskills and subcommands | This entrypoint |
 | `mermaid-graphing` | Create, revise, troubleshoot, or style Mermaid diagrams in Markdown, including flowcharts, sequence diagrams, state diagrams, class diagrams, ER diagrams, timelines, and Gantt charts | [commands/mermaid-graphing.md](commands/mermaid-graphing.md) |
 | `format-mermaid` | Reformat existing Mermaid diagrams in one or more Markdown documents to match the `mermaid-graphing` portable style | [commands/format-mermaid.md](commands/format-mermaid.md) |
 | `mermaid-syntax-check` | Check Mermaid source text or an `.mmd` file with the `mermaid` package without rendering an image or launching a browser | [commands/mermaid-syntax-check.md](commands/mermaid-syntax-check.md) |
@@ -88,3 +95,4 @@ When the user names a file, edit that file in place. When the user asks for a ne
 - DO NOT treat a documentation result as a transcript of reasoning.
 - DO NOT add unused process notes or auxiliary documents.
 - DO NOT produce Mermaid that does not render or requires horizontal scrolling.
+- DO NOT use the general documentation pass when the code-explainer subskill is the specific route.

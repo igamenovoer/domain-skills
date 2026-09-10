@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Scaled Dot-Product Attention — Annotated Source Example</title>
+  <style>
+    :root {
+      --page-bg: #171920;
+      --prose-bg: #1c1f26;
+      --code-bg: #262936;
+      --code-header: #222530;
+      --rule: #343846;
+      --text: #d8dae1;
+      --muted: #9298a8;
+      --line-number: #697083;
+      --link: #a8ccce;
+      --accent: #d79ac8;
+      --keyword: #e68ac2;
+      --function: #e4c278;
+      --type: #72c7b4;
+      --number: #90b8e8;
+      --string: #b8d486;
+      --operator: #d2d5df;
+      --focus: #f0d38a;
+      --prose-column: minmax(19rem, 40%);
+      --code-column: minmax(0, 60%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--page-bg);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--page-bg);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-width: 20rem;
+      margin: 0;
+      color: var(--text);
+      background: var(--page-bg);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    a {
+      color: var(--link);
+      text-decoration-color: color-mix(in srgb, var(--link) 55%, transparent);
+      text-underline-offset: 0.18em;
+    }
+
+    a:hover {
+      text-decoration-color: currentColor;
+    }
+
+    a:focus-visible,
+    pre:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: -2px;
+    }
+
+    .utility-header,
+    .annotation-row {
+      display: grid;
+      grid-template-columns: var(--prose-column) var(--code-column);
+    }
+
+    .utility-header {
+      min-height: 7.25rem;
+      border-bottom: 1px solid var(--rule);
+      background: var(--prose-bg);
+    }
+
+    .utility-copy {
+      padding: 1.65rem clamp(1.25rem, 4vw, 3.25rem);
+    }
+
+    .crumbs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin: 0 0 0.8rem;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .crumbs a {
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .source-link {
+      font-size: 0.9rem;
+    }
+
+    .snapshot {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+      padding: 1.65rem clamp(1.25rem, 3vw, 2.5rem);
+      border-left: 1px solid var(--rule);
+      color: var(--muted);
+      background: var(--code-bg);
+      font: 0.8rem/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .explainer {
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .annotation-row {
+      scroll-margin-top: 1rem;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .annotation-row:last-child {
+      border-bottom: 0;
+    }
+
+    .explanation {
+      min-width: 0;
+      padding: clamp(1.4rem, 3vw, 2.55rem) clamp(1.25rem, 4vw, 3.25rem);
+      background: var(--prose-bg);
+    }
+
+    .explanation h1,
+    .explanation h2 {
+      margin: 0;
+      color: #eceef3;
+      line-height: 1.18;
+      letter-spacing: -0.025em;
+    }
+
+    .explanation h1 {
+      max-width: 20ch;
+      font-size: clamp(1.85rem, 3vw, 2.55rem);
+    }
+
+    .explanation h2 {
+      font-size: clamp(1.08rem, 2vw, 1.42rem);
+    }
+
+    .explanation p {
+      max-width: 45rem;
+      margin: 0.85rem 0 0;
+    }
+
+    .lede {
+      color: #c6c9d2;
+      font-size: 1.04rem;
+    }
+
+    .shape,
+    .inline-code {
+      padding: 0.12rem 0.36rem;
+      border: 1px solid #3c4151;
+      border-radius: 0.25rem;
+      color: #e4e6ec;
+      background: #242833;
+      font: 0.82em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: nowrap;
+    }
+
+    .equation {
+      display: block;
+      margin: 1.2rem 0 0;
+      color: #eceef3;
+      font: italic clamp(1.15rem, 2.2vw, 1.55rem)/1.3 Georgia, "Times New Roman", serif;
+      text-align: center;
+    }
+
+    .anchor {
+      margin-left: 0.45rem;
+      color: var(--line-number);
+      font-size: 0.82em;
+      text-decoration: none;
+      opacity: 0;
+    }
+
+    .explanation:hover .anchor,
+    .anchor:focus-visible {
+      opacity: 1;
+    }
+
+    .source-pane {
+      min-width: 0;
+      border-left: 1px solid var(--rule);
+      background: var(--code-bg);
+    }
+
+    .source-label {
+      padding: 0.42rem 1.25rem;
+      border-bottom: 1px solid color-mix(in srgb, var(--rule) 70%, transparent);
+      color: var(--muted);
+      background: var(--code-header);
+      font: 0.7rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    pre {
+      min-width: 0;
+      margin: 0;
+      padding: clamp(1.15rem, 2.8vw, 2.1rem) 0;
+      overflow-x: auto;
+      color: #d7d9e0;
+      background: var(--code-bg);
+      font: 0.88rem/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      tab-size: 4;
+    }
+
+    code {
+      display: block;
+      min-width: max-content;
+    }
+
+    .code-line {
+      display: grid;
+      grid-template-columns: 3.6rem minmax(max-content, 1fr);
+      min-height: 1.55em;
+      padding-right: 1.5rem;
+    }
+
+    .line-number {
+      padding-right: 1rem;
+      color: var(--line-number);
+      text-align: right;
+      user-select: none;
+    }
+
+    .source-text {
+      white-space: pre;
+    }
+
+    .kw { color: var(--keyword); }
+    .fn { color: var(--function); }
+    .type { color: var(--type); }
+    .num { color: var(--number); }
+    .str { color: var(--string); }
+    .op { color: var(--operator); }
+
+    .example-note {
+      margin: 0;
+      padding: 1rem clamp(1.25rem, 4vw, 3.25rem);
+      border-top: 1px solid var(--rule);
+      color: var(--muted);
+      background: #15171d;
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 54rem) {
+      .utility-header,
+      .annotation-row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .snapshot,
+      .source-pane {
+        border-left: 0;
+      }
+
+      .snapshot {
+        min-height: 3.5rem;
+        padding-top: 0.8rem;
+        padding-bottom: 0.8rem;
+        border-top: 1px solid var(--rule);
+      }
+
+      .explanation {
+        padding-top: 1.55rem;
+        padding-bottom: 1.55rem;
+      }
+
+      pre {
+        padding-top: 1.1rem;
+        padding-bottom: 1.1rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+    }
+  </style>
+</head>
+<body id="top">
+  <!--
+    Parent-scoped example resource: learn this file's structure, intent, and semantics.
+    Replace the sample source and annotations instead of hardcoding them.
+  -->
+  <header class="utility-header">
+    <div class="utility-copy">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="#top">Annotated Source</a>
+        <span aria-hidden="true">›</span>
+        <span>Example</span>
+      </nav>
+      <a class="source-link" href="#source">View source snapshot</a>
+    </div>
+    <div class="snapshot" id="source">attention.py · example snapshot · lines 1–9</div>
+  </header>
+
+  <main class="explainer">
+    <section class="annotation-row" id="overview">
+      <div class="explanation">
+        <h1>Scaled dot-product attention <a class="anchor" href="#overview" aria-label="Link to overview">#</a></h1>
+        <p class="lede">This compact function matches every query with a set of keys, normalizes those matches into weights, and uses the weights to blend the values.</p>
+        <p>Inputs use shapes <span class="shape">[..., queries, depth]</span>, <span class="shape">[..., keys, depth]</span>, and <span class="shape">[..., keys, value_depth]</span>.</p>
+      </div>
+      <div class="source-pane" role="region" aria-label="Source lines 1 to 2">
+        <div class="source-label">Lines 1–2</div>
+        <pre tabindex="0"><code><span class="code-line"><span class="line-number" aria-hidden="true">1</span><span class="source-text"><span class="kw">import</span> math</span></span><span class="code-line"><span class="line-number" aria-hidden="true">2</span><span class="source-text"></span></span></code></pre>
+      </div>
+    </section>
+
+    <section class="annotation-row" id="contract">
+      <div class="explanation">
+        <h2>Keep the batch dimensions generic <a class="anchor" href="#contract" aria-label="Link to function contract">#</a></h2>
+        <p>The function operates on the final two axes, so any leading batch or head dimensions pass through unchanged. The optional mask controls which key positions each query may see.</p>
+      </div>
+      <div class="source-pane" role="region" aria-label="Source line 3">
+        <div class="source-label">Line 3</div>
+        <pre tabindex="0"><code><span class="code-line"><span class="line-number" aria-hidden="true">3</span><span class="source-text"><span class="kw">def</span> <span class="fn">attention</span>(query, key, value, mask<span class="op">=</span><span class="kw">None</span>):</span></span></code></pre>
+      </div>
+    </section>
+
+    <section class="annotation-row" id="scale">
+      <div class="explanation">
+        <h2>Scale by the key depth <a class="anchor" href="#scale" aria-label="Link to score scaling">#</a></h2>
+        <p>Dot products grow with vector width. Dividing by <span class="inline-code">√dₖ</span> keeps score magnitudes in a range where softmax remains responsive.</p>
+        <span class="equation" role="math" aria-label="scale equals one divided by the square root of d k">scale = 1 / √dₖ</span>
+      </div>
+      <div class="source-pane" role="region" aria-label="Source line 4">
+        <div class="source-label">Line 4</div>
+        <pre tabindex="0"><code><span class="code-line"><span class="line-number" aria-hidden="true">4</span><span class="source-text">    scale <span class="op">=</span> <span class="num">1</span> <span class="op">/</span> math.<span class="fn">sqrt</span>(query.<span class="fn">size</span>(<span class="num">-1</span>))</span></span></code></pre>
+      </div>
+    </section>
+
+    <section class="annotation-row" id="scores">
+      <div class="explanation">
+        <h2>Compare every query with every key <a class="anchor" href="#scores" aria-label="Link to score calculation">#</a></h2>
+        <p>Transposing the key sequence and depth axes makes matrix multiplication produce one score per query–key pair.</p>
+        <p>The result has shape <span class="shape">[..., queries, keys]</span>.</p>
+        <span class="equation" role="math" aria-label="scores equal Q K transpose divided by square root of d k">scores = QKᵀ / √dₖ</span>
+      </div>
+      <div class="source-pane" role="region" aria-label="Source line 5">
+        <div class="source-label">Line 5</div>
+        <pre tabindex="0"><code><span class="code-line"><span class="line-number" aria-hidden="true">5</span><span class="source-text">    scores <span class="op">=</span> query <span class="op">@</span> key.<span class="fn">transpose</span>(<span class="num">-2</span>, <span class="num">-1</span>) <span class="op">*</span> scale</span></span></code></pre>
+      </div>
+    </section>
+
+    <section class="annotation-row" id="mask">
+      <div class="explanation">
+        <h2>Remove inaccessible positions <a class="anchor" href="#mask" aria-label="Link to masking">#</a></h2>
+        <p>Masked scores become negative infinity. Their softmax probability is therefore zero, while permitted positions retain their relative scores.</p>
+      </div>
+      <div class="source-pane" role="region" aria-label="Source lines 6 to 7">
+        <div class="source-label">Lines 6–7</div>
+        <pre tabindex="0"><code><span class="code-line"><span class="line-number" aria-hidden="true">6</span><span class="source-text">    <span class="kw">if</span> mask <span class="kw">is not None</span>:</span></span><span class="code-line"><span class="line-number" aria-hidden="true">7</span><span class="source-text">        scores <span class="op">=</span> scores.<span class="fn">masked_fill</span>(<span class="op">~</span>mask, <span class="fn">float</span>(<span class="str">"-inf"</span>))</span></span></code></pre>
+      </div>
+    </section>
+
+    <section class="annotation-row" id="normalize">
+      <div class="explanation">
+        <h2>Turn scores into a distribution <a class="anchor" href="#normalize" aria-label="Link to normalization">#</a></h2>
+        <p>Softmax runs across the key axis. For each query, the resulting weights sum to one over the available keys.</p>
+      </div>
+      <div class="source-pane" role="region" aria-label="Source line 8">
+        <div class="source-label">Line 8</div>
+        <pre tabindex="0"><code><span class="code-line"><span class="line-number" aria-hidden="true">8</span><span class="source-text">    weights <span class="op">=</span> scores.<span class="fn">softmax</span>(dim<span class="op">=</span><span class="num">-1</span>)</span></span></code></pre>
+      </div>
+    </section>
+
+    <section class="annotation-row" id="weighted-sum">
+      <div class="explanation">
+        <h2>Blend values with the learned weights <a class="anchor" href="#weighted-sum" aria-label="Link to weighted sum">#</a></h2>
+        <p>The final matrix multiplication replaces the key axis with the value depth. Each query receives a context vector assembled from the values it attended to.</p>
+        <span class="equation" role="math" aria-label="output equals softmax of the scores multiplied by V">output = softmax(scores)V</span>
+      </div>
+      <div class="source-pane" role="region" aria-label="Source line 9">
+        <div class="source-label">Line 9</div>
+        <pre tabindex="0"><code><span class="code-line"><span class="line-number" aria-hidden="true">9</span><span class="source-text">    <span class="kw">return</span> weights <span class="op">@</span> value</span></span></code></pre>
+      </div>
+    </section>
+  </main>
+
+  <aside class="example-note">
+    Example resource only. Learn its style, intent, and semantics; replace the sample source, annotations, labels, and palette instead of hardcoding them.
+  </aside>
+</body>
+</html>

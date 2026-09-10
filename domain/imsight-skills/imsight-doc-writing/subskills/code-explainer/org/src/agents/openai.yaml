@@ -1,0 +1,6 @@
+interface:
+  display_name: "Imsight Code Explainer"
+  short_description: "Build aligned prose-and-code explanation pages"
+  default_prompt: "Use $imsight-code-explainer to turn this source file into an annotated code explanation page."
+policy:
+  allow_implicit_invocation: false
