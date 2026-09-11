@@ -1,3 +1,17 @@
+---
+metadata:
+  skill_invocation_notation: >
+    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
+    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
+    accepted only as legacy input when SKILL-MAIN.md is absent.
+    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
+    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
+    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
+    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
+    by parent subcommand parent. Intermediate subcommands act as object generators.
+    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
+---
+
 # Edit Brooks Rules
 
 Use this single command for all selection mutations. Rule inventory belongs to the separate `list` command.
@@ -20,8 +34,8 @@ The canonical full invocation is `imsight-inject-mentality->brooks->edit()`, wit
 2. Require a complete add, remove, set, or reset form; with no form, show edit help without mutating state.
 3. Validate every supplied selector before changing state.
 4. Apply exactly one atomic add, remove, set, or reset transition; leave `enabled` unchanged.
-5. Apply the application order from `../../../references/runtime-injection.md`, defaulting to the compact project summary and rule index.
-6. Report added and removed canonical IDs, resulting selection, current effectiveness, and persistence destination.
+5. Apply the application order from `../../../references/runtime-injection.md`, defaulting to the managed `AGENTS.md` directive and synchronized Brooks rules artifact.
+6. Report added and removed canonical IDs, resulting selection, current effectiveness, `AGENTS.md` destination, and rules artifact destination.
 
 If the task does not map cleanly to these forms, use the native planning tool to translate the user's unambiguous desired selection into one atomic edit. Ask for clarification only when different edits would produce materially different state.
 

@@ -7,7 +7,7 @@
 1. Resolve Brooks state from `../references/state.md` without mutating it.
 2. Read the rule catalog from `../references/principles.md`.
 3. Mark every canonical rule as selected or unselected and derive whether it is effective.
-4. Report production rules, test rules, selector groups, enabled state, and persistence destination.
+4. Report production rules, test rules, selector groups, enabled state, persistence destination, and both project files when project persistence applies.
 
 If the task does not map cleanly to these steps, use the native planning tool to produce a read-only rule inventory from valid state and catalog data.
 

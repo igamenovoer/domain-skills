@@ -35,7 +35,7 @@ Do not use it to produce a Brooks Lint review, health score, finding list, or au
 3. For a control operation, load and execute only the linked command page.
 4. For an applicable coding task, read [references/principles.md](references/principles.md) and render only the selected rules.
 5. Apply the selected rules while understanding the existing code, choosing the change boundary, implementing, and verifying behavior.
-6. For every state-changing control operation, follow the application order in [../../references/runtime-injection.md](../../references/runtime-injection.md); project summary and rule index are the default.
+6. For every state-changing control operation, follow the application order in [../../references/runtime-injection.md](../../references/runtime-injection.md); a managed `AGENTS.md` directive and `.imsight-arts/mentality/brooks-rules.md` are the default project representation.
 7. Report the task result normally; mention Brooks only when its guidance caused a material tradeoff or the user requested status.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the selected Brooks rules, current task, and repository constraints, then execute it without turning the mentality into a lint report.
@@ -79,7 +79,7 @@ For injection, render each selected rule as its compact constructive reminder. D
 
 ## Rule Catalog
 
-Brooks canonical IDs, compact reminders, examples, and judgment notes live at `references/principles.md` relative to this subskill. Default project-rule persistence names the entrance skill `imsight-inject-mentality` and the selected canonical IDs; after loading, the entrance skill owns routing to this entrypoint and catalog. Wrap the persisted section in the runtime contract's invisible `imsight-skill:imsight-inject-mentality/brooks` managed fence so later control operations replace the same source-owned block.
+Brooks canonical IDs, compact reminders, examples, and judgment notes live at `references/principles.md` relative to this subskill. Default project-rule persistence writes the selected compact reminders to `.imsight-arts/mentality/brooks-rules.md`, then names the entrance skill `imsight-inject-mentality`, the selected canonical IDs, and that artifact in `AGENTS.md`; after loading, the entrance skill owns routing to this entrypoint and catalog. Wrap the `AGENTS.md` section in the runtime contract's invisible `imsight-skill:imsight-inject-mentality/brooks` managed fence so later control operations replace the same source-owned block.
 
 ## Rationalization Table
 
@@ -110,3 +110,4 @@ Brooks canonical IDs, compact reminders, examples, and judgment notes live at `r
 - DO NOT let Brooks override explicit task requirements or repository instructions.
 - DO NOT claim conversation state survives context loss or a new conversation without host support.
 - DO NOT copy rule text into a project instruction file unless the user explicitly requests the inline-copy variant.
+- DO NOT persist Brooks to a project without synchronizing `.imsight-arts/mentality/brooks-rules.md` and its `AGENTS.md` reference.

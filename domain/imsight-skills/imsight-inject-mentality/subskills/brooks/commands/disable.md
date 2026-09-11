@@ -5,8 +5,8 @@
 1. Resolve current Brooks state from `../references/state.md`.
 2. Set `enabled` to `false`.
 3. Retain the complete selected rule set unchanged.
-4. Apply the application order from `../../../references/runtime-injection.md`, defaulting to the compact project summary and rule index.
-5. Report whether Brooks was newly disabled or already disabled, retained rule IDs, and persistence destination.
+4. Apply the application order from `../../../references/runtime-injection.md`, defaulting to the managed `AGENTS.md` directive and synchronized Brooks rules artifact.
+5. Report whether Brooks was newly disabled or already disabled, retained rule IDs, `AGENTS.md` destination, and rules artifact destination.
 
 If the task does not map cleanly to these steps, use the native planning tool to disable only Brooks while preserving its retained selection and sibling mentality state.
 

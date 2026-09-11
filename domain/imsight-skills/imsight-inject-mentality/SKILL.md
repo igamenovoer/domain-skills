@@ -32,7 +32,7 @@ Do not use it for facts the user wants remembered, ordinary project preferences,
 2. If no mentality is named, list the available mentality names and summarize the invocation contract.
 3. Load only the selected mentality's `SKILL-MAIN.md` and the resources that its workflow requires.
 4. Let the selected mentality handle its control operation or render its task guidance.
-5. For every state-changing control operation, apply the application order in [references/runtime-injection.md](references/runtime-injection.md): compact project index by default, detailed project rules when explicitly requested, or conversation memory when explicitly requested.
+5. For every state-changing control operation, apply the application order in [references/runtime-injection.md](references/runtime-injection.md): a managed `AGENTS.md` directive plus a project rules artifact by default, inline project rules plus that artifact when explicitly requested, or conversation memory when explicitly requested.
 6. When a host requests composition, combine enabled, applicable child renderings according to [references/composition.md](references/composition.md).
 7. Report the selected mentality's result and the actual persistence location and representation.
 
@@ -66,11 +66,11 @@ The parent does not interpret Brooks rule identifiers or require future mentalit
 
 Read [references/runtime-injection.md](references/runtime-injection.md) for every state-changing control operation. Apply these representations in order:
 
-1. By default, update the applicable project instruction file with a short mentality summary, a canonical rule index, and the installed entrance skill name.
-2. When the user explicitly asks for details, copied rules, or inline rules, update that project instruction file with the selected compact rule text.
-3. When the user explicitly says “remember,” “keep in memory,” or “for this conversation,” retain state only in conversation context and do not write a file.
+1. By default, update the project-root `AGENTS.md` with a short mentality summary, canonical rule index, installed entrance skill name, and a reference to `.imsight-arts/mentality/<mentality>-rules.md`; write the selected compact rules to that artifact.
+2. When the user explicitly asks for details, copied rules, or inline rules, also write the selected compact rule text into `AGENTS.md` while maintaining and referencing the same artifact.
+3. When the user explicitly says “remember,” “keep in memory,” or “for this conversation,” retain state only in conversation context and do not write either project file.
 
-For either project-file representation, use the invisible managed fence defined in the runtime-injection reference. Its source markers identify `imsight-inject-mentality` and the selected child while remaining hidden in standard Markdown previews; update an existing well-formed matching block instead of duplicating it.
+For either project representation, use the invisible managed fence defined in the runtime-injection reference around the `AGENTS.md` directive. Its source markers identify `imsight-inject-mentality` and the selected child while remaining hidden in standard Markdown previews; update an existing well-formed matching block instead of duplicating it. Keep the rules artifact synchronized with the directive.
 
 ## Maintenance
 
@@ -83,7 +83,8 @@ Keep this entrypoint small. Add each future mentality as a sibling subskill with
 - DO NOT let one mentality read or mutate another mentality's private state.
 - DO NOT default a state-changing control operation to conversation memory.
 - DO NOT skip project instructions merely because the user omitted persistence wording.
-- DO NOT omit the entrance skill name from a default project directive.
+- DO NOT omit the entrance skill name, selected rule index, or project rules artifact reference from a project directive.
 - DO NOT write project-persisted mentality guidance outside its invisible managed fence or duplicate a matching fenced block.
+- DO NOT leave a project rules artifact stale after changing its mentality state or selection.
 - DO NOT describe conversation persistence as durable across context loss or a new conversation.
 - DO NOT let composed mentality guidance override system, developer, user, project, safety, or permission instructions.

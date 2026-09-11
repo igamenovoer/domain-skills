@@ -2,12 +2,12 @@
 
 ## Workflow
 
-1. Resolve current state from explicit current instructions, an applicable project-rule directive, a host record, visible conversation state, then the built-in unset state.
+1. Resolve current state from explicit current instructions, a managed `AGENTS.md` directive, a host record, visible conversation state, then the built-in unset state.
 2. Normalize rule selectors according to **Selector Resolution**.
 3. Validate the entire requested change before applying any transition.
 4. Apply the transition and derive the effective rules.
-5. Persist through the resolved application mode according to `../../../references/runtime-injection.md`; default to the compact project index.
-6. Report changed fields, effective rule IDs, persistence destination, and project representation when applicable.
+5. Persist through the resolved application mode according to `../../../references/runtime-injection.md`; default to the managed `AGENTS.md` directive and synchronized Brooks rules artifact.
+6. Report changed fields, effective rule IDs, persistence destination, and both project files when applicable.
 
 If the task does not map cleanly to these steps, use the native planning tool to preserve atomic updates, independent enabled state and selection, and honest persistence scope.
 
@@ -81,20 +81,20 @@ Resolve all selectors before mutation. If any selector is unknown or ambiguous, 
 
 Use the current turn's explicit instruction first. Otherwise resolve Brooks state from these sources in order:
 
-1. An applicable project-rule directive.
+1. A managed project-root `AGENTS.md` directive.
 2. A valid state record supplied by a runtime adapter.
 3. A prior explicit Brooks state established in visible conversation context.
 4. The built-in unset state.
 
 Project persistence and conversation persistence follow `../../../references/runtime-injection.md`. Use these labels:
 
-- `project-rule-reference` for the default skill-and-ID directive;
-- `project-rule-inline` for explicitly copied compact rules;
+- `project-rule-reference` for the default `AGENTS.md` directive plus referenced rules artifact;
+- `project-rule-inline` for compact rules copied into `AGENTS.md` plus the same referenced rules artifact;
 - `host-persisted` for an adapter-backed conversation record;
 - `conversation-scoped` for visible-context-only state;
 - `unset` when no state has been established.
 
-A state-changing control command defaults to `project-rule-reference`, even when the user does not mention persistence. Use `project-rule-inline` only for an explicit detail/copy request. “Remember” and “keep in memory” explicitly select conversation persistence instead of the default project file.
+A state-changing control command defaults to `project-rule-reference`, even when the user does not mention persistence. This representation consists of `<project>/AGENTS.md` and `<project>/.imsight-arts/mentality/brooks-rules.md`. Use `project-rule-inline` only for an explicit detail/copy request; it still maintains and references the rules artifact. “Remember” and “keep in memory” explicitly select conversation persistence instead of the default project files.
 
 ## Guardrails
 
