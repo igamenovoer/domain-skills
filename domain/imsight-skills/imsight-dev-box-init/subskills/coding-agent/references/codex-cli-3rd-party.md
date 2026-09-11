@@ -44,13 +44,14 @@ Terminal invocation of `imsight-dev-box-init->coding-agent->codex-cli-3rd-party(
 
 | Provider | Endpoint base | Category | Notes |
 | --- | --- | --- | --- |
+| OpenLux | `https://api.openlux.ai/v1` | `responses-api` | Requires a Codex-dedicated token group; model `gpt-5-codex` |
 | OpenRouter | `https://openrouter.ai/api/v1` | `responses-api` | Responses-compatible gateway; proxy for many providers |
 | SiliconFlow | `https://api.siliconflow.cn/v1` | `chat-completions-only` | Use `codex-relay` or OpenRouter |
 | DeepSeek direct | `https://api.deepseek.com/v1` | `chat-completions-only` | Use `codex-relay` or OpenRouter |
 | Kimi direct | `https://api.moonshot.cn/v1` | `chat-completions-only` | Use `codex-relay` or OpenRouter |
 | Zhipu GLM direct | `https://open.bigmodel.cn/api/paas/v4` | `chat-completions-only` | Use `codex-relay` or OpenRouter |
 
-If a provider is not listed, test `POST /v1/responses` directly. A `404` means it is `chat-completions-only`.
+If a provider is not listed, test `POST /v1/responses` directly with a valid key. A `404` means it is `chat-completions-only`; a `401`/`403` from an unauthenticated probe is inconclusive.
 
 ---
 
@@ -63,6 +64,8 @@ These endpoints already implement `/v1/responses`. Configure Codex to call them 
 ```toml
 model = "<model-name>"
 model_provider = "<provider-id>"
+disable_response_storage = true
+preferred_auth_method = "apikey"
 
 [model_providers.<provider-id>]
 name = "<display-name>"
@@ -80,10 +83,48 @@ model_reasoning_effort = "high"
 model_reasoning_summary = "auto"
 ```
 
+`disable_response_storage = true` turns off Codex's default server-side response storage, which third-party relays commonly reject or mishandle. `preferred_auth_method = "apikey"` keeps Codex on API-key auth instead of steering into the ChatGPT OAuth login flow.
+
 ```bash
 export <API_KEY_ENV_VAR>='<set locally, do not commit>'
 codex exec -p <provider-id> --skip-git-repo-check "Reply with exactly: ok"
 ```
+
+### Example: OpenLux
+
+OpenLux (`https://api.openlux.ai`) natively serves `/v1/responses` for Codex. Official tutorial: `https://doc.openlux.ai/tutorials/plugins-7422014`.
+
+Create the token in the OpenLux console under a Codex-dedicated token group (named along the lines of "codex专属" or "codex渠道-gpt"). OpenLux partitions keys into per-product groups, so a Claude-group key is rejected for Codex use and vice versa.
+
+```toml
+model = "gpt-5-codex"
+model_provider = "openlux"
+model_reasoning_effort = "high"
+disable_response_storage = true
+preferred_auth_method = "apikey"
+
+[model_providers.openlux]
+name = "OpenLux"
+base_url = "https://api.openlux.ai/v1"
+env_key = "OPENLUX_API_KEY"
+wire_api = "responses"
+request_max_retries = 4
+stream_max_retries = 5
+stream_idle_timeout_ms = 300000
+
+[profiles.openlux]
+model_provider = "openlux"
+model = "gpt-5-codex"
+model_reasoning_effort = "high"
+model_reasoning_summary = "auto"
+```
+
+```bash
+export OPENLUX_API_KEY='<set locally, do not commit>'
+codex exec -p openlux --skip-git-repo-check "Reply with exactly: ok"
+```
+
+The official tutorial stores the key in `~/.codex/auth.json` instead; this skill prefers `env_key` so no key is written to config files. For Claude Code against the same relay, see `claude-openlux-launcher.md`.
 
 ### Example: OpenRouter
 
@@ -283,6 +324,7 @@ Expected success: Codex returns `ok`.
 ## Notes
 
 - Keep provider IDs stable so profiles and historical Codex sessions remain understandable.
+- Some relays partition keys into per-product token groups. An OpenLux Claude-group key does not work for Codex, and a Codex-group key does not work for the Anthropic Messages API; create the key in the group matching the client.
 - Prefer `env_key` over `experimental_bearer_token`; do not store bearer tokens in tracked config.
 - Avoid `--ignore-user-config` except for tests. Normal setup should update `~/.codex/config.toml` or add a named profile.
 - For providers that only expose a thinking on/off switch (such as SiliconFlow), Codex's `model_reasoning_effort` level may have no effect; the translator forwards the on/off switch only.
