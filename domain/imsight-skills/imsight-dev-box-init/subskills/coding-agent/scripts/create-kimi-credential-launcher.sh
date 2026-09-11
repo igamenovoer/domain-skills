@@ -10,6 +10,7 @@ name=''
 home_dir=''
 output_dir="$HOME/.local/bin"
 kimi_bin=''
+auto_mode=true
 
 usage() {
   cat >&2 <<'EOF'
@@ -23,6 +24,7 @@ Options:
   --home DIR        Data home for the launcher (default: ~/kimi-homes/<name>).
   --output DIR      Directory for the launcher file (default: ~/.local/bin).
   --kimi-bin PATH   Pin the kimi binary path (default: auto-detect at runtime).
+  --no-auto         Do not add --auto to Kimi CLI startup arguments.
   -h, --help        Show this help.
 EOF
 }
@@ -33,6 +35,7 @@ while [[ $# -gt 0 ]]; do
     --home) home_dir="${2:?--home requires a value}"; shift 2 ;;
     --output) output_dir="${2:?--output requires a value}"; shift 2 ;;
     --kimi-bin) kimi_bin="${2:?--kimi-bin requires a value}"; shift 2 ;;
+    --no-auto) auto_mode=false; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "create-kimi-credential-launcher: unknown option $1" >&2; usage; exit 2 ;;
   esac
@@ -63,6 +66,11 @@ if [[ -n "$kimi_bin" ]]; then
   pinned_kimi_line="kimi_bin='$kimi_bin'"
 fi
 
+default_args_line='default_kimi_args=(--auto)'
+if [[ "$auto_mode" == false ]]; then
+  default_args_line='default_kimi_args=()'
+fi
+
 cat > "$launcher" <<EOF
 #!/usr/bin/env bash
 set -euo pipefail
@@ -91,10 +99,16 @@ if [[ -z "\${kimi_bin:-}" ]]; then
   exit 127
 fi
 
-exec "\$kimi_bin" "\$@"
+$default_args_line
+exec "\$kimi_bin" "\${default_kimi_args[@]}" "\$@"
 EOF
 
 chmod +x "$launcher"
 echo "created launcher: $launcher"
 echo "data home:        $home_dir"
+if [[ "$auto_mode" == true ]]; then
+  echo "default mode:     --auto"
+else
+  echo "default mode:     no --auto"
+fi
 echo "next step:        $name login   # OAuth device-code flow"

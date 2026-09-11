@@ -43,7 +43,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | `codex-cli-3rd-party` | Configure Codex CLI for third-party OpenAI-compatible APIs. | `references/codex-cli-3rd-party.md` |
 | `claude-kimi-launcher` | Create or repair a Claude Code launcher backed by Kimi, including Coding Plan thinking effort. | `references/claude-kimi-launcher.md` |
 | `claude-openlux-launcher` | Create or repair a Claude Code launcher backed by the OpenLux relay, replacing the retired Yunwu relay. | `references/claude-openlux-launcher.md` |
-| `kimi-multi-credential` | Create Kimi Code CLI launchers named `kimi-<suffix>`, each with an isolated OAuth credential home under `~/kimi-homes/`. | `references/kimi-multi-credential.md` |
+| `kimi-multi-credential` | Create Kimi Code CLI launchers named `kimi-<suffix>`, each with an isolated OAuth credential home and `--auto` startup default unless no-auto mode is explicitly requested. | `references/kimi-multi-credential.md` |
 | `help` | Explain this subskill and list its commands. | This entrypoint |
 
 ## Resource Ownership
