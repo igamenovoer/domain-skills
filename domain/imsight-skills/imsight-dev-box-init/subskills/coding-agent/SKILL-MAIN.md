@@ -1,6 +1,6 @@
 ---
 name: coding-agent
-description: Use when an Imsight dev-box task configures Codex CLI, third-party Codex providers, or a Claude Code launcher that uses Kimi Platform API or Kimi Coding Plan credentials.
+description: Use when an Imsight dev-box task configures Codex CLI, third-party Codex providers, or a Claude Code launcher that uses Kimi Platform API, Kimi Coding Plan, or OpenLux relay credentials.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -42,11 +42,12 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | `codex-cli-setup` | Configure Imsight-preferred Codex CLI behavior. | `references/codex-cli-setup.md` |
 | `codex-cli-3rd-party` | Configure Codex CLI for third-party OpenAI-compatible APIs. | `references/codex-cli-3rd-party.md` |
 | `claude-kimi-launcher` | Create or repair a Claude Code launcher backed by Kimi, including Coding Plan thinking effort. | `references/claude-kimi-launcher.md` |
+| `claude-openlux-launcher` | Create or repair a Claude Code launcher backed by the OpenLux relay, replacing the retired Yunwu relay. | `references/claude-openlux-launcher.md` |
 | `help` | Explain this subskill and list its commands. | This entrypoint |
 
 ## Resource Ownership
 
-This subskill owns its Codex and Claude-Kimi references and the cross-platform Claude-Kimi launcher generators under `scripts/`.
+This subskill owns its Codex, Claude-Kimi, and Claude-OpenLux references and the cross-platform Claude-Kimi launcher generators under `scripts/`.
 
 ## Guardrails
 

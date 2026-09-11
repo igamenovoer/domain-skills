@@ -44,8 +44,6 @@ Terminal invocation of `imsight-dev-box-init->coding-agent->codex-cli-3rd-party(
 
 | Provider | Endpoint base | Category | Notes |
 | --- | --- | --- | --- |
-| Yunwu (mainland) | `https://api3.wlai.vip/v1` | `responses-api` | Append `/v1`; default model `gpt-5.2` |
-| Yunwu (international) | `https://yunwu.ai/v1` | `responses-api` | Append `/v1`; default model `gpt-5.2` |
 | OpenRouter | `https://openrouter.ai/api/v1` | `responses-api` | Responses-compatible gateway; proxy for many providers |
 | SiliconFlow | `https://api.siliconflow.cn/v1` | `chat-completions-only` | Use `codex-relay` or OpenRouter |
 | DeepSeek direct | `https://api.deepseek.com/v1` | `chat-completions-only` | Use `codex-relay` or OpenRouter |
@@ -85,77 +83,6 @@ model_reasoning_summary = "auto"
 ```bash
 export <API_KEY_ENV_VAR>='<set locally, do not commit>'
 codex exec -p <provider-id> --skip-git-repo-check "Reply with exactly: ok"
-```
-
-### Example: Yunwu
-
-Yunwu has two endpoint roots. Always append `/v1`.
-
-| Region | Endpoint root | `base_url` |
-| --- | --- | --- |
-| Mainland | `https://api3.wlai.vip` | `https://api3.wlai.vip/v1` |
-| International | `https://yunwu.ai` | `https://yunwu.ai/v1` |
-
-Recommended env var: `YUNWU_OPENAI_API_KEY`  
-Recommended model: `gpt-5.2` (or `gpt-5.2-codex` if listed)
-
-Mainland config:
-
-```toml
-[model_providers.yunwu]
-name = "yunwu-api"
-base_url = "https://api3.wlai.vip/v1"
-env_key = "YUNWU_OPENAI_API_KEY"
-wire_api = "responses"
-request_max_retries = 4
-stream_max_retries = 5
-stream_idle_timeout_ms = 300000
-
-[profiles.yunwu]
-model_provider = "yunwu"
-model = "gpt-5.2"
-model_reasoning_effort = "high"
-model_reasoning_summary = "auto"
-```
-
-International config:
-
-```toml
-[model_providers.yunwu]
-name = "yunwu-api"
-base_url = "https://yunwu.ai/v1"
-env_key = "YUNWU_OPENAI_API_KEY"
-wire_api = "responses"
-request_max_retries = 4
-stream_max_retries = 5
-stream_idle_timeout_ms = 300000
-
-[profiles.yunwu]
-model_provider = "yunwu"
-model = "gpt-5.2"
-model_reasoning_effort = "high"
-model_reasoning_summary = "auto"
-```
-
-Use:
-
-```bash
-export YUNWU_OPENAI_API_KEY='<set locally, do not commit>'
-codex -p yunwu
-```
-
-One-shot test:
-
-```bash
-export YUNWU_OPENAI_API_KEY='<set locally, do not commit>'
-codex exec --skip-git-repo-check \
-  -c model_provider=yunwu-test \
-  -c model_providers.yunwu-test.name=Yunwu \
-  -c model_providers.yunwu-test.base_url=https://yunwu.ai/v1 \
-  -c model_providers.yunwu-test.env_key=YUNWU_OPENAI_API_KEY \
-  -c model_providers.yunwu-test.wire_api=responses \
-  -m gpt-5.2 \
-  "Reply with exactly: yunwu-ok"
 ```
 
 ### Example: OpenRouter
