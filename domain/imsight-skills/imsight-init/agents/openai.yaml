@@ -1,0 +1,6 @@
+interface:
+  display_name: "Imsight Init"
+  short_description: "Recover sibling Imsight skill discovery"
+  default_prompt: "Use $imsight-init to discover sibling Imsight skills that the harness may have missed."
+policy:
+  allow_implicit_invocation: true
