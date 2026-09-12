@@ -1,6 +1,6 @@
 ---
 name: imsight-inject-mentality
-description: Use when an Imsight agent is asked to select, control, persist, or compose a named injected mentality such as Brooks. Do not use for ordinary factual memory or generic preference changes unrelated to a mentality.
+description: Use when an Imsight agent is asked to select, control, persist, or compose a named injected mentality such as Brooks or Docs Writer. Do not use for ordinary factual memory or generic preference changes unrelated to a mentality.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -53,6 +53,7 @@ Rule-backed mentalities use the shared public controls `enable`, `disable`, `ena
 | Mentality | When to Route Here | Load |
 | --- | --- | --- |
 | `brooks` | Choose this mentality for coding and test-design work that should proactively resist Brooks Lint's production and test decay risks. | `subskills/brooks/SKILL-MAIN.md` |
+| `docs-writer` | Choose this mentality for writing or revising durable documents whose main text should read as a clean current-state description, free of the document's own revision history. | `subskills/docs-writer/SKILL-MAIN.md` |
 
 An unknown mentality name is an error. List the registered names instead of routing it to Brooks.
 
@@ -60,7 +61,7 @@ An unknown mentality name is an error. List the registered names instead of rout
 
 The parent treats each mentality as an opaque provider with four answers: whether it is enabled, whether it applies to the task, its compact rendered guidance, and its status summary. See [references/composition.md](references/composition.md).
 
-The parent does not interpret Brooks rule identifiers or require future mentalities to use rule sets. A future mentality belongs beside `brooks` under `subskills/` and owns its own model.
+The parent does not interpret child rule identifiers or require future mentalities to use rule sets. A future mentality belongs beside the registered mentalities under `subskills/` and owns its own model.
 
 ## Persistence Contract
 
