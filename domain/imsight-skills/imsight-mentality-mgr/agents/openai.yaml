@@ -1,6 +1,6 @@
 interface:
   display_name: "imsight-mentality-mgr"
   short_description: "Manage scoped principles and Brooks or Ponytail reviews"
-  default_prompt: "Use $imsight-mentality-mgr to manage project or agent-memory principles, configure Ponytail intensity and edit scope, recall effective settings, or run a Brooks or Ponytail review."
+  default_prompt: "Use $imsight-mentality-mgr to manage project or agent-memory principles for Brooks, Ponytail, Docs Writer, or Agile Experimenter, configure Ponytail, recall effective settings, or run a Brooks or Ponytail review."
 policy:
   allow_implicit_invocation: false

@@ -1,6 +1,6 @@
 ---
 name: imsight-mentality-mgr
-description: Use when an Imsight mentality request concerns catalogs, project or agent-memory rules, Ponytail intensity and edit scope, effective mentality recall, or explicit Brooks or Ponytail reviews, or when applicable work has resolved mentality rules. Do not use for ordinary factual memory or unrelated preferences.
+description: Use when an Imsight mentality request concerns catalogs, project or agent-memory rules, Agile Experimenter evidence sufficiency, Ponytail intensity and edit scope, effective mentality recall, or explicit Brooks or Ponytail reviews, or when applicable work has resolved mentality rules. Do not use for ordinary factual memory or unrelated preferences.
 metadata:
   skill_invocation_notation: >
     Invoke skills and subskills as bare paths (`X`, `X->Y`). Append `()` to
@@ -57,6 +57,7 @@ These are peer actions, not required phases. Definitions are shared here; childr
 | `brooks` | Choose Brooks for maintainable production-code decisions and test design, or to explicitly review existing code through those principles. | [Brooks](subskills/brooks/SKILL-MAIN.md) |
 | `ponytail` | Choose Ponytail to simplify implementations through reuse and removal, with explicit intensity and boundaries for changing existing infrastructure, or to review those opportunities. | [Ponytail](subskills/ponytail/SKILL-MAIN.md) |
 | `docs-writer` | Choose Docs Writer principles for durable prose whose main text should describe its current state without incidental revision history. | [Docs Writer](subskills/docs-writer/SKILL-MAIN.md) |
+| `agile-experimenter` | Choose Agile Experimenter for experiment scope, evidence sufficiency, and stopping decisions. | [Agile Experimenter](subskills/agile-experimenter/SKILL-MAIN.md) |
 
 An unknown mentality is an error; list registered names instead of guessing. New mentalities belong beside these children and own their principle catalogs and selector vocabularies.
 
