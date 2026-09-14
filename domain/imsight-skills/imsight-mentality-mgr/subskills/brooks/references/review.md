@@ -1,22 +1,3 @@
----
-metadata:
-  skill_invocation_notation: >
-    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
-    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
-    accepted only as legacy input when SKILL-MAIN.md is absent.
-    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
-    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
-    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
-    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
-    by parent subcommand parent. Intermediate subcommands act as object generators.
-    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
-  invocation_contract: |
-    - Invoke `imsight-mentality-mgr->brooks->review()` with a PR, diff, files, directory, or pasted code. Without a target, use Code Scope to resolve current changes.
-    - Omitted selectors use effective Brooks rules. Explicit codes, names, or groups such as `r1 t2`, `production`, `tests`, or `all` replace criteria for this invocation only. “Full Brooks review” explicitly selects `all`; “review with Brooks” does not.
-    - Natural form: `$imsight-mentality-mgr brooks review r1 t2` followed by the target. Selectors are arguments, not components of the invocation path.
-    - Review returns findings in chat without changing files or memory. An explicit request to save the report permits only the report output described below. Review does not apply fixes.
----
-
 # Brooks Review
 
 ## Overview
@@ -36,7 +17,11 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 ## Rule Selection
 
+Invoke `imsight-mentality-mgr->brooks->review()` with a PR, diff, files, directory, or pasted code; without a target, follow **Code Scope**. A natural example is `$imsight-mentality-mgr brooks review r1 t2` followed by the target. Results return in chat; only an explicit save request permits a report file, and review changes neither activation nor code.
+
 Follow [shared rule selection](../../../references/review-common.md#rule-selection) with Brooks selectors from [state.md](state.md). Omitted selectors use effective rules; explicit selectors replace criteria for this review only. Explicit all or full Brooks review selects r1–r6 and t1–t6 without changing activation. Empty effective selection stops only default review, not an explicit valid selection.
+
+Explicit selectors may be codes, canonical names, groups such as `production` or `tests`, or `all`. “Review with Brooks” alone uses effective rules; it does not request every criterion.
 
 ### Selection examples
 

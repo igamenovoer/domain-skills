@@ -29,6 +29,12 @@ Paths under `src/` preserve their upstream relative location. Every copied file 
 
 The complete upstream review skill and its relevant shared support are preserved. Other Brooks skills, installers, plugin metadata, website assets, and evaluation corpora are not bundled. Snapshot references to other upstream modes remain untouched; those modes are not supported runtime dependencies of this adaptation.
 
+## Offline Constructive Sources
+
+The distributable [source bundle](../references/sources/index.md) includes annotated copies of the original production-risk, test-risk, and source-coverage files and the MIT notice. Each source records its upstream revision and original-file hash. The immutable `src/` archive is unchanged.
+
+Constructive examples now link to local per-rule grounding and these complete source references. Their previous article URLs are retained in the source index as optional attribution, not required dependencies. The index's short notes are original summaries of the bundled grounding, not archived copies of external articles or books. Deployment copies the whole source directory beside the catalog and rewrites all source links for offline use.
+
 ## Adaptation Map
 
 | Source behavior | Maintained adaptation |
@@ -47,4 +53,4 @@ The complete upstream review skill and its relevant shared support are preserved
 
 ## Maintenance
 
-Edit maintained files under the Brooks entrypoint and `references/`. Preserve `src/` unchanged and update the inventory if importing a different source revision. Validate the active bundle independently of this snapshot and of the original checkout. Project report artifacts document assessed criteria; they are never a replacement for project selection or agent memory.
+Edit maintained files under the Brooks entrypoint and `references/`. Preserve `src/` unchanged and update the inventory if importing a different source revision. Validate the active bundle independently of this archive, the original checkout, and network access; also validate the source links after catalog deployment. Project report artifacts document assessed criteria; they are never a replacement for project selection or agent memory.

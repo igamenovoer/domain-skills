@@ -108,6 +108,16 @@ The reference includes a title, entrance skill name, canonical rule index, and a
 
 A deployed catalog is a project-owned snapshot. Refresh it only through an explicit deployment request. Recall and ordinary work do not silently regenerate it. The child remains authoritative for canonical selector identities; use an available valid deployed definition for application, otherwise load the maintained child definition in memory and report the missing project copy. If deployed and installed definitions disagree materially, report the discrepancy rather than silently combining versions or changing project policy.
 
+### Offline source bundles
+
+Brooks and Ponytail declare `references/sources/` as their distributable source directory. Copy the complete directory, including its index, source documents or identified excerpts, and licenses, into `.imsight-arts/mentality/sources/<mentality>/<bundle-id>/`. Other children need no source directory unless they declare one. Treat source documents as historical evidence, not active rules or runnable code. Origin URLs remain inside source records for attribution; application, recall, review, and deployment use bundled material without fetching them.
+
+Use a deterministic content identity so different catalog snapshots and concurrent agents can retain their own source versions. Build a UTF-8 inventory with one `relative-path<TAB>file-sha256<LF>` record per file, sorted by relative path; `bundle-id` is the full SHA-256 of those inventory bytes. Preserve source bytes and relative filenames when copying. An existing identical bundle is a no-op; complete a partial bundle only when its present files match the expected paths and bytes. A content mismatch at that identity is a conflict, not permission to overwrite. Leave previous bundles in place rather than deleting sources still referenced by an older catalog.
+
+Rewrite a catalog link such as `sources/index.md` to `sources/<mentality>/<bundle-id>/index.md`, preserving fragments and rewriting every source reference consistently. Links between copied source documents remain relative within that directory. Verify the local link closure before publication; no catalog or required source link may escape into the installed skill, `extern/`, or an absolute machine path. Source files and catalog examples must contain the needed explanation; optional origin links do not satisfy a missing local dependency.
+
+Publish source files before the catalog and the catalog before its discovery block. Report partial effects if publication fails. Source bundles use content identity rather than catalog block markers and contain no project selection, agent memory, or session-state record.
+
 ### Catalog discovery in `AGENTS.md`
 
 Use this separate discovery block, substituting the actual mentality, title, and path:
@@ -148,8 +158,8 @@ Use canonical IDs beside their names and write `Project-enabled principles: none
 2. Locate the exact start/end markers for the action's block. Replace one well-formed matching block in place; when neither exists, insert one block or create the required file.
 3. Reject partial, reversed, nested, or duplicate matching markers. An existing catalog artifact without its matching markers is not owned output and must not be overwritten. If existing mentality directives use an incompatible scope or representation, report the conflict for explicit reconciliation instead of guessing which rules are project-wide.
 4. Preserve other mentalities' blocks, unrelated guidance, and unrelated artifact content. Immediately before writing shared `AGENTS.md`, check for intervening changes; if it changed, re-read and recompute the targeted edit rather than writing a stale whole-file snapshot. Use a lock or conditional write when the host supports one; otherwise report any detected concurrent conflict instead of claiming atomic multi-agent writes.
-5. For deployment, publish the validated catalog before its discovery reference so a new reference does not point to an unwritten file. If either write fails, report actual partial effects and complete or safely recover only the action's owned changes.
-6. Verify exactly one matching block per affected file, correct references and canonical IDs, preserved out-of-scope state, and a no-op result when applying the same action again to unchanged inputs.
+5. For deployment, publish any offline source bundle, then the validated catalog, then its discovery reference so new references never point to unwritten files. If a write fails, report actual partial effects and complete or safely recover only the action's owned changes.
+6. Verify exactly one matching block per affected catalog/instruction file, source-bundle identity and local links, correct canonical IDs, preserved out-of-scope state, and a no-op result when applying the same action again to unchanged inputs.
 
 ### Missing and inconsistent material
 

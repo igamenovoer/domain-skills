@@ -1,23 +1,3 @@
----
-metadata:
-  skill_invocation_notation: >
-    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
-    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
-    accepted only as legacy input when SKILL-MAIN.md is absent.
-    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
-    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
-    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
-    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
-    by parent subcommand parent. Intermediate subcommands act as object generators.
-    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
-  invocation_contract: |
-    - Invoke `imsight-mentality-mgr->ponytail->review()` with a PR, diff, files, or pasted code. If no target is supplied, use the shared code-scope contract.
-    - Omitted criteria use effective Ponytail rules. Explicit p1–p12, canonical names, or all replace criteria for this review; alternatively use intensity=safe|normal|extreme. A short preset name has the same meaning. Do not combine explicit rule selectors with an intensity parameter.
-    - Optional edit-scope=new-code-only|destructive replaces only this invocation's boundary. Omitted edit scope inherits this agent's resolved scope, otherwise the project setting, otherwise new-code-only. Short edit-scope names are accepted.
-    - Natural example: `$imsight-mentality-mgr ponytail review normal new-code-only` followed by the target. all or extreme never implies destructive. No configuration or memory mutation occurs.
-    - Save only when explicitly requested. Review never applies fixes, runs a refactoring sweep, or installs upstream tools, including with destructive scope.
----
-
 # Ponytail Review
 
 ## Overview
@@ -37,6 +17,10 @@ If the request does not map cleanly to these steps, use the native planning tool
 
 ## Review Selection
 
+Invoke `imsight-mentality-mgr->ponytail->review()` with a PR, diff, files, or pasted code; without a target, use the shared code-scope contract. A natural example is `$imsight-mentality-mgr ponytail review normal new-code-only` followed by the target.
+
+Criteria accept explicit p1–p12, canonical names, or `all`, or alternatively `intensity=safe|normal|extreme`. Optional `edit-scope=new-code-only|destructive` overrides only this review's boundary. Unambiguous short intensity and edit-scope names are accepted. Do not combine explicit rule selectors with an intensity parameter. Review settings never persist, and destructive scope never applies fixes or installs upstream tools.
+
 Apply shared selection with Ponytail's canonical IDs. Explicit intensity expands into R for this invocation, including normally memory-disabled rules; label its source review-request. Explicit individual selectors instead define a custom R. Omitted criteria use E unchanged. An empty E stops only a default review; explicit valid criteria can run without prior activation or deployment. Unknown settings or selectors reject the complete request rather than falling back to all.
 
 Resolve edit scope separately, using an explicit review parameter first, then agent memory, project, and the default new-code-only. An explicit destructive parameter allows recommendations affecting task-related infrastructure; it enables no rule and applies no edit. Without it, increasing intensity or passing all leaves the resolved edit boundary unchanged. If memory is unavailable, report that uncertainty rather than claiming a known inherited scope; an explicit invocation boundary can resolve the review without repairing stored state.
@@ -51,13 +35,15 @@ Retain a supported finding only when it identifies:
 
 - A precise file/line or snippet location, applicable p IDs, and the current implementation burden.
 - The proposed cut or consolidation and the concrete replacement, including a named existing helper, native feature, or standard function when applicable.
-- Evidence that the replacement preserves the relevant success, invalid-input, edge, failure, and side-effect behavior. Existing tests and contracts may provide evidence; state what was inspected rather than claiming execution.
+- Evidence that the replacement preserves the material behavior affected by the task, including meaningful boundary or failure behavior where relevant. Use existing tests, contracts, and code inspection; this is not a checklist requiring new tests for every category. State what was inspected rather than claiming execution.
 - Why the change fits the task and edit scope. For existing-infrastructure changes, explain the necessary connection and affected callers; an unrelated potential saving is outside scope.
 - A specific evidence gap or follow-up check when confidence is incomplete. A candidate whose equivalence is unknown remains conditional and is not presented as a supported removal.
 
 Check [Validity Requirements](principles.md#validity-requirements) before accepting any simplification, regardless of intensity or selected IDs. A single caller or implementation is not proof of unnecessary structure. An uncommon input is not proof a guard is unnecessary. Savings in lines or dependencies do not establish a benefit if the proposal increases hidden obligations or weakens defenses.
 
 Selected p4, p6, or p7 can identify a placement, verification, or limitation issue without a line-saving claim. Keep those notes tied to the proposed task implementation or simplification. Do not expand into unrelated bug hunting, a test-suite overhaul, or automatic debt harvesting. A directly observed issue that invalidates a proposed cut belongs in its evidence discussion.
+
+For p6, identify a plausible material regression and the specific gap in existing evidence before recommending additional tests. Missing new tests for an edited function is not itself a finding. Prefer an existing product-level check or a focused addition at a suitable boundary; adequate coverage needs no extra suite, runtime conformance tests, or duplicate checks at every level.
 
 ## Report Format
 

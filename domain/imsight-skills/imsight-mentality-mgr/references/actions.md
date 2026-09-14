@@ -14,13 +14,13 @@ If the task does not map cleanly to these steps, use the native planning tool to
 **Input:** one or more named mentalities and a target project. Naming particular principles identifies their owning mentality; deployment publishes that mentality's complete catalog.
 
 1. Read the complete maintained catalog and its **Catalog Publication** contract in the child's entrypoint.
-2. Render all canonical principles with definitions, examples, judgment notes, applicability, and available provenance into `.imsight-arts/mentality/<mentality>-principles.md`.
+2. Publish any source bundle declared by the child using [Offline source bundles](runtime-injection.md#offline-source-bundles). Render all canonical principles with definitions, examples, judgment notes, applicability, and provenance into `.imsight-arts/mentality/<mentality>-principles.md`, rewriting source links to the project-local copy.
 3. Add or refresh only the catalog discovery block in `AGENTS.md`, following **Managed Project Files** in the runtime reference.
-4. Verify the complete catalog and discovery reference agree, and that project selection and every agent's remembered overrides are unchanged.
+4. Verify the complete catalog, source links, and discovery reference resolve within the project without network access or an installed skill. Confirm project selection and every agent's remembered overrides are unchanged.
 
-**File effects:** the deployed catalog and its `AGENTS.md` discovery block only. Deployment never creates a project-enabled selection, even when the caller names all principles. Refreshing a catalog does not enable newly added principles.
+**File effects:** the deployed catalog, any child-declared offline source bundle, and the catalog's `AGENTS.md` discovery block only. Deployment never creates a project-enabled selection, even when the caller names all principles. Refreshing a catalog does not enable newly added principles.
 
-**Output:** mentality names, deployed canonical rule index, both project paths, and whether catalogs were created or refreshed. State that deployment alone enables no rules.
+**Output:** mentality names, deployed canonical rule index, catalog and discovery paths, any source-bundle path, and whether catalogs were created or refreshed. State that deployment alone enables no rules.
 
 ## Enable Project
 

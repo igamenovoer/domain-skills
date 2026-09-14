@@ -1,24 +1,6 @@
 ---
 name: docs-writer
 description: Use when an Imsight mentality request names Docs Writer, or durable document writing and revision has effective Docs Writer principles. Do not use for ordinary chat replies, commit messages, code-only tasks, or unrelated document linting.
-metadata:
-  skill_invocation_notation: >
-    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
-    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
-    accepted only as legacy input when SKILL-MAIN.md is absent.
-    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
-    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
-    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
-    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
-    by parent subcommand parent. Intermediate subcommands act as object generators.
-    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
-  invocation_contract: |
-    - Invoke `imsight-mentality-mgr->docs-writer` for recall and concise help without changing state.
-    - Invoke `imsight-mentality-mgr->docs-writer->deploy()` to publish this mentality's complete catalog without enabling it.
-    - Invoke `imsight-mentality-mgr->docs-writer->enable-project()` or `imsight-mentality-mgr->docs-writer->disable-project()` with explicit selectors to change project scope.
-    - Invoke `imsight-mentality-mgr->docs-writer->enable-memory()` or `imsight-mentality-mgr->docs-writer->disable-memory()` with explicit selectors to change only this agent's remembered overrides.
-    - Invoke `imsight-mentality-mgr->docs-writer->recall()` to report the scope resolution without writing files or changing memory.
-    - Natural invocation may use `$imsight-mentality-mgr docs-writer enable-memory d1`. Use `all` explicitly to select every principle for an enable/disable action.
 ---
 
 # Docs Writer Mentality
@@ -29,7 +11,7 @@ Docs Writer provides principles for durable prose that reads as a clear current-
 
 ## Workflow
 
-1. **Resolve intent** using **Subcommands** and the frontmatter `metadata.invocation_contract`, or recognize an applicable task with effective Docs Writer principles.
+1. **Resolve intent** using **Subcommands**, or recognize an applicable task with effective Docs Writer principles.
 2. **Validate selectors** using [state.md](references/state.md), which owns this mentality's canonical IDs and groups.
 3. **Execute the resolved action** through its shared detail section.
 4. **For substantive work**, resolve scope through [runtime-injection.md](../../references/runtime-injection.md), then apply the selected definitions under **Applying the Mentality**.
@@ -44,6 +26,8 @@ Use for Docs Writer catalog deployment, explicit project or agent-memory selecti
 ## Subcommands
 
 These actions inherit the shared workflows unchanged with `docs-writer` as the selected mentality. The parent owns action and scope semantics; this child owns selectors, definitions, and applicability.
+
+For example, `$imsight-mentality-mgr docs-writer enable-memory d1` remembers the single-pass-revision principle for this agent.
 
 | Subcommand | Use For | Detail |
 | --- | --- | --- |

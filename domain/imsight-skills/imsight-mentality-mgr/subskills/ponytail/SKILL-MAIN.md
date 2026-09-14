@@ -1,24 +1,6 @@
 ---
 name: ponytail
 description: Use when an Imsight mentality request names Ponytail, applicable coding work has effective Ponytail rules, or the user explicitly requests a Ponytail simplification review. Supports independent simplification intensity and edit scope. Do not use for unrelated prose, automatic repository cleanup, or global persona activation.
-metadata:
-  skill_invocation_notation: >
-    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
-    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
-    accepted only as legacy input when SKILL-MAIN.md is absent.
-    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
-    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
-    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
-    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
-    by parent subcommand parent. Intermediate subcommands act as object generators.
-    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
-  invocation_contract: |
-    - Invoke `imsight-mentality-mgr->ponytail` for recall and concise help without changing state. Deployment publishes the full catalog and enables nothing.
-    - Invoke `imsight-mentality-mgr->ponytail->configure-project()` or `imsight-mentality-mgr->ponytail->configure-memory()` with `intensity=safe|normal|extreme` and/or `edit-scope=new-code-only|destructive`. Short arguments such as `normal new-code-only` mean the same settings. Omitted axes are preserved; no arguments means help, not activation.
-    - Natural wording such as “set Ponytail to normal in your memory” selects configure-memory with intensity=normal. Require explicit project or memory scope for persistent configuration; do not guess it from earlier actions.
-    - Invoke this child's shared `deploy()`, `enable-project()`, `disable-project()`, `enable-memory()`, `disable-memory()`, `recall()`, or `help()` actions with their shared meanings. Rule enable/disable accepts explicit p1–p12, canonical names, or all; it never changes edit scope. Intensity presets use configure actions, not additive rule actions.
-    - Invoke `imsight-mentality-mgr->ponytail->review()` with a target, optional rule selectors or intensity, and optional edit-scope. Explicit review settings last for that review only; destructive scope does not apply fixes. Natural form: `$imsight-mentality-mgr ponytail review intensity=normal edit-scope=new-code-only` followed by the target.
-    - `safe`, `normal`, and `extreme` are the only intensity presets. Upstream lite/full/ultra/off modes, mode files, and hooks are not this skill's control surface. Use explicit rule disable actions to disable principles.
 ---
 
 # Ponytail Mentality
@@ -29,7 +11,7 @@ Reduce unnecessary implementation and maintenance work while preserving required
 
 ## Workflow
 
-1. **Resolve intent** from **Subcommands** and the frontmatter contract; ordinary coding work requires effective selected rules.
+1. **Resolve intent** from **Subcommands** and the selected action reference; ordinary coding work requires effective selected rules.
 2. **Resolve rules and both axes** through [state.md](references/state.md). Validate the complete request and preserve agent identity before configuration or application.
 3. **Execute an explicit action** through its detail page. Review follows [review.md](references/review.md); shared rule actions retain their original meanings.
 4. **For implementation**, establish the assigned task and starting code boundary, read relevant flow and callers, and apply **Applying the Mentality** only to permitted code.
@@ -42,6 +24,10 @@ If the task does not map cleanly to these steps, use the native planning tool to
 Use for Ponytail catalog and scope management, implementation with selected principles, and explicit simplification reviews. Discussing a principle or loading this child does not activate it. Configuration controls future applicable work, not permission to begin unrelated cleanup. Ordinary prose follows the user's communication requirements.
 
 ## Subcommands
+
+Shared rule actions retain the parent's meanings with `ponytail` selected. Configure actions accept intensity and/or edit scope through [state.md](references/state.md); review accepts invocation-only criteria and scope through [review.md](references/review.md).
+
+For example, `$imsight-mentality-mgr ponytail configure-memory normal new-code-only` sets both axes in this agent's memory. “Set Ponytail to normal in your memory” selects the same action with intensity only; omitted axes are preserved, and configuration without arguments shows help. Persistent configuration requires explicit project or memory scope, never a guess based on earlier actions.
 
 | Subcommand | Use For | Detail |
 | --- | --- | --- |
@@ -74,20 +60,20 @@ Safe plus new-code-only is the recommended explicit starting configuration. No r
 ## Applying the Mentality
 
 1. Identify the required behavior, affected flow and callers, existing task infrastructure, and relevant edge/failure conditions. Use the [edit boundary](references/state.md#edit-boundary) before choosing a simplification.
-2. Read selected definitions and examples from the valid deployed catalog, otherwise [principles.md](references/principles.md), following the shared runtime's definition policy. Apply only the selected rules within the resolved edit scope.
+2. Read selected definitions and **Representative Do / Don't comparisons** from the valid deployed catalog, otherwise [principles.md](references/principles.md), following the shared runtime's definition policy. Use each comparison's stated contract and judgment note; apply only the selected rules within the resolved edit scope.
 3. For selected reuse rules, look for a suitable local solution, then proven standard-library/native facilities, then suitable installed dependencies, before writing custom machinery. Suitability includes edge cases and the project's supported runtime; a superficially shorter alternative is not automatically equivalent.
 4. Apply selected structural rules only where their present benefit is supported. Preserve defenses required by the actual contract. Under destructive scope, keep changes confined to the task's affected infrastructure and necessary callers; stop expansion at unrelated cleanup opportunities.
-5. Verify changed behavior in proportion to risk using repository conventions and available evidence. Report what was actually checked and explain any unresolved scope conflict or deliberate limitation. Honor requested explanations without a fixed line limit.
+5. Use existing evidence and repository-required checks; apply selected p6 to decide whether further verification is warranted. New tests are not an automatic consequence of an edit. Report what was actually checked and explain any material unresolved risk, scope conflict, or deliberate limitation. Honor requested explanations without a fixed line limit.
 
 If a correct root-cause fix needs infrastructure outside new-code-only scope, use an existing explicit task instruction that authorizes that precise change or surface the boundary conflict. Do not hide the issue behind a new caller-specific workaround. A general request for a feature does not authorize a surrounding infrastructure rewrite.
 
 ## Catalog Publication
 
-Publish `.imsight-arts/mentality/ponytail-principles.md` using the shared deployment contract. Copy the complete `Principle Index`, `Safe Rules`, `Normal Additions`, `Extreme Additions`, `Validity Requirements`, `Applicability`, and `Provenance` sections of [principles.md](references/principles.md), including every example and judgment note. Include the title, canonical index, entrance skill, and availability-only statement. Exclude control workflows, current selection, and project or agent settings. The published explanations stand alone; no installed paths or source snapshots are required.
+Publish `.imsight-arts/mentality/ponytail-principles.md` using the shared deployment contract. Copy the complete `Principle Index`, `Safe Rules`, `Normal Additions`, `Extreme Additions`, `Validity Requirements`, `Applicability`, and `Provenance` sections of [principles.md](references/principles.md), including every Do / Don't code comparison, its assumptions, judgment note, source attribution, and the example license notice. Declare all files in `references/sources/`, indexed by [offline sources](references/sources/index.md), as the source bundle; copy it and rewrite catalog links through the shared [offline publication contract](../../references/runtime-injection.md#offline-source-bundles). Include the title, canonical index, entrance skill, and availability-only statement. Exclude control workflows, current selection, and project or agent settings. The published catalog and its source directory work without installed paths, the original checkout, or network access.
 
 ## Maintenance
 
-Keep canonical rules and preset membership in the principle index, state transitions and edit boundaries in state.md, and diagnostic evidence in review-patterns.md. Shared review mechanics belong to the parent. [Upstream provenance](org/README.md) records the source snapshot and MIT notice; upstream entrypoints are historical material, not runtime instructions.
+Keep canonical rules and preset membership in the principle index, state transitions and edit boundaries in state.md, and diagnostic evidence in review-patterns.md. Shared review mechanics belong to the parent. [Offline sources](references/sources/index.md) retain the relevant originals or explicitly identified excerpts with origin links and licenses. [Upstream provenance](org/README.md) records the immutable archive; source entrypoints and examples are historical material, not runtime instructions.
 
 ## Guardrails
 

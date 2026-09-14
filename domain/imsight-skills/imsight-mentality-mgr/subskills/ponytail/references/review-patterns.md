@@ -14,7 +14,7 @@ Use these patterns with the selected rules from [principles.md](principles.md) a
 | shrink | p9 | Consolidation improves clarity or ownership without hiding error paths. |
 | dependency | p11 | A task-related dependency replacement preserves contracts and has a justified transition cost. |
 | boundary | p4 | The task fix belongs at a permitted shared boundary instead of repeated symptom patches. |
-| check | p6 | The changed behavior or proposed simplification lacks proportionate evidence. |
+| check | p6 | A plausible material regression remains unsupported by existing evidence; a new test is not automatically needed. |
 | limit | p7 | A real simplification ceiling or necessary calibration/operational control is unclear. |
 
 ## Reuse and Proven Primitives
@@ -53,9 +53,11 @@ Inspect the dependency's actual use, supported runtime, edge behavior, and affec
 
 Use p4 to trace the affected flow and locate the defect owner, p6 to assess available behavioral evidence, and p7 to identify genuine ceilings and revisit triggers. These checks can justify retaining code or flagging a blocked opportunity; they need not generate a deletion.
 
+For p6, start with existing coverage and observable product behavior. Reusing a sufficient regression test is a complete outcome. Recommend more verification only for a concrete material gap; avoid a test per changed helper, unrelated built-in edge cases, and repeated coverage across levels without a distinct risk.
+
 **Supported example:** A proposed smaller caller patch leaves a sibling caller violating the same shared invariant. Identify the real boundary; if new-code-only prevents the required repair and it was not explicitly authorized by the task, report the scope conflict rather than endorsing the partial fix.
 
-**Counterexample:** A passing happy-path assertion does not establish equivalence for malformed inputs. A missing test in a snippet does not prove the project has no tests. A known hardware calibration knob is not dead flexibility merely because its default usually works. Test frameworks and fixtures are not automatically bloat; use the project's established verification approach.
+**Counterexample:** If malformed-input behavior changes and remains uncovered, a happy-path assertion alone may be insufficient. Conversely, an internal refactor with adequate existing behavioral coverage does not need a new fine-grained suite. A missing test in a snippet does not prove the project has no tests. A known hardware calibration knob is not dead flexibility merely because its default usually works. Use the project's established verification approach; frameworks and fixtures are not automatically bloat.
 
 ## Scope Examples
 

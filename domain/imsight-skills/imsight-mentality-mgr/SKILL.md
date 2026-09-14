@@ -3,28 +3,11 @@ name: imsight-mentality-mgr
 description: Use when an Imsight mentality request concerns catalogs, project or agent-memory rules, Ponytail intensity and edit scope, effective mentality recall, or explicit Brooks or Ponytail reviews, or when applicable work has resolved mentality rules. Do not use for ordinary factual memory or unrelated preferences.
 metadata:
   skill_invocation_notation: >
-    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
-    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
-    accepted only as legacy input when SKILL-MAIN.md is absent.
-    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
-    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
-    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
-    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
-    by parent subcommand parent. Intermediate subcommands act as object generators.
-    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
-  invocation_contract: |
-    - Invoke `imsight-mentality-mgr` without an action or named child to show help and registered mentalities.
-    - Invoke a named child, such as `imsight-mentality-mgr->brooks`, to recall that mentality and show concise help.
-    - Invoke a shared action with mentality and selectors as arguments, such as `imsight-mentality-mgr->enable-project()` with `brooks r1 r5`.
-    - A child exposes the same actions with its mentality already selected, such as `imsight-mentality-mgr->brooks->enable-memory()` with `r1 r5`.
-    - Invoke `imsight-mentality-mgr->brooks->review()` to review existing code using effective Brooks rules; pass explicit selectors, including `all`, for criteria limited to this review. “Review this with Brooks” selects this child action, not activation. Review is not a shared parent action.
-    - Invoke `imsight-mentality-mgr->ponytail->configure-project()` or `imsight-mentality-mgr->ponytail->configure-memory()` with `intensity=safe|normal|extreme` and/or `edit-scope=new-code-only|destructive`. Intensity replaces the selected scope's Ponytail rule set; an omitted axis is preserved. These are child-specific actions.
-    - Invoke `imsight-mentality-mgr->ponytail->review()` with effective rules or explicit selectors and optional invocation-only `intensity` and `edit-scope`. Review never applies fixes, even with destructive edit scope.
-    - Invoke `imsight-mentality-mgr->recall()` without a mentality to report all registered mentalities. A named child or mentality argument filters recall.
-    - Natural wording uses the same actions: `$imsight-mentality-mgr brooks deploy`, `$imsight-mentality-mgr brooks enable-project r1 r5`, or `$imsight-mentality-mgr brooks disable-memory r5`.
-    - “Deploy these principles” selects `deploy`; “enable/disable in project scope” selects the corresponding project action; “remember and apply” or “enable/disable in your memory” selects the corresponding memory action; “recall the effective Imsight mentality” selects `recall`.
-    - Require a named mentality and explicit rule selectors for enable/disable actions; accept `all` only within a named mentality. For several named mentalities, validate every selection before changing anything. Never interpret omitted selectors as all rules.
-    - When an enable/disable request leaves its scope materially ambiguous, ask for scope without mutating state. Do not infer project scope from a prior project action or the existence of `AGENTS.md`.
+    Invoke skills and subskills as bare paths (`X`, `X->Y`). Append `()` to
+    every subcommand component (`X->cmd()`, `X->Y->cmd()`,
+    `X->parent()->child()`). Intermediate commands establish their declared
+    child context; arguments follow the invocation path. This convention
+    applies throughout this skill and its subskills.
 ---
 
 # Imsight Mentality Manager
@@ -35,7 +18,7 @@ Manage named mentalities, their principle catalogs, project-wide selections, and
 
 ## Workflow
 
-1. **Resolve intent** using **Subcommands** and the frontmatter `metadata.invocation_contract`.
+1. **Resolve intent** using **Invocation** and **Subcommands**.
 2. **Select mentalities** from **Subskills**. Load only the named child's `SKILL-MAIN.md` and required resources; unqualified recall covers all registered mentalities.
 3. **Resolve scope and selectors** through the child's selector reference and [runtime-injection.md](references/runtime-injection.md). Load child-specific configuration or review contracts when selected; validate both Ponytail axes independently before mutation.
 4. **Execute the action** using its linked detail section. For ordinary applicable work, resolve effective rules and apply [composition.md](references/composition.md); an explicit review follows its own diagnostic workflow.
@@ -43,13 +26,23 @@ Manage named mentalities, their principle catalogs, project-wide selections, and
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the registered mentalities, declared actions, and scope boundaries without inventing a state change.
 
+## Invocation
+
+Bare invocation shows help and registered mentalities; a named child alone recalls that mentality and shows concise help. `recall` without a mentality covers all registered children.
+
+Shared actions take the mentality and selectors as arguments, such as `imsight-mentality-mgr->enable-project()` with `brooks r1 r5`. A child preselects its mentality, such as `imsight-mentality-mgr->brooks->enable-memory()` with `r1 r5`. Natural wording uses the same actions: “deploy these principles,” “enable/disable in project scope,” “remember and apply” or “enable/disable in your memory,” and “recall the effective Imsight mentality.”
+
+Enable/disable requires a named mentality, explicit selectors, and a clear project or memory scope. Use `all` explicitly; omitted selectors never mean all rules. Validate the complete request before changing state. If scope is ambiguous, clarify it without mutation; prior actions or an existing `AGENTS.md` do not choose the scope.
+
+Review and Ponytail configuration are child-specific actions. Route “review this with Brooks/Ponytail” to that child's review, not activation; use each child's action reference for arguments and defaults.
+
 ## Subcommands
 
 These are peer actions, not required phases. Definitions are shared here; children supply their own selectors, catalogs, and applicability. Child-specific review and configuration procedures are listed in each child's subcommand table.
 
 | Subcommand | Use For | Detail |
 | --- | --- | --- |
-| `deploy` | Publish complete principle catalogs and their project discovery references without enabling rules. | [Deploy](references/actions.md#deploy) |
+| `deploy` | Publish complete catalogs, declared offline sources, and project discovery references without enabling rules. | [Deploy](references/actions.md#deploy) |
 | `enable-project` | Add selected principles to project-wide requirements in `AGENTS.md`. | [Enable Project](references/actions.md#enable-project) |
 | `disable-project` | Remove selected principles from project-wide requirements. | [Disable Project](references/actions.md#disable-project) |
 | `enable-memory` | Remember explicit enabled overrides for this agent's chat session. | [Enable Memory](references/actions.md#enable-memory) |
@@ -69,7 +62,7 @@ An unknown mentality is an error; list registered names instead of guessing. New
 
 ## Scope Contract
 
-- **Deployed catalogs** live at `.imsight-arts/mentality/<mentality>-principles.md` and contain the complete definitions, examples, and judgment notes. A catalog or discovery reference never enables a principle.
+- **Deployed catalogs** live at `.imsight-arts/mentality/<mentality>-principles.md` and contain the complete definitions, examples, and judgment notes. Declared source bundles are copied into project-local `sources/` directories and linked from the catalogs for offline use. A catalog, source file, or discovery reference never enables a principle.
 - **Project selection** lives in a separate managed `AGENTS.md` block and changes only through an explicitly requested project action.
 - **Agent memory** contains this agent's explicit enabled and disabled overrides. Neither kind of override is written to shared files or automatically assigned to another agent.
 - **Effective selection** follows agent overrides first, then project selection, then disabled by default. Applicability and conflict resolution determine which selected guidance applies to the task.
@@ -80,7 +73,7 @@ Full storage, precedence, concurrency, and context-handoff rules live in [runtim
 
 ## Maintenance
 
-Keep shared action and scope semantics in the parent references. [review-common.md](references/review-common.md) owns shared review selection, target discovery, coverage, and report storage. Children own canonical IDs, examples, domain judgment, and any configuration schema or additional edit boundary. Bundle runtime resources inside this skill; provenance snapshots document origins and are not runtime dependencies.
+Keep shared action and scope semantics in the parent references. [review-common.md](references/review-common.md) owns shared review selection, target discovery, coverage, and report storage. Children own canonical IDs, examples, domain judgment, and any configuration schema or additional edit boundary. Bundle runtime resources and relevant source material inside this skill. Link maintained guidance to local source records; keep origin URLs inside those records. Preserve original archives under `org/` and declare the source files needed for offline catalog deployment.
 
 ## Guardrails
 
@@ -92,3 +85,4 @@ Keep shared action and scope semantics in the parent references. [review-common.
 - DO NOT load every child's full catalog to handle one selected mentality.
 - DO NOT imply that a skill invocation installs runtime hooks or guarantees memory across context loss.
 - DO NOT let mentality guidance override unrelated repository instructions or higher-priority instructions.
+- DO NOT require online source retrieval to apply, recall, review, or deploy bundled principles.

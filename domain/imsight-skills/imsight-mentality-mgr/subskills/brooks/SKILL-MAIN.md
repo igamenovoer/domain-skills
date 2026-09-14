@@ -1,26 +1,6 @@
 ---
 name: brooks
 description: Use when an Imsight mentality request names Brooks, coding and test-design work has effective Brooks principles, or the user explicitly requests a Brooks review of code, tests, a diff, or a PR. Do not use for health scores, automatic refactoring sweeps, or unrelated non-coding work.
-metadata:
-  skill_invocation_notation: >
-    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
-    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
-    accepted only as legacy input when SKILL-MAIN.md is absent.
-    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
-    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
-    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
-    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
-    by parent subcommand parent. Intermediate subcommands act as object generators.
-    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
-  invocation_contract: |
-    - Invoke `imsight-mentality-mgr->brooks` for recall and concise help without changing state.
-    - Invoke `imsight-mentality-mgr->brooks->deploy()` to publish this mentality's complete catalog without enabling it.
-    - Invoke `imsight-mentality-mgr->brooks->enable-project()` or `imsight-mentality-mgr->brooks->disable-project()` with explicit selectors to change project scope.
-    - Invoke `imsight-mentality-mgr->brooks->enable-memory()` or `imsight-mentality-mgr->brooks->disable-memory()` with explicit selectors to change only this agent's remembered overrides.
-    - Invoke `imsight-mentality-mgr->brooks->recall()` to report the scope resolution without writing files or changing memory.
-    - Invoke `imsight-mentality-mgr->brooks->review()` with a target to review existing code using effective rules. Explicit selectors such as `r1 t2` or `all` replace criteria for this invocation only. Omitted selectors never mean all rules.
-    - Natural invocation may use `$imsight-mentality-mgr brooks review all` with a PR, diff, files, or pasted code. Review returns findings in chat; save a report only when explicitly requested. It never changes activation or applies fixes.
-    - Natural invocation may use `$imsight-mentality-mgr brooks enable-memory r1 r5`. Use `all` explicitly to select every principle for an enable/disable action.
 ---
 
 # Brooks Mentality
@@ -31,7 +11,7 @@ Brooks provides preventive principles for maintainable production code and trust
 
 ## Workflow
 
-1. **Resolve intent** using **Subcommands** and the frontmatter `metadata.invocation_contract`, or recognize an applicable task with effective Brooks principles.
+1. **Resolve intent** using **Subcommands**, or recognize an applicable task with effective Brooks principles.
 2. **Validate selectors** using [state.md](references/state.md), which owns this mentality's canonical IDs and groups.
 3. **Execute the resolved action** through its linked detail section. For explicit review, follow [review.md](references/review.md), including invocation-only selection, code scope, diagnostics, and reporting.
 4. **For ordinary coding and test-design work**, resolve scope through [runtime-injection.md](../../references/runtime-injection.md), then apply the selected definitions under **Applying the Mentality**.
@@ -46,6 +26,8 @@ Use for Brooks catalog deployment, explicit project or agent-memory selection, r
 ## Subcommands
 
 The scope-management actions inherit the shared workflows unchanged with `brooks` as the selected mentality. The parent owns activation semantics; this child owns selectors, definitions, applicability, and the review procedure.
+
+For example, `$imsight-mentality-mgr brooks enable-memory r1 r5` remembers those rules for this agent; `$imsight-mentality-mgr brooks review all` selects all criteria for one review.
 
 | Subcommand | Use For | Detail |
 | --- | --- | --- |
@@ -71,6 +53,8 @@ Apply guidance before, during, and after editing. Render constructive reminders 
 ## Catalog Publication
 
 The canonical source is [principles.md](references/principles.md). Publish `.imsight-arts/mentality/brooks-principles.md` using the shared deployment contract. Include the complete `Production Rules`, `Test Rules`, `Applicability`, and `Provenance` sections and every nested example and judgment note, with a title, canonical rule index, entrance skill name, and availability-only statement. Exclude the source workflow and skill-control guardrails; the artifact documents principles, not activation or agent state.
+
+Declare all files in `references/sources/`, indexed by [offline sources](references/sources/index.md), as the source bundle. Copy it with its license and rewrite catalog source links through the shared [offline publication contract](../../references/runtime-injection.md#offline-source-bundles). The catalog and its source directory must work without the installed skill, original checkout, books, or network access. Source records retain optional web origins and earlier attributions; they do not require fetching those pages.
 
 Publishing or refreshing the catalog does not change either scope. Project actions change only `AGENTS.md`; memory actions change only the current agent's explicit overrides. Apply the shared precedence rather than a mentality-wide enabled flag.
 

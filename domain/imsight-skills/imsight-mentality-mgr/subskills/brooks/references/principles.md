@@ -1,6 +1,6 @@
 # Brooks Constructive Principles
 
-This catalog converts Brooks Lint's diagnostic risks into preventive reminders for writing production code and tests. It is derived from the upstream Brooks Lint risk references at `skills/_shared/decay-risks.md` and `skills/_shared/test-decay-risks.md`; the reminders are intentionally constructive rather than finding-oriented.
+This catalog converts Brooks Lint's diagnostic risks into preventive reminders for writing production code and tests. It is derived from the bundled original [production risks](sources/production-risks.md) and [test risks](sources/test-risks.md); the reminders are intentionally constructive rather than finding-oriented.
 
 ## Workflow
 
@@ -24,9 +24,9 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 ### Representative Do / Don't comparisons
 
-These original examples synthesize the linked sources into small teaching cases. Use the comparison to recognize the design move, not as a language-specific recipe or an unconditional demand to introduce the shown abstraction.
+These original teaching examples use the bundled source grounding and local attribution notes. Every linked source needed to interpret them is available offline. Use the comparison to recognize the design move, not as a language-specific recipe or an unconditional demand to introduce the shown abstraction.
 
-- **`r1` — `comprehension`** ([Software Engineering at Google — Style Guides](https://abseil.io/resources/swe-book/html/ch08.html))
+- **`r1` — `comprehension`** ([Local source and attribution](sources/index.md#r1))
 
   **Don't:** Mix several responsibilities, abstraction levels, and nested decisions behind a vague name.
 
@@ -49,7 +49,7 @@ These original examples synthesize the linked sources into small teaching cases.
       send_confirmation(priced_order)
   ```
 
-- **`r2` — `change-boundary`** ([Martin Fowler — the Shotgun Surgery problem](https://martinfowler.com/articles/modularizing-react-apps.html))
+- **`r2` — `change-boundary`** ([Local source and attribution](sources/index.md#r2))
 
   **Don't:** Repeat the same volatile decision in every consumer.
 
@@ -74,7 +74,7 @@ These original examples synthesize the linked sources into small teaching cases.
   analytics.record(currency=payment_policy.currency)
   ```
 
-- **`r3` — `decision-ownership`** ([The Pragmatic Programmer — DRY](https://books.pragprog.com/tips/))
+- **`r3` — `decision-ownership`** ([Local source and attribution](sources/index.md#r3))
 
   **Don't:** Encode one business rule independently in several paths.
 
@@ -97,7 +97,7 @@ These original examples synthesize the linked sources into small teaching cases.
           return order.total >= self.free_shipping_threshold
   ```
 
-- **`r4` — `essential-complexity`** ([Martin Fowler — YAGNI](https://martinfowler.com/bliki/Yagni.html))
+- **`r4` — `essential-complexity`** ([Local source and attribution](sources/index.md#r4))
 
   **Don't:** Build extension machinery for hypothetical requirements.
 
@@ -117,7 +117,7 @@ These original examples synthesize the linked sources into small teaching cases.
   store.save(document)
   ```
 
-- **`r5` — `dependency-direction`** ([Microsoft — Clean architecture](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures))
+- **`r5` — `dependency-direction`** ([Local source and attribution](sources/index.md#r5))
 
   **Don't:** Make core policy construct and depend on an infrastructure detail.
 
@@ -142,7 +142,7 @@ These original examples synthesize the linked sources into small teaching cases.
   order_service = OrderService(PostgresOrderRepository(database))
   ```
 
-- **`r6` — `domain-fidelity`** ([Microsoft — Designing a DDD domain model](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model))
+- **`r6` — `domain-fidelity`** ([Local source and attribution](sources/index.md#r6))
 
   **Don't:** Let an application service duplicate an entity's rules and mutate its state.
 
@@ -186,7 +186,7 @@ These original examples synthesize the linked sources into small teaching cases.
 
 These examples are likewise illustrative. Preserve the observable contract and risk being tested when adapting them to the project's framework and test architecture.
 
-- **`t1` — `test-intent`** ([Google Testing Blog — Writing Descriptive Test Names](https://testing.googleblog.com/2014/10/testing-on-toilet-writing-descriptive.html))
+- **`t1` — `test-intent`** ([Local source and attribution](sources/index.md#t1))
 
   **Don't:** Use a vague name and hide the decisive scenario facts in a general fixture.
 
@@ -209,7 +209,7 @@ These examples are likewise illustrative. Preserve the observable contract and r
       assert active_account.is_locked()
   ```
 
-- **`t2` — `test-resilience`** ([Software Engineering at Google — Unit Testing](https://abseil.io/resources/swe-book/html/ch12.html))
+- **`t2` — `test-resilience`** ([Local source and attribution](sources/index.md#t2))
 
   **Don't:** Couple the test to private state and internal call choreography.
 
@@ -229,7 +229,7 @@ These examples are likewise illustrative. Preserve the observable contract and r
   assert found_user == ada
   ```
 
-- **`t3` — `test-knowledge`** ([Google Testing Blog — Cleanly Create Test Data](https://testing.googleblog.com/2018/02/testing-on-toilet-cleanly-create-test.html))
+- **`t3` — `test-knowledge`** ([Local source and attribution](sources/index.md#t3))
 
   **Don't:** Repeat a large valid object while burying the one scenario-specific value.
 
@@ -253,7 +253,7 @@ These examples are likewise illustrative. Preserve the observable contract and r
   assert result.error == "payment method expired"
   ```
 
-- **`t4` — `mock-boundaries`** ([Google Testing Blog — Don't Overuse Mocks](https://testing.googleblog.com/2013/05/testing-on-toilet-dont-overuse-mocks.html))
+- **`t4` — `mock-boundaries`** ([Local source and attribution](sources/index.md#t4))
 
   **Don't:** Mock every collaborator and make implementation order the primary assertion.
 
@@ -277,7 +277,7 @@ These examples are likewise illustrative. Preserve the observable contract and r
   notifier_mock.send.assert_called_once_with(subscription.customer)
   ```
 
-- **`t5` — `risk-coverage`** ([Google Testing Blog — Understanding Your Coverage Data](https://testing.googleblog.com/2008/03/tott-understanding-your-coverage-data.html))
+- **`t5` — `risk-coverage`** ([Local source and attribution](sources/index.md#t5))
 
   **Don't:** Treat one line-covering happy path as proof that withdrawal behavior is covered.
 
@@ -308,7 +308,7 @@ These examples are likewise illustrative. Preserve the observable contract and r
       assert events.published == [MoneyWithdrawn(account_id, 20)]
   ```
 
-- **`t6` — `test-architecture`** ([Google Testing Blog — Just Say No to More End-to-End Tests](https://testing.googleblog.com/2015/04/just-say-no-to-more-end-to-end-tests.html))
+- **`t6` — `test-architecture`** ([Local source and attribution](sources/index.md#t6))
 
   **Don't:** Exercise pure pricing logic only through a slow, broad browser journey.
 
@@ -353,7 +353,7 @@ These examples are likewise illustrative. Preserve the observable contract and r
 
 ## Provenance
 
-The diagnostic taxonomy and exceptions originate from [Brooks Lint](https://github.com/hyhmrright/brooks-lint). These constructive definitions guide authorship and remain independent of review reporting. The mentality manager separately bundles an explicit Brooks review procedure using the same rule IDs; publishing this catalog neither starts that procedure nor enables any principle.
+The diagnostic taxonomy and exceptions originate from [bundled Brooks Lint sources](sources/index.md). The source bundle includes the original references and MIT notice; online origins are recorded only inside the source files. These constructive definitions guide authorship and remain independent of review reporting. The mentality manager separately bundles an explicit Brooks review procedure using the same rule IDs; publishing this catalog neither starts that procedure nor enables any principle.
 
 ## Guardrails
 

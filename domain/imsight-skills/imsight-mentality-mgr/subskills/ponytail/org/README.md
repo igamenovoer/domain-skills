@@ -27,7 +27,24 @@ Each copied file retains its original bytes and relative path, except instructio
 | hooks/ponytail-activate.js | [ponytail-activate.js](src/hooks/ponytail-activate.js) | Startup activation and statusline setup behavior. |
 | LICENSE | [LICENSE](src/LICENSE) | Original copyright and permission notice. |
 
-Other skills, installers, adapters, MCP server, package metadata, assets, and benchmarks are excluded from the runtime and this focused snapshot. References to excluded host resources remain in the untouched source files; those files are never executed or loaded by the maintained skill.
+Other skills, installers, adapters, MCP server, package metadata, assets, and the benchmark harness are excluded from the runtime and this focused archive. References to excluded host resources remain in the untouched source files; those files are never executed or loaded by the maintained skill.
+
+## Constructive Example Sources
+
+The [offline source bundle](../references/sources/index.md) is distributed with the active skill and copied beside deployed catalogs. It contains six complete original example documents, exact reuse-money and trace-transfer benchmark excerpts, the original Rules section, and the MIT notice. Each document records its origin, revision, and the hash of the original source file. Origin URLs belong to those records; principle examples link to their local copies.
+
+The official repository's main branch was verified at the same revision on 2026-09-14. The earlier archive under `src/` remains unchanged. The separate distributable bundle preserves the source needed for inspection without importing a runnable benchmark harness or treating upstream directives as current rules.
+
+| Rules | Local source | Adaptation |
+| --- | --- | --- |
+| p1, p4 | [Benchmark cases](../references/sources/benchmark-cases.md) | Use good/bad implementations with types and explicit transaction/input assumptions. |
+| p2 | [Group By](../references/sources/group-by.md) | Explain runtime requirements and null-prototype output. |
+| p3, p6 | [Deep Clone](../references/sources/deep-clone.md) | Bound the clone contract and reuse a product regression instead of adding unrelated runtime tests. |
+| p5, p8, p10 | [Debounce](../references/sources/debounce.md) | Separate proven redundancy, local structure, and unused options while preserving required behavior and cancellation. |
+| p7 | [Original Rules](../references/sources/ponytail-rules.md) | Make the lock ceiling and measured revisit trigger explicit. |
+| p9 | [CSV Sum](../references/sources/csv-sum.md) | Retain file lifetime, decimal arithmetic, and input validation. |
+| p11 | [Number Formatting](../references/sources/number-formatting.md) | Correct fractional precision and require equivalent consumer behavior before dependency removal. |
+| p12 | [Countdown Timer](../references/sources/react-countdown.md) | Preserve cleanup and the zero boundary, and state prop and timing limits. |
 
 ## Adaptation Map
 
@@ -47,4 +64,4 @@ Other skills, installers, adapters, MCP server, package metadata, assets, and be
 
 ## Maintenance
 
-Preserve src unchanged. Edit the active references and their shared parent contracts. When importing a different revision, record the origin and retained files explicitly. Check that an isolated mentality-manager bundle works without this snapshot, upstream checkout, hooks, or external installation. Project catalogs publish explanations, and optional reports record historical evidence; neither stores agent activation.
+Preserve src unchanged. Edit the active references and their shared parent contracts. When importing a different revision, record the origin and retained files explicitly. Check that an isolated mentality-manager bundle works without the archive, upstream checkout, hooks, network, or external installation, and that deployed catalogs retain a complete local source bundle. Project catalogs publish explanations, and optional reports record historical evidence; neither stores agent activation.
