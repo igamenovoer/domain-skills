@@ -4,10 +4,10 @@
 
 1. Resolve the target project and action scope from the explicit request; keep catalog publication, project selection, and agent memory separate.
 2. Obtain canonical selectors and applicability from the named child, then validate the complete request.
-3. Read only the state sources defined under **State Sources** and derive the result using **Effective Selection**.
+3. Resolve activation and configured values only from **State Sources** and derive the result using **Effective Selection**. Read and retain their meanings through **Definition Retention**.
 4. Apply the requested shared action's mutation boundary from [actions.md](actions.md), using **Managed Project Files** for project writes. Child configuration follows **Child Settings**; explicit review follows **Review Criteria and Reports** without an activation transition.
 5. For ordinary substantive work, apply only effective, applicable guidance through [composition.md](composition.md), including the selected examples and judgment notes when needed. Explicit review uses its separately resolved invocation criteria.
-6. Report actual scope and effects; preserve agent identity and explicit negative overrides across any supported handoff.
+6. Report actual scope and effects through **Memory Confirmation** when applicable; preserve agent identity, definitions, and explicit negative overrides across any supported handoff.
 
 If the task does not map cleanly to these steps, use the native planning tool to preserve the caller's scope, validated selectors, and independent agent contexts without inventing persistence.
 
@@ -22,7 +22,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 Resolve the project root from the user-provided directory, otherwise the current version-control root, otherwise the current working directory. These project-facing files intentionally live under that root; a generic report-output override does not relocate them.
 
-Re-read project selection for recall and before applicable work. A catalog is evidence of a principle's definition, never evidence that any agent selected it. There is no mentality-wide enabled flag, built-in all-rules selection, or shared record of agents' effective selections.
+Re-read project selection for recall and before applicable work. A catalog is evidence of a principle's definition, never evidence that any agent selected it. There is no mentality-wide enabled flag, default all-rules selection, or shared record of agents' effective selections. An explicit named memory enable/disable without selectors expands to all current canonical IDs once; it never selects future additions automatically.
 
 An absent project-selection block means no project-enabled rules. A known fresh agent with no remembered instruction inherits project settings. After lost context, absence of a memory record does not prove that no override was previously given: label memory as unavailable and any project-only reconstruction as provisional. Recover an explicit handoff when available rather than guessing.
 
@@ -52,22 +52,9 @@ The most recent explicit memory instruction for a rule replaces its earlier memo
 
 An explicit memory disable must remain remembered even when the project currently leaves the rule disabled. Absence of an override means inheritance; clearing an override is conceptually distinct from disabling and is not an alias of any declared action.
 
-### Agent record
+### Agent Record
 
-A host may carry a record in the current agent's context using this illustrative shape. The skill does not write it to a file:
-
-```json
-{
-  "mentalities": {
-    "brooks": {
-      "enabled_rules": ["r1", "t2"],
-      "disabled_rules": ["r5"]
-    }
-  }
-}
-```
-
-Store canonical IDs, not selector groups. Each child resolves only its own selectors and state entry. Qualify IDs by mentality when composing or reporting several children so one child's identifiers cannot mutate another's selection.
+Retain canonical enabled and disabled IDs, explicit child-setting values, and the definition references or content specified below in the current agent's conversation context. No file or prescribed serialization schema is needed. Expand selector groups before retention. Qualify IDs by mentality when composing or reporting several children so one child's identifiers cannot mutate another's selection.
 
 ### Applicability and conflicts
 
@@ -77,11 +64,33 @@ Agent-memory guidance overrides conflicting project-scope mentality guidance, in
 
 This override policy is part of the project mentality contract itself. It does not allow mentality rules to bypass unrelated repository instructions, system or developer instructions, explicit user requirements, or tool and permission constraints.
 
+## Definition Retention
+
+Use this contract for every mentality's rules, presets, switches, flags, and edit-scope settings. Keep each item's canonical identity, selected value (including disabled or false), and source scope independent of how its meaning is retained.
+
+1. Check the project's deployed details for the specific item. A catalog's existence, a discovery entry, or a setting's selected value alone does not establish that its behavior is documented there.
+2. When the definition is present and usable, read it and retain the project root, project-relative path, and canonical ID, name, flag, or section anchor that locates it. This is a `project-reference`; retain that locator without duplicating the full definition in memory. Reopen the referenced details when needed for application or recall.
+3. Otherwise, read the child's maintained definition and retain its operative content in context. This is `inline-content`; keep what to do, applicability, important constraints, exceptions, and judgment notes needed for faithful application. A bare ID, slogan, or installed-skill path is insufficient. Reuse the retained content while it remains available.
+4. Resolve each item separately. A partial deployment may provide rule references while a preset or edit boundary needs inline content. Definition storage does not enable rules, change values or precedence, or enlarge task authority.
+5. If a remembered reference no longer resolves, recover the definition from available retained content or the maintained child resource and disclose the inline fallback. Unknown identities or unavailable meanings remain unresolved; do not guess, discard overrides, or deploy files to repair memory.
+
+Prefer valid deployed definitions without requiring their files to match installed source hashes. If inspected deployed and maintained definitions disagree materially, report the discrepancy instead of silently combining meanings or changing policy. Content identities for historical offline source bundles serve archival publication, not a rule-application compatibility gate.
+
+All retention happens in the current conversation or a host-supported context summary. Memory actions do not write catalogs, `AGENTS.md`, session files, or persistent-memory stores, and do not install hooks or skills. Unavailable project deployment is a normal inline-content case, not a prerequisite to activation.
+
+### Memory Confirmation
+
+After a memory action or memory configuration, state the mentality, canonical selections and explicit overrides, effective result, and scope `agent-memory`. Summarize each requested rule or setting's practical meaning in plain language so the user can verify understanding. Identify project-reference paths and IDs for deployed details, and mark meanings retained as inline-content; group items sharing a path. Confirm that no files were written and state any unresolved context limits without promising durable memory.
+
+For recall, use the same definition summary for remembered and effective items, preserving their actual source scopes. Ordinary work need not repeat the full confirmation. A compact user-facing summary does not replace the operative inline content required in the agent's context or handoff.
+
 ## Child Settings
 
 Children may declare additional settings without changing shared per-rule precedence. [Ponytail state](../subskills/ponytail/references/state.md) defines an intensity preset replacement operation and an independent `edit-scope` field. Intensity is stored as expanded canonical rule selections, not a competing mode flag; recall derives a preset label only when a selection exactly matches it. Individual rule actions keep their union/subtraction semantics and preserve child settings.
 
 For Ponytail, an agent's explicit edit-scope override wins over the project's field; no setting means `new-code-only`. An explicit edit-scope setting enables no principles. Child project configuration uses the existing mentality project block and concurrent-write protocol; memory configuration stays in that agent's chat context. Recall and same-agent handoffs include setting provenance and unresolved context. A changed intensity never changes edit scope implicitly, and configuration never authorizes an unrelated task.
+
+Use **Definition Retention** for these settings as well as rule IDs. Retaining a preset's meaning does not introduce a second authoritative intensity flag; its stored selection remains the expanded IDs. A catalog that defines principles but omits an edit-scope definition cannot serve as that setting's reference.
 
 ## Review Criteria and Reports
 
@@ -106,7 +115,7 @@ For each deployed mentality, use this path and exact marker pattern, replacing `
 
 The reference includes a title, entrance skill name, canonical rule index, and an explicit statement that publication does not enable rules. Copy the child's specified catalog sections and their full examples, judgment notes, applicability, and provenance. Preserve internal example indentation and fenced code; keep ordinary Markdown paragraphs on logical lines. Exclude skill-control workflows, session state, active-selection fields, and instructions to apply every listed rule. Resolve or rewrite relative links so the deployed document stands alone inside the target project; do not embed installed child paths that will be invalid on another machine.
 
-A deployed catalog is a project-owned snapshot. Refresh it only through an explicit deployment request. Recall and ordinary work do not silently regenerate it. The child remains authoritative for canonical selector identities; use an available valid deployed definition for application, otherwise load the maintained child definition in memory and report the missing project copy. If deployed and installed definitions disagree materially, report the discrepancy rather than silently combining versions or changing project policy.
+A deployed catalog is a project-owned snapshot. Refresh it only through an explicit deployment request. Recall and ordinary work do not silently regenerate it. The child remains authoritative for canonical selector identities; resolve each rule and setting through **Definition Retention**.
 
 ### Offline source bundles
 
@@ -173,7 +182,7 @@ Shared files never carry an agent-specific active selection. Two agents reading 
 
 When delegating work, state the intended principle overrides in the subagent's task message if they should transfer. Sharing a repository or spawning a subagent alone does not authorize copying the parent's personal selection. If a harness inherits conversation history, distinguish the delegated agent's explicit assignment from records belonging to the parent; ambiguous ownership must not silently become child overrides. A subagent's memory actions do not update its parent or siblings.
 
-For a same-agent compaction or handoff, retain both enabled and disabled override sets, child-setting overrides, and any task boundary required by the child in the agent's supplied context summary when the host supports that operation. Do not write a shared session-state file to simulate memory. A skill invocation alone installs no lifecycle hooks and guarantees neither cross-turn reinjection nor recovery after context loss.
+For a same-agent compaction or handoff, retain enabled and disabled override sets, child-setting values and source scopes, and any required task boundary in the host-supported context summary. Preserve project-bound paths plus identifiers for project-reference items, and operative content for inline-content items. Keep explicit false values and negative overrides; never reduce inline definitions to IDs or skill paths. Do not write a session-state file to simulate memory. A skill invocation alone installs no lifecycle hooks and guarantees neither cross-turn reinjection nor recovery after context loss.
 
 ## Guardrails
 

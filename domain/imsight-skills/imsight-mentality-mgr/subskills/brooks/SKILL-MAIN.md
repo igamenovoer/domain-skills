@@ -44,7 +44,7 @@ For example, `$imsight-mentality-mgr brooks enable-memory r1 r5` remembers those
 
 1. Read the existing flow and relevant callers before selecting a change boundary.
 2. Resolve effective principles and their scope through the shared runtime contract; exclude rules that do not apply to the requested production or test work.
-3. Read each applicable principle's reminder, example, and judgment notes from the deployed catalog or maintained definition.
+3. Read and retain each applicable principle's reminder, example, and judgment notes through shared [Definition Retention](../../references/runtime-injection.md#definition-retention).
 4. Implement the smallest coherent change satisfying the task; use symptoms and thresholds as prompts for judgment rather than automatic refactoring verdicts.
 5. Verify behavior and test architecture in proportion to the affected risk.
 

@@ -7,7 +7,7 @@
 3. Read [runtime-injection.md](runtime-injection.md) and execute the matching detail section below.
 4. Verify the action's file and state boundaries, then report canonical selections and actual effects. Preserve child settings during rule-only actions; include the child's settings in recall.
 
-If the task does not map cleanly to these steps, use the native planning tool to build a bounded plan from the declared actions and explicit caller intent. Missing selectors or ambiguous scope do not authorize a mutation.
+If the task does not map cleanly to these steps, use the native planning tool to build a bounded plan from the declared actions and explicit caller intent. Ambiguous scope does not authorize a mutation. Only named memory enable/disable actions treat omitted selectors as all current rules; project actions still require explicit selectors.
 
 ## Deploy
 
@@ -51,29 +51,29 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 ## Enable Memory
 
-**Input:** named mentalities and explicit rule selectors. Natural instructions such as “remember and apply Brooks r1” select this action.
+**Input:** named mentalities and optional rule selectors. Natural instructions such as “remember and apply Brooks r1” select this action. “Enable Agile Experimenter in memory” or a named `enable-memory` with no selectors selects all currently defined rules of that mentality.
 
-1. Validate the selected principles using the child's canonical catalog; deployment is not required.
+1. Expand omitted selectors to the named child's current canonical IDs, or resolve the explicit subset. Validate the complete selection and read its meanings through [Definition Retention](runtime-injection.md#definition-retention); deployment is not required.
 2. Remove each selected ID from this agent's remembered disabled set and add it to its remembered enabled set.
 3. Keep the explicit enabled override even when the project already enables the same rule, so later project changes do not erase the caller's local intent.
-4. Recompute effective selection and retain the overrides in this agent's chat context only.
+4. Recompute effective selection and retain the overrides with each item's project-reference or inline-content in this agent's chat context only. Preserve independent child settings such as Ponytail edit scope.
 
 **File effects:** none, including no catalog deployment, repair, instruction-file update, or session-state file.
 
-**Output:** explicit memory-enabled IDs, remaining memory-disabled IDs, effective selection, and scope `agent-memory`. Describe any dependence on visible context or an actual host-provided handoff honestly.
+**Output:** explicit memory-enabled IDs, remaining memory-disabled IDs, and effective selection. Follow [Memory Confirmation](runtime-injection.md#memory-confirmation) to summarize the meanings, retention sources, scope, and zero file effects.
 
 ## Disable Memory
 
-**Input:** named mentalities and explicit rule selectors. Natural instructions such as “do not apply Brooks r5 in your memory” select this action.
+**Input:** named mentalities and optional rule selectors. Natural instructions such as “do not apply Brooks r5 in your memory” select this action. A named `disable-memory` without selectors disables all currently defined rules of that mentality.
 
-1. Validate the selected principles using the child's canonical catalog; deployment is not required.
+1. Expand omitted selectors or resolve the explicit subset, then validate the complete selection and read its meanings through [Definition Retention](runtime-injection.md#definition-retention); deployment is not required.
 2. Remove each selected ID from this agent's remembered enabled set and add it to its remembered disabled set.
 3. Retain that disabled override even if the project currently leaves the rule disabled; it must also mask a later project enable.
-4. Recompute effective selection without changing project files or another agent's context.
+4. Recompute effective selection and retain each override with its definition reference or content, without changing child settings, project files, or another agent's context.
 
 **File effects:** none. Disabling is an explicit negative override, not a request to inherit project defaults.
 
-**Output:** explicit memory-disabled IDs, remaining memory-enabled IDs, effective selection, and scope `agent-memory`.
+**Output:** explicit memory-disabled IDs, remaining memory-enabled IDs, and effective selection, with the same [Memory Confirmation](runtime-injection.md#memory-confirmation). Explain which guidance is suppressed, including when it was already disabled in project scope.
 
 ## Recall
 
@@ -85,9 +85,9 @@ If the task does not map cleanly to these steps, use the native planning tool to
 4. Report project-enabled rules, memory-enabled rules, memory-disabled rules, effective selection, and the applicable rules for the supplied task. Name the source of each effective rule and explain masked or conflicting guidance. For Ponytail, use its [recall extension](../subskills/ponytail/references/state.md#recall) to include both axes and their provenance.
 5. Identify missing or inconsistent state/catalog evidence without repairing files or fabricating remembered selections.
 
-**File effects:** none. Recall also makes no memory-state changes.
+**File effects:** none. Recall changes no selections or configured values; reading or recovering definition references/content follows the shared retention contract.
 
-**Output:** prefer a per-mentality table with canonical ID, name, project setting, memory override (`enabled`, `disabled`, or `inherit`), and effective setting. List applicable IDs separately when task context is known; otherwise label the result as configured selection. Show `none` explicitly for empty sets, and distinguish missing remembered context from a confirmed empty set.
+**Output:** identify canonical ID, name, project setting, memory override (`enabled`, `disabled`, or `inherit`), and effective setting. Include practical meanings and definition references or inline-content through [Memory Confirmation](runtime-injection.md#memory-confirmation); use a table only when it aids comparison. List applicable IDs separately when task context is known; otherwise label the result as configured selection. Show `none` explicitly for empty sets, and distinguish missing remembered context from a confirmed empty set.
 
 ### Example interaction
 
@@ -106,11 +106,16 @@ Effective selection: r1 (project), t2 (memory)
 Applicable to these test-only changes: t2
 Not applicable here: r1 (production guidance)
 Suppressed: r5, because the agent-memory disable overrides project enable.
+Definitions: project-reference to .imsight-arts/mentality/brooks-principles.md
+in this project, entries r1, r5, t2.
+Meaning: r1 makes code structure understandable; r5 keeps dependencies
+pointing toward stable policy; t2 checks behavior without tying tests to internals.
 Docs Writer
 Project enabled: none
 Memory enabled: none
 Memory disabled: none
 Effective selection: none
+No files written.
 ```
 
 ## Guardrails

@@ -36,8 +36,8 @@ For example, `$imsight-mentality-mgr ponytail configure-memory normal new-code-o
 | `configure-memory` | Replace this agent's intensity and/or set its edit-scope override. | [Configure Memory](references/state.md#configure-memory) |
 | `enable-project` | Add named individual rules to project selection. | [Shared definition](../../references/actions.md#enable-project) |
 | `disable-project` | Remove named individual rules from project selection. | [Shared definition](../../references/actions.md#disable-project) |
-| `enable-memory` | Remember enabled individual-rule overrides for this agent. | [Shared definition](../../references/actions.md#enable-memory) |
-| `disable-memory` | Remember disabled individual-rule overrides for this agent. | [Shared definition](../../references/actions.md#disable-memory) |
+| `enable-memory` | Remember enabled rule overrides; omitted selectors mean all current rules. | [Shared definition](../../references/actions.md#enable-memory) |
+| `disable-memory` | Remember disabled rule overrides; omitted selectors mean all current rules. | [Shared definition](../../references/actions.md#disable-memory) |
 | `recall` | Report selected rules, intensity, edit scope, and their provenance. | [Recall](references/state.md#recall) |
 | `review` | Find supported simplifications within the selected criteria and edit boundary. | [Review](references/review.md) |
 | `help` | Explain actions, axes, and rule IDs without changing state. | This entrypoint |
@@ -60,7 +60,7 @@ Safe plus new-code-only is the recommended explicit starting configuration. No r
 ## Applying the Mentality
 
 1. Identify the required behavior, affected flow and callers, existing task infrastructure, and relevant edge/failure conditions. Use the [edit boundary](references/state.md#edit-boundary) before choosing a simplification.
-2. Read selected definitions and **Representative Do / Don't comparisons** from the valid deployed catalog, otherwise [principles.md](references/principles.md), following the shared runtime's definition policy. Use each comparison's stated contract and judgment note; apply only the selected rules within the resolved edit scope.
+2. Read and retain selected rule definitions, **Representative Do / Don't comparisons**, and configured setting meanings through shared [Definition Retention](../../references/runtime-injection.md#definition-retention). Use each comparison's stated contract and judgment note; apply only the selected rules within the resolved edit scope.
 3. For selected reuse rules, look for a suitable local solution, then proven standard-library/native facilities, then suitable installed dependencies, before writing custom machinery. Suitability includes edge cases and the project's supported runtime; a superficially shorter alternative is not automatically equivalent.
 4. Apply selected structural rules only where their present benefit is supported. Preserve defenses required by the actual contract. Under destructive scope, keep changes confined to the task's affected infrastructure and necessary callers; stop expansion at unrelated cleanup opportunities.
 5. Use existing evidence and repository-required checks; apply selected p6 to decide whether further verification is warranted. New tests are not an automatic consequence of an edit. Report what was actually checked and explain any material unresolved risk, scope conflict, or deliberate limitation. Honor requested explanations without a fixed line limit.
@@ -82,6 +82,6 @@ Keep canonical rules and preset membership in the principle index, state transit
 - DO NOT let intensity widen edit scope or let destructive scope expand the assigned task.
 - DO NOT revise existing infrastructure under new-code-only scope without an explicit task instruction authorizing that change.
 - DO NOT pursue opportunistic or codebase-wide refactoring unless it is the assigned task.
-- DO NOT apply review recommendations as edits or write memory/settings during review.
+- DO NOT apply review recommendations as edits or change activation and configured settings during review.
 - DO NOT infer activation from deployment, configuration of edit scope alone, or upstream state files.
 - DO NOT copy another agent's remembered rules or edit-scope override into this agent or shared project policy.

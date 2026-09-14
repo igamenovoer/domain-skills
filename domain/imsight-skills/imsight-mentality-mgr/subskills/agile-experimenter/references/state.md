@@ -20,11 +20,11 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 Selectors are case-insensitive and normalize to lowercase canonical IDs. Accept canonical hyphenated names and unambiguous natural variants. Expand completely, remove duplicates, and preserve catalog order. IDs belong to this mentality; another child's IDs are invalid here.
 
-Enable/disable actions require explicit selectors. Missing selectors never mean `all`; an empty request or `none` is not a selection mutation. Unknown or ambiguous selectors reject the entire request without partial changes. List the valid IDs and names when correction is needed.
+Project enable/disable requires explicit selectors. Named memory enable/disable with omitted selectors expands to all current Agile Experimenter IDs under the shared action contract. A bare child invocation or `none` does not change selection. Unknown or ambiguous selectors reject the entire request without partial changes. List the valid IDs and names when correction is needed.
 
 ## Scope Binding
 
-The shared runtime owns all state transitions and precedence. This child supplies only these bindings:
+The shared runtime owns state transitions, precedence, and [definition retention](../../../references/runtime-injection.md#definition-retention). This child supplies only these bindings:
 
 - Project artifact: `.imsight-arts/mentality/agile-experimenter-principles.md`.
 - Catalog discovery marker key: `imsight-skill:imsight-mentality-mgr/agile-experimenter-catalog`.

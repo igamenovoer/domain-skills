@@ -14,6 +14,8 @@ If the request does not map cleanly to these steps, use the native planning tool
 
 The [principle index](principles.md#principle-index) owns the canonical IDs, names, and preset membership. Normalize rule codes and names case-insensitively; accept p1–p12, canonical hyphenated names, and explicit all. Validate and deduplicate the complete request before effects. IDs are local to Ponytail.
 
+Project rule enable/disable requires explicit selectors. Named memory rule enable/disable with omitted selectors expands to all current Ponytail IDs and preserves edit scope. This shorthand does not change configuration's missing-parameter behavior or review's default criteria.
+
 | Input | Meaning |
 | --- | --- |
 | intensity=safe | Exactly p1–p7. |
@@ -41,19 +43,9 @@ Unknown or malformed settings are unresolved, not permission for destructive edi
 - Project block marker key: `imsight-skill:imsight-mentality-mgr/ponytail-project`.
 - Memory namespace: ponytail, with enabled_rules, disabled_rules, and optional edit_scope.
 
-Illustrative agent memory, retained only in this agent's chat context:
+Retain rule and setting meanings through shared [Definition Retention](../../../references/runtime-injection.md#definition-retention). Check whether the project's deployed details define each preset or edit boundary; a principle catalog alone does not imply coverage of every setting. Keep the setting's value and source independently of its definition reference or content.
 
-```json
-{
-  "mentalities": {
-    "ponytail": {
-      "enabled_rules": ["p1", "p2", "p3", "p4", "p5", "p6", "p7", "p8", "p9"],
-      "disabled_rules": ["p10", "p11", "p12"],
-      "edit_scope": "new-code-only"
-    }
-  }
-}
-```
+For example, `configure-memory normal new-code-only` remembers enabled IDs p1 through p9, disabled IDs p10 through p12, and the explicit edit-scope value. If deployed details define the rules and preset but omit edit scope, retain their project-bound paths and identifiers. Retain the operative **New-code-only** boundary below as inline content, including allowed wiring, explicit task-authority exceptions, and the distinction between new code and rewritten infrastructure. This example requires no memory file or new storage schema.
 
 The project block uses the shared managed-file protocol. Its additional field is `Edit scope: new-code-only.` or `Edit scope: destructive.`; an absent field uses the default. Preserve this field in rule-only changes. Write canonical project IDs and names as usual, without a redundant authoritative intensity field. Include the catalog link when deployed; a scope-only block with no deployment lists no enabled rules and omits the unavailable definition link.
 
@@ -78,10 +70,10 @@ The following abbreviated shape illustrates a configured project block; populate
 
 ## Configure Memory
 
-1. Require memory scope and at least one validated axis; no deployment is needed. Use only the current agent's record.
+1. Require memory scope and at least one validated axis; no deployment is needed. Use only the current agent's record. Read the requested rule, preset, and edit-scope meanings through shared [Definition Retention](../../../references/runtime-injection.md#definition-retention).
 2. If intensity is supplied, let S be its expansion and U the current twelve Ponytail IDs. Replace this child's overrides with `M+ = S` and `M- = U minus S`. This intentionally replaces earlier Ponytail rule overrides, including individual ones; it masks project rules above the chosen preset. Other mentalities are unaffected.
 3. If edit scope is supplied, remember that scalar; otherwise preserve the existing override or inheritance. The explicit parameter `edit-scope=inherit`, accepted only by this memory configuration action, removes this agent's scope override without changing any rule override.
-4. Resolve and report E, derived intensity, effective edit scope, and each setting's source. Write no files. Later individual enable/disable actions modify M+/M- normally, without rewriting edit scope.
+4. Retain each affected rule or setting's definition reference or content, then report E, derived intensity, effective edit scope, and each setting's source through [Memory Confirmation](../../../references/runtime-injection.md#memory-confirmation). Summarize practical behavior and the permitted edit surface; write no files. Later individual enable/disable actions modify M+/M- normally, without rewriting edit scope.
 
 Configuration is explicit replacement, while shared individual rule actions remain additive/subtractive. For example, setting safe after extreme makes E exactly p1–p7 for that agent, even if the project selects extreme. A later explicit enable-memory p8 makes its selection custom. Disabling all rules does not reset edit scope or create an off mode; recall shows no effective rules and the retained scope separately.
 
@@ -112,7 +104,7 @@ Follow the shared recall action, then add:
 - For a supplied task, the known starting boundary and which selected rules are applicable, blocked by the edit boundary, or unresolved. Without a task, applicability is not evaluated.
 - Any review-only overrides belong to that report, not subsequent configured recall. No report is a memory or policy input.
 
-Same-agent handoffs retain both negative overrides and the optional edit-scope override, plus the task baseline. Subagents receive only their explicitly assigned overrides and boundary; sharing the project does not transfer this agent's settings.
+Same-agent handoffs retain both negative overrides and the optional edit-scope override, plus the task baseline. Preserve definition paths and identifiers or operative inline content for rules and settings through the shared retention contract. Subagents receive only their explicitly assigned overrides and boundary; sharing the project does not transfer this agent's settings.
 
 ## Guardrails
 
@@ -122,4 +114,4 @@ Same-agent handoffs retain both negative overrides and the optional edit-scope o
 - DO NOT persist intensity labels as competing activation state or auto-expand them after catalog updates.
 - DO NOT treat destructive scope as permission to refactor unrelated infrastructure.
 - DO NOT classify rewritten existing code as new to bypass the edit boundary.
-- DO NOT change settings or state while recalling or reviewing them.
+- DO NOT change selections or configured values while recalling or reviewing them.

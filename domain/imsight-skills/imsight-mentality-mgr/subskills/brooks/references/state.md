@@ -23,13 +23,13 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 Selectors are case-insensitive and normalize to lowercase canonical IDs. Accept canonical hyphenated names and unambiguous natural variants. Resolve groups completely, remove duplicates, and retain catalog order for output. IDs are local to Brooks; a Docs Writer ID is invalid here.
 
-Enable/disable actions require explicit selectors. Missing selectors do not mean `all`, and an empty request or `none` is not a selection mutation. Unknown or ambiguous selectors reject the entire request; list valid codes, names, and groups without partial application. To disable every principle in a scope, use that scope's disable action with `all`.
+Project enable/disable requires explicit selectors. Named memory enable/disable with omitted selectors expands to all current Brooks IDs under the shared action contract. A bare child invocation or `none` does not change selection. Unknown or ambiguous selectors reject the entire request; list valid codes, names, and groups without partial application.
 
 Review accepts the same codes, names, and groups. Omitted review selectors use effective selection; explicit selectors replace review criteria for this invocation only. Uppercase upstream risk labels normalize to the same lowercase IDs and never create separate diagnostic state. Selection, applicability, and reporting details live in the review contract.
 
 ## Scope Binding
 
-The shared runtime contract defines state transitions and precedence once. Brooks supplies these bindings:
+The shared runtime contract owns state transitions, precedence, and [definition retention](../../../references/runtime-injection.md#definition-retention). Brooks supplies these bindings:
 
 - Project artifact: `.imsight-arts/mentality/brooks-principles.md`.
 - Catalog discovery marker key: `imsight-skill:imsight-mentality-mgr/brooks-catalog`.
@@ -43,6 +43,6 @@ Do not resolve a shared mentality-wide activation flag. Each principle independe
 
 - DO NOT partially apply a request containing an invalid selector.
 - DO NOT store selector groups or aliases as canonical state.
-- DO NOT default omitted selectors to every Brooks principle.
+- DO NOT default omitted project or review selectors to every Brooks principle.
 - DO NOT read or mutate another mentality's private state entry.
 - DO NOT treat a missing memory override as an explicit disabled override.

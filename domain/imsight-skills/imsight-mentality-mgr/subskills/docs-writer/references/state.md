@@ -20,11 +20,11 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 Selectors are case-insensitive and normalize to lowercase canonical IDs. Accept canonical hyphenated names and unambiguous natural variants. Expand selectors fully, remove duplicates, and retain catalog order for output. IDs are local to Docs Writer; a Brooks ID is invalid here.
 
-Enable/disable actions require explicit selectors. Missing selectors do not mean `all`, and an empty request or `none` is not a selection mutation. Unknown or ambiguous selectors reject the entire request; list valid IDs and names without partial application. To disable every principle in a scope, use that scope's disable action with `all`.
+Project enable/disable requires explicit selectors. Named memory enable/disable with omitted selectors expands to all current Docs Writer IDs under the shared action contract. A bare child invocation or `none` does not change selection. Unknown or ambiguous selectors reject the entire request; list valid IDs and names without partial application.
 
 ## Scope Binding
 
-The shared runtime contract defines state transitions and precedence once. Docs Writer supplies these bindings:
+The shared runtime contract owns state transitions, precedence, and [definition retention](../../../references/runtime-injection.md#definition-retention). Docs Writer supplies these bindings:
 
 - Project artifact: `.imsight-arts/mentality/docs-writer-principles.md`.
 - Catalog discovery marker key: `imsight-skill:imsight-mentality-mgr/docs-writer-catalog`.
@@ -38,6 +38,6 @@ Each principle independently follows this agent's explicit override, otherwise t
 
 - DO NOT partially apply a request containing an invalid selector.
 - DO NOT store selector groups or aliases as canonical state.
-- DO NOT default omitted selectors to every Docs Writer principle.
+- DO NOT default omitted project selectors to every Docs Writer principle.
 - DO NOT read or mutate another mentality's private state entry.
 - DO NOT treat a missing memory override as an explicit disabled override.

@@ -22,7 +22,7 @@ Manage named mentalities, their principle catalogs, project-wide selections, and
 2. **Select mentalities** from **Subskills**. Load only the named child's `SKILL-MAIN.md` and required resources; unqualified recall covers all registered mentalities.
 3. **Resolve scope and selectors** through the child's selector reference and [runtime-injection.md](references/runtime-injection.md). Load child-specific configuration or review contracts when selected; validate both Ponytail axes independently before mutation.
 4. **Execute the action** using its linked detail section. For ordinary applicable work, resolve effective rules and apply [composition.md](references/composition.md); an explicit review follows its own diagnostic workflow.
-5. **Report the result** with canonical rule IDs, affected scope, and actual file effects. Identify project paths when they are relevant to the requested result.
+5. **Report the result** with canonical rule IDs, affected scope, and actual file effects. For memory actions and configuration, summarize the remembered behavior and its definition references or retained content through [Memory Confirmation](references/runtime-injection.md#memory-confirmation).
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the registered mentalities, declared actions, and scope boundaries without inventing a state change.
 
@@ -32,7 +32,7 @@ Bare invocation shows help and registered mentalities; a named child alone recal
 
 Shared actions take the mentality and selectors as arguments, such as `imsight-mentality-mgr->enable-project()` with `brooks r1 r5`. A child preselects its mentality, such as `imsight-mentality-mgr->brooks->enable-memory()` with `r1 r5`. Natural wording uses the same actions: “deploy these principles,” “enable/disable in project scope,” “remember and apply” or “enable/disable in your memory,” and “recall the effective Imsight mentality.”
 
-Enable/disable requires a named mentality, explicit selectors, and a clear project or memory scope. Use `all` explicitly; omitted selectors never mean all rules. Validate the complete request before changing state. If scope is ambiguous, clarify it without mutation; prior actions or an existing `AGENTS.md` do not choose the scope.
+Enable/disable requires a named mentality and a clear project or memory scope. For memory actions, omitted selectors mean all currently defined rules of the named mentality: “enable Agile Experimenter in memory” remembers its complete current selection. Explicit selectors still choose a subset. Project actions require explicit selectors, including `all` when intended. Validate the complete request before changing state. If scope is ambiguous, clarify it without mutation; prior actions or an existing `AGENTS.md` do not choose the scope.
 
 Review and Ponytail configuration are child-specific actions. Route “review this with Brooks/Ponytail” to that child's review, not activation; use each child's action reference for arguments and defaults.
 
@@ -65,7 +65,8 @@ An unknown mentality is an error; list registered names instead of guessing. New
 
 - **Deployed catalogs** live at `.imsight-arts/mentality/<mentality>-principles.md` and contain the complete definitions, examples, and judgment notes. Declared source bundles are copied into project-local `sources/` directories and linked from the catalogs for offline use. A catalog, source file, or discovery reference never enables a principle.
 - **Project selection** lives in a separate managed `AGENTS.md` block and changes only through an explicitly requested project action.
-- **Agent memory** contains this agent's explicit enabled and disabled overrides. Neither kind of override is written to shared files or automatically assigned to another agent.
+- **Agent memory** contains this agent's explicit enabled and disabled overrides and child settings. Memory actions write nothing and do not automatically assign overrides to another agent.
+- **Definition retention** applies to every rule and switch: retain its identity, selected value, and source scope. If its details are deployed in the project, remember the project-bound path and ID/name/flag; otherwise remember the operative content. Resolve each item independently through [Definition Retention](references/runtime-injection.md#definition-retention).
 - **Effective selection** follows agent overrides first, then project selection, then disabled by default. Applicability and conflict resolution determine which selected guidance applies to the task.
 - **Child settings** follow the child's schema. Ponytail intensity expands into canonical rule IDs; edit scope resolves independently from agent memory, then project settings, then `new-code-only`. Neither deployment nor an edit-scope setting enables rules.
 - **Review criteria** default to effective selection. Explicit review selectors replace criteria for that invocation only; they never enable rules, alter memory, or change subsequent recall. Saved review evidence is not an activation source. Child edit boundaries also constrain recommendations.

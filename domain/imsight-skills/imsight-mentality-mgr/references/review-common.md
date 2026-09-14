@@ -28,7 +28,7 @@ If project state is malformed, contains unresolved IDs, or the current agent's m
 
 Review uses applicable selected criteria only. The report distinguishes rules excluded by selection from selected rules that were inapplicable, insufficiently supported, or not assessed. A scope-limited review is not a complete assessment merely because all rules were requested.
 
-A child's explicit review intensity can expand a preset into R; it never changes stored intensity or edit scope. Resolve additional invocation settings through the child's schema. A review request is not permission to apply its recommendations, including when a child uses the term destructive.
+A child's explicit review intensity can expand a preset into R; it never changes stored intensity or edit scope. Resolve additional invocation settings through the child's schema. Read rule and setting meanings through shared [Definition Retention](runtime-injection.md#definition-retention), keeping review-only choices labeled as invocation criteria, never remembered activation or setting overrides. A review request is not permission to apply its recommendations, including when a child uses the term destructive.
 
 ## Code Scope
 
@@ -50,7 +50,7 @@ A target names the code to consider, not permission to exceed a child's edit bou
 
 Use read-only source, configuration, and Git inspection. Existing test output may support findings, but report its provenance and relevance. This review does not execute tests, generators, installers, or application code. If the user also requested test execution or fixes, handle that as a distinct authorized task phase and report its actual effects separately.
 
-Neither installed upstream plugins, their configuration, nor past reports supply activation, suppression, or scoring state. Review uses the registered child's canonical vocabulary and current task instructions. It does not change AGENTS.md, catalogs, agent memory, or child settings.
+Neither installed upstream plugins, their configuration, nor past reports supply activation, suppression, or scoring state. Review uses the registered child's canonical vocabulary and current task instructions. It does not change AGENTS.md, catalogs, agent-memory overrides, or configured child settings; reading definitions does not constitute an activation change.
 
 ## Coverage and Reporting
 

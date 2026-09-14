@@ -4,9 +4,9 @@
 
 1. Obtain registered children from the parent entrypoint and the task being performed.
 2. Resolve each relevant child's effective selection through [runtime-injection.md](runtime-injection.md), preserving the project or agent-memory source of each rule.
-3. Ask each child which selected principles apply to the task and request only their guidance, loading examples, judgment notes, and child-specific edit boundaries as needed. For Ponytail, resolve both axes and its [task boundary](../subskills/ponytail/references/state.md#edit-boundary) before proposing changes.
+3. Ask each child which selected principles apply to the task and request only their guidance through [Definition Retention](runtime-injection.md#definition-retention), including settings, examples, judgment notes, and edit boundaries as needed. For Ponytail, resolve both axes and its [task boundary](../subskills/ponytail/references/state.md#edit-boundary) before proposing changes.
 4. Combine named renderings in registration order and resolve conflicts under **Conflict Resolution**; registration order is not rule priority.
-5. Apply the resulting guidance throughout planning, execution, and verification, or return it to the requesting host. For recall, explain the same resolution without changing state.
+5. Apply the resulting guidance throughout planning, execution, and verification, or return it to the requesting host. For recall, explain the same resolution without changing selections or configured values.
 
 If the task does not map cleanly to these steps, use the native planning tool to compose available, applicable child guidance while preserving scope and agent identity.
 
@@ -18,6 +18,7 @@ Each child's rendering identifies:
 - the effective selection and each rule's source (`project` or `agent-memory`);
 - applicability to the current task;
 - resolved child settings and their source, where present, including Ponytail intensity and edit scope;
+- each rule or setting's project-bound definition path and identifier, or retained operative inline content when its details are not deployed;
 - actionable reminders grounded in the full definitions, examples, and judgment notes;
 - any unresolved definition or state evidence that prevents confident application.
 
@@ -42,7 +43,7 @@ For ordinary tasks, mention the mentality only when it caused a material tradeof
 
 ## Guardrails
 
-- DO NOT deploy catalogs, change project selection, or mutate memory while composing guidance.
+- DO NOT deploy catalogs or change project selections, memory overrides, or configured values while composing guidance.
 - DO NOT include catalog entries solely because they are deployed or discoverable.
 - DO NOT let project-scope mentality guidance override an explicit agent-memory override.
 - DO NOT present registration order as cross-mentality priority.

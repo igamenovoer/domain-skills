@@ -43,7 +43,7 @@ For example, `$imsight-mentality-mgr agile-experimenter enable-memory e1 e3` rem
 
 ## Applying the Mentality
 
-Read selected definitions from a valid deployed catalog, otherwise the maintained [principles](references/principles.md), following the shared runtime contract. Apply only effective, relevant guidance through [composition](../../references/composition.md); the following pattern creates no extra activation or checklist requirements.
+Read and retain selected definitions through shared [Definition Retention](../../references/runtime-injection.md#definition-retention). Apply only effective, relevant guidance through [composition](../../references/composition.md); the following pattern creates no extra activation or checklist requirements.
 
 1. State the question, intended claim, and useful resolution in the existing working context (`e1`, `e3`). Reuse existing answers where they remain applicable.
 2. Choose the smallest valid next experiment and a lightweight first-evidence checkpoint (`e2`, `e5`). Resolve any conflict with the approved scope before narrowing it.

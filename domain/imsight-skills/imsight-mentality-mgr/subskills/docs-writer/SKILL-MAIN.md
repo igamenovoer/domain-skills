@@ -42,7 +42,7 @@ For example, `$imsight-mentality-mgr docs-writer enable-memory d1` remembers the
 ## Applying the Mentality
 
 1. Resolve effective principles and their scope through the shared runtime contract, then check applicability to the durable document being written.
-2. Read each applicable principle's reminder, examples, and judgment notes from the deployed catalog or maintained definition.
+2. Read and retain each applicable principle's reminder, examples, and judgment notes through shared [Definition Retention](../../references/runtime-injection.md#definition-retention).
 3. Draft and revise the current state directly, moving incidental self-revision history into designed tracking sections or deleting it.
 4. Preserve legitimate changelogs, migration guides, decision records, and references to external documents.
 5. Re-read the final text as a first-time reader and remove dependence on unseen previous versions.
