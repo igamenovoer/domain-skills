@@ -1,0 +1,88 @@
+---
+metadata:
+  skill_invocation_notation: >
+    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
+    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
+    accepted only as legacy input when SKILL-MAIN.md is absent.
+    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
+    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
+    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
+    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
+    by parent subcommand parent. Intermediate subcommands act as object generators.
+    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
+  invocation_contract: |
+    - Invoke `imsight-mentality-mgr->ponytail->review()` with a PR, diff, files, or pasted code. If no target is supplied, use the shared code-scope contract.
+    - Omitted criteria use effective Ponytail rules. Explicit p1–p12, canonical names, or all replace criteria for this review; alternatively use intensity=safe|normal|extreme. A short preset name has the same meaning. Do not combine explicit rule selectors with an intensity parameter.
+    - Optional edit-scope=new-code-only|destructive replaces only this invocation's boundary. Omitted edit scope inherits this agent's resolved scope, otherwise the project setting, otherwise new-code-only. Short edit-scope names are accepted.
+    - Natural example: `$imsight-mentality-mgr ponytail review normal new-code-only` followed by the target. all or extreme never implies destructive. No configuration or memory mutation occurs.
+    - Save only when explicitly requested. Review never applies fixes, runs a refactoring sweep, or installs upstream tools, including with destructive scope.
+---
+
+# Ponytail Review
+
+## Overview
+
+Find supported opportunities to simplify implementation through reuse, removal, or consolidation within the assigned task and resolved edit boundary. Keep the upstream review's compact actionable style while requiring evidence that the proposed replacement preserves behavior. This is a simplification review, not shipping approval or a substitute for a general correctness review.
+
+## Workflow
+
+1. **Resolve criteria and axes** through **Review Selection**, [state.md](state.md), and [shared rule selection](../../../references/review-common.md#rule-selection). Validate the whole request before scanning.
+2. **Establish the target and task baseline** through [shared code scope](../../../references/review-common.md#code-scope) and the Ponytail [edit boundary](state.md#edit-boundary). Identify eligible new code or task-related existing infrastructure; existing context is not automatically a recommendation target.
+3. **Read the relevant contract and flow**: callers, existing helpers, supported runtime, failure handling, tests, and any claimed operational limits. Load selected [principle definitions](principles.md) or valid deployed definitions under the shared runtime policy.
+4. **Inspect applicable opportunities** using [review-patterns.md](review-patterns.md), filtered by selected IDs and permitted surface. Support each candidate with its specific replacement, preserved behavior, and connection to the assigned task.
+5. **Challenge the candidate** under **Finding Evidence**: check edge cases, defensive guarantees, existing consumers, and whether the proposed reduction just moves complexity elsewhere. Mark material unknowns as blocked opportunities rather than approved cuts.
+6. **Report findings and limits** through **Report Format** and the shared coverage contract. Follow [read-only effects](../../../references/review-common.md#read-only-effects); save only through the shared explicit report protocol.
+
+If the request does not map cleanly to these steps, use the native planning tool to preserve the selected criteria, known task baseline, and read-only boundary without inventing activation or a codebase-wide refactor.
+
+## Review Selection
+
+Apply shared selection with Ponytail's canonical IDs. Explicit intensity expands into R for this invocation, including normally memory-disabled rules; label its source review-request. Explicit individual selectors instead define a custom R. Omitted criteria use E unchanged. An empty E stops only a default review; explicit valid criteria can run without prior activation or deployment. Unknown settings or selectors reject the complete request rather than falling back to all.
+
+Resolve edit scope separately, using an explicit review parameter first, then agent memory, project, and the default new-code-only. An explicit destructive parameter allows recommendations affecting task-related infrastructure; it enables no rule and applies no edit. Without it, increasing intensity or passing all leaves the resolved edit boundary unchanged. If memory is unavailable, report that uncertainty rather than claiming a known inherited scope; an explicit invocation boundary can resolve the review without repairing stored state.
+
+For new-code-only, recommendations concern new task code and its use of existing infrastructure. Read old helpers to verify contracts but do not recommend deleting or replacing them. For destructive, each recommendation must serve the task at hand, including required caller/contract updates, with minimal impact. Do not inventory unrelated abstractions, flags, or dependencies for cleanup unless the assigned task explicitly requests that breadth.
+
+If the target contains only established infrastructure and scope is new-code-only, report no eligible new-code target and the resulting coverage limit. Do not call it lean, silently switch to destructive, or label the whole file new because the task renamed or rewrote it.
+
+## Finding Evidence
+
+Retain a supported finding only when it identifies:
+
+- A precise file/line or snippet location, applicable p IDs, and the current implementation burden.
+- The proposed cut or consolidation and the concrete replacement, including a named existing helper, native feature, or standard function when applicable.
+- Evidence that the replacement preserves the relevant success, invalid-input, edge, failure, and side-effect behavior. Existing tests and contracts may provide evidence; state what was inspected rather than claiming execution.
+- Why the change fits the task and edit scope. For existing-infrastructure changes, explain the necessary connection and affected callers; an unrelated potential saving is outside scope.
+- A specific evidence gap or follow-up check when confidence is incomplete. A candidate whose equivalence is unknown remains conditional and is not presented as a supported removal.
+
+Check [Validity Requirements](principles.md#validity-requirements) before accepting any simplification, regardless of intensity or selected IDs. A single caller or implementation is not proof of unnecessary structure. An uncommon input is not proof a guard is unnecessary. Savings in lines or dependencies do not establish a benefit if the proposal increases hidden obligations or weakens defenses.
+
+Selected p4, p6, or p7 can identify a placement, verification, or limitation issue without a line-saving claim. Keep those notes tied to the proposed task implementation or simplification. Do not expand into unrelated bug hunting, a test-suite overhaul, or automatic debt harvesting. A directly observed issue that invalidates a proposed cut belongs in its evidence discussion.
+
+## Report Format
+
+Use [shared coverage and reporting](../../../references/review-common.md#coverage-and-reporting), including R, derived intensity or custom label, resolved edit scope and source, task baseline, and coverage gaps. Group common coverage statuses to keep reports concise. For findings, use a compact form that can expand when evidence needs explanation:
+
+```text
+<file>:<line> — <tag> [p IDs]: <what to simplify> → <replacement>.
+Evidence: <why the required behavior remains covered and the change fits this task>.
+Check/limit: <a material remaining condition, if any>.
+```
+
+The tags and ID mapping live in review-patterns.md. State findings in the user's language, preserve IDs, and give enough detail to justify the change; no strict one-line or three-line limit applies. Separate supported simplifications from conditional opportunities and boundary conflicts. Prioritize relevance, confidence, and maintenance benefit over raw deletion size; do not double-count a change under several tags.
+
+An optional net line/dependency estimate is allowed only when the concrete replacements and non-overlapping scope make it defensible. Label it an estimate, include necessary caller/test changes, and omit it when evidence is insufficient. Do not import upstream performance, cost, or safety percentages. No numeric quality score is produced.
+
+With no supported findings, report no supported simplification within the assessed criteria and scope, qualified by any gaps. Empty criteria or no eligible target is a review not performed; neither result implies that the code is safe to ship.
+
+## Saved Reports
+
+Follow [shared saved reports](../../../references/review-common.md#saved-reports) only on an explicit save request. Identify Ponytail and record the review criteria, intensity, edit scope, task baseline, findings, and limits as historical evidence. The artifact does not change AGENTS.md, catalogs, agent memory, or future modes and cannot supply another agent's settings.
+
+## Guardrails
+
+- DO NOT let extreme or all imply destructive edit scope.
+- DO NOT recommend changes outside the assigned task or resolved edit boundary.
+- DO NOT approve a cut whose edge-case equivalence or required behavior remains unknown.
+- DO NOT treat reduced lines or dependencies as proof of correctness or maintenance benefit.
+- DO NOT apply fixes, persist configuration, or automatically launch audit/debt workflows during review.

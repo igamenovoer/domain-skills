@@ -5,7 +5,7 @@
 1. Resolve the action, target project, and named mentalities from the caller; use the action table in the parent entrypoint.
 2. Load each selected child's entrypoint and selector contract. Validate every requested ID or name before changing any scope.
 3. Read [runtime-injection.md](runtime-injection.md) and execute the matching detail section below.
-4. Verify the action's file and state boundaries, then report canonical selections and actual effects.
+4. Verify the action's file and state boundaries, then report canonical selections and actual effects. Preserve child settings during rule-only actions; include the child's settings in recall.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a bounded plan from the declared actions and explicit caller intent. Missing selectors or ambiguous scope do not authorize a mutation.
 
@@ -24,7 +24,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 ## Enable Project
 
-**Input:** named mentalities and explicit rule selectors, including `all` within a named mentality.
+**Input:** named mentalities and explicit rule selectors, including `all` within a named mentality. Child intensity configuration is a separate replacement action, not an alias for this union operation.
 
 1. Resolve selectors against each child's complete canonical catalog.
 2. Verify that the requested principles have a valid deployed catalog and discovery reference. If missing or incomplete, explain that `deploy` is required; perform it only when deployment is also authorized by the request.
@@ -82,7 +82,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 1. Read current project selections from `AGENTS.md` and this agent's explicit remembered overrides from its own context.
 2. Resolve the effective selection using the shared per-rule precedence. Keep principle identity qualified by mentality when reporting across children.
 3. Evaluate task applicability and material conflicts through [composition.md](composition.md). When no substantive task is available, report applicability as not evaluated rather than treating the recall request as the task being guided.
-4. Report project-enabled rules, memory-enabled rules, memory-disabled rules, effective selection, and the applicable rules for the supplied task. Name the source of each effective rule and explain masked or conflicting guidance.
+4. Report project-enabled rules, memory-enabled rules, memory-disabled rules, effective selection, and the applicable rules for the supplied task. Name the source of each effective rule and explain masked or conflicting guidance. For Ponytail, use its [recall extension](../subskills/ponytail/references/state.md#recall) to include both axes and their provenance.
 5. Identify missing or inconsistent state/catalog evidence without repairing files or fabricating remembered selections.
 
 **File effects:** none. Recall also makes no memory-state changes.

@@ -1,6 +1,6 @@
 ---
 name: imsight-mentality-mgr
-description: Use when an Imsight mentality request concerns principle deployment, project-wide rules, agent-local remembered rules, effective mentality recall, or an explicit Brooks code review, or when an applicable task arrives with resolved mentality rules. Do not use for ordinary factual memory or unrelated preferences.
+description: Use when an Imsight mentality request concerns catalogs, project or agent-memory rules, Ponytail intensity and edit scope, effective mentality recall, or explicit Brooks or Ponytail reviews, or when applicable work has resolved mentality rules. Do not use for ordinary factual memory or unrelated preferences.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -18,6 +18,8 @@ metadata:
     - Invoke a shared action with mentality and selectors as arguments, such as `imsight-mentality-mgr->enable-project()` with `brooks r1 r5`.
     - A child exposes the same actions with its mentality already selected, such as `imsight-mentality-mgr->brooks->enable-memory()` with `r1 r5`.
     - Invoke `imsight-mentality-mgr->brooks->review()` to review existing code using effective Brooks rules; pass explicit selectors, including `all`, for criteria limited to this review. “Review this with Brooks” selects this child action, not activation. Review is not a shared parent action.
+    - Invoke `imsight-mentality-mgr->ponytail->configure-project()` or `imsight-mentality-mgr->ponytail->configure-memory()` with `intensity=safe|normal|extreme` and/or `edit-scope=new-code-only|destructive`. Intensity replaces the selected scope's Ponytail rule set; an omitted axis is preserved. These are child-specific actions.
+    - Invoke `imsight-mentality-mgr->ponytail->review()` with effective rules or explicit selectors and optional invocation-only `intensity` and `edit-scope`. Review never applies fixes, even with destructive edit scope.
     - Invoke `imsight-mentality-mgr->recall()` without a mentality to report all registered mentalities. A named child or mentality argument filters recall.
     - Natural wording uses the same actions: `$imsight-mentality-mgr brooks deploy`, `$imsight-mentality-mgr brooks enable-project r1 r5`, or `$imsight-mentality-mgr brooks disable-memory r5`.
     - “Deploy these principles” selects `deploy`; “enable/disable in project scope” selects the corresponding project action; “remember and apply” or “enable/disable in your memory” selects the corresponding memory action; “recall the effective Imsight mentality” selects `recall`.
@@ -29,13 +31,13 @@ metadata:
 
 ## Overview
 
-Manage named mentalities, their principle catalogs, project-wide selections, and agent-local overrides. Shared catalogs document what each principle means; project instructions select shared defaults; each agent remembers its own overrides. Multiple agents can use the same catalogs and `AGENTS.md` while applying different principles. Brooks also provides an explicitly requested review of existing code using the same rule identities.
+Manage named mentalities, their principle catalogs, project-wide selections, and agent-local overrides. Shared catalogs document what each principle means; project instructions select shared defaults; each agent remembers its own overrides. Multiple agents can use the same catalogs and `AGENTS.md` while applying different principles. Brooks and Ponytail provide explicit reviews; Ponytail also separates simplification intensity from permission to revise existing task-related infrastructure.
 
 ## Workflow
 
 1. **Resolve intent** using **Subcommands** and the frontmatter `metadata.invocation_contract`.
 2. **Select mentalities** from **Subskills**. Load only the named child's `SKILL-MAIN.md` and required resources; unqualified recall covers all registered mentalities.
-3. **Resolve scope and selectors** through the child's selector reference and [runtime-injection.md](references/runtime-injection.md). For Brooks review, load the child's review contract for invocation-only criteria. Validate the entire request before mutation.
+3. **Resolve scope and selectors** through the child's selector reference and [runtime-injection.md](references/runtime-injection.md). Load child-specific configuration or review contracts when selected; validate both Ponytail axes independently before mutation.
 4. **Execute the action** using its linked detail section. For ordinary applicable work, resolve effective rules and apply [composition.md](references/composition.md); an explicit review follows its own diagnostic workflow.
 5. **Report the result** with canonical rule IDs, affected scope, and actual file effects. Identify project paths when they are relevant to the requested result.
 
@@ -43,7 +45,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 ## Subcommands
 
-These are peer actions, not required phases. Definitions are shared here; children supply their own selectors, catalogs, and applicability. Child-specific procedures, such as Brooks review, are listed in the child's subcommand table.
+These are peer actions, not required phases. Definitions are shared here; children supply their own selectors, catalogs, and applicability. Child-specific review and configuration procedures are listed in each child's subcommand table.
 
 | Subcommand | Use For | Detail |
 | --- | --- | --- |
@@ -60,6 +62,7 @@ These are peer actions, not required phases. Definitions are shared here; childr
 | Mentality | When to Route Here | Load |
 | --- | --- | --- |
 | `brooks` | Choose Brooks for maintainable production-code decisions and test design, or to explicitly review existing code through those principles. | [Brooks](subskills/brooks/SKILL-MAIN.md) |
+| `ponytail` | Choose Ponytail to simplify implementations through reuse and removal, with explicit intensity and boundaries for changing existing infrastructure, or to review those opportunities. | [Ponytail](subskills/ponytail/SKILL-MAIN.md) |
 | `docs-writer` | Choose Docs Writer principles for durable prose whose main text should describe its current state without incidental revision history. | [Docs Writer](subskills/docs-writer/SKILL-MAIN.md) |
 
 An unknown mentality is an error; list registered names instead of guessing. New mentalities belong beside these children and own their principle catalogs and selector vocabularies.
@@ -70,13 +73,14 @@ An unknown mentality is an error; list registered names instead of guessing. New
 - **Project selection** lives in a separate managed `AGENTS.md` block and changes only through an explicitly requested project action.
 - **Agent memory** contains this agent's explicit enabled and disabled overrides. Neither kind of override is written to shared files or automatically assigned to another agent.
 - **Effective selection** follows agent overrides first, then project selection, then disabled by default. Applicability and conflict resolution determine which selected guidance applies to the task.
-- **Review criteria** default to effective selection. Explicit Brooks review selectors replace the criteria for that invocation only; they never enable rules, alter memory, or change subsequent recall. Saved review evidence is not an activation source.
+- **Child settings** follow the child's schema. Ponytail intensity expands into canonical rule IDs; edit scope resolves independently from agent memory, then project settings, then `new-code-only`. Neither deployment nor an edit-scope setting enables rules.
+- **Review criteria** default to effective selection. Explicit review selectors replace criteria for that invocation only; they never enable rules, alter memory, or change subsequent recall. Saved review evidence is not an activation source. Child edit boundaries also constrain recommendations.
 
 Full storage, precedence, concurrency, and context-handoff rules live in [runtime-injection.md](references/runtime-injection.md). Action workflows and output examples live in [actions.md](references/actions.md).
 
 ## Maintenance
 
-Keep shared action and scope semantics in the parent references. Child entrypoints link to these definitions instead of duplicating command files. Keep canonical IDs, examples, and domain judgment with each child. Bundle child-specific procedures and their diagnostic references inside this skill; provenance snapshots document origins and are not runtime dependencies.
+Keep shared action and scope semantics in the parent references. [review-common.md](references/review-common.md) owns shared review selection, target discovery, coverage, and report storage. Children own canonical IDs, examples, domain judgment, and any configuration schema or additional edit boundary. Bundle runtime resources inside this skill; provenance snapshots document origins and are not runtime dependencies.
 
 ## Guardrails
 

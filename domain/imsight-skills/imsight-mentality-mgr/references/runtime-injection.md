@@ -5,7 +5,7 @@
 1. Resolve the target project and action scope from the explicit request; keep catalog publication, project selection, and agent memory separate.
 2. Obtain canonical selectors and applicability from the named child, then validate the complete request.
 3. Read only the state sources defined under **State Sources** and derive the result using **Effective Selection**.
-4. Apply the requested shared action's mutation boundary from [actions.md](actions.md), using **Managed Project Files** for project writes. Explicit Brooks review follows **Review Criteria and Reports** without an activation transition.
+4. Apply the requested shared action's mutation boundary from [actions.md](actions.md), using **Managed Project Files** for project writes. Child configuration follows **Child Settings**; explicit review follows **Review Criteria and Reports** without an activation transition.
 5. For ordinary substantive work, apply only effective, applicable guidance through [composition.md](composition.md), including the selected examples and judgment notes when needed. Explicit review uses its separately resolved invocation criteria.
 6. Report actual scope and effects; preserve agent identity and explicit negative overrides across any supported handoff.
 
@@ -17,8 +17,8 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | --- | --- | --- |
 | `.imsight-arts/mentality/<mentality>-principles.md` | Complete shared definitions and examples; no activation state. | Explicit `deploy`. |
 | `AGENTS.md` catalog discovery block | Location and purpose of available principles; no activation state. | Explicit `deploy`. |
-| `AGENTS.md` project-selection block | Canonical principles enabled project-wide. | Explicit `enable-project` or `disable-project`. |
-| Current agent's chat context | Explicit enabled and disabled overrides for this agent only. | Explicit `enable-memory` or `disable-memory`. |
+| `AGENTS.md` project-selection block | Canonical principles enabled project-wide and explicitly configured child settings. | Explicit project actions or a child's declared project configuration action. |
+| Current agent's chat context | Explicit enabled and disabled rule overrides and child-setting overrides for this agent only. | Explicit memory actions or a child's declared memory configuration action. |
 
 Resolve the project root from the user-provided directory, otherwise the current version-control root, otherwise the current working directory. These project-facing files intentionally live under that root; a generic report-output override does not relocate them.
 
@@ -48,7 +48,7 @@ Effective selection = (P union M+) minus M-
 
 Memory actions remove the opposite override before adding the requested one, so an ID never belongs to both `M+` and `M-`. Repeated actions are idempotent. If restored state contains both and no explicit instruction order resolves them, report inconsistent memory rather than guessing or persisting a repair.
 
-The most recent explicit memory instruction for a rule replaces its earlier memory override. A project action changes only `P`, even when requested later; it never cancels an agent's existing override. No project-scoped disabled tombstones are needed: removing a project requirement still permits an explicit local enable.
+The most recent explicit memory instruction for a rule replaces its earlier memory override. A shared project rule action changes only `P`; declared child configuration may also change that child's project settings. Neither cancels an agent's existing overrides, even when requested later. No project-scoped disabled tombstones are needed: removing a project requirement still permits an explicit local enable.
 
 An explicit memory disable must remain remembered even when the project currently leaves the rule disabled. Absence of an override means inheritance; clearing an override is conceptually distinct from disabling and is not an alias of any declared action.
 
@@ -77,9 +77,15 @@ Agent-memory guidance overrides conflicting project-scope mentality guidance, in
 
 This override policy is part of the project mentality contract itself. It does not allow mentality rules to bypass unrelated repository instructions, system or developer instructions, explicit user requirements, or tool and permission constraints.
 
+## Child Settings
+
+Children may declare additional settings without changing shared per-rule precedence. [Ponytail state](../subskills/ponytail/references/state.md) defines an intensity preset replacement operation and an independent `edit-scope` field. Intensity is stored as expanded canonical rule selections, not a competing mode flag; recall derives a preset label only when a selection exactly matches it. Individual rule actions keep their union/subtraction semantics and preserve child settings.
+
+For Ponytail, an agent's explicit edit-scope override wins over the project's field; no setting means `new-code-only`. An explicit edit-scope setting enables no principles. Child project configuration uses the existing mentality project block and concurrent-write protocol; memory configuration stays in that agent's chat context. Recall and same-agent handoffs include setting provenance and unresolved context. A changed intensity never changes edit scope implicitly, and configuration never authorizes an unrelated task.
+
 ## Review Criteria and Reports
 
-[Brooks review](../subskills/brooks/references/review.md) defaults to effective selection. Explicit user selectors replace criteria only for that review, including a named principle ordinarily disabled in agent memory. This is an explicit task instruction, not another persistent scope or a memory enable. Later recall and ordinary work still use the unchanged project and memory selections.
+[Review contracts](review-common.md) default to effective selection. Explicit user selectors replace criteria only for that review, including a named principle ordinarily disabled in agent memory. This is an explicit task instruction, not another persistent scope or a memory enable. Later recall and ordinary work still use the unchanged project and memory selections. Ponytail resolves invocation-only intensity and edit-scope parameters through its own contract; destructive scope permits recommendations within the task boundary and never applies fixes during review.
 
 Review returns findings in chat by default. An explicitly requested saved report may record the criteria assessed, findings, and evidence limits as a historical review snapshot. It must not serialize the agent's enabled/disabled memory record. Reports are never read as activation state, handoff memory, catalog discovery, or project selection. Save through the review contract's unique output directory without changing the managed project blocks.
 
@@ -121,7 +127,7 @@ This block lists reference material. It must not list an agent's selection or te
 
 ### Project selection in `AGENTS.md`
 
-Create or update this block only for an explicit project action:
+Create or update this block only for an explicit project action, including a child's declared project configuration action. Preserve child-specific fields when changing only rule IDs:
 
 ```markdown
 <!-- imsight-skill:imsight-mentality-mgr/brooks-project:start -->
@@ -157,7 +163,7 @@ Shared files never carry an agent-specific active selection. Two agents reading 
 
 When delegating work, state the intended principle overrides in the subagent's task message if they should transfer. Sharing a repository or spawning a subagent alone does not authorize copying the parent's personal selection. If a harness inherits conversation history, distinguish the delegated agent's explicit assignment from records belonging to the parent; ambiguous ownership must not silently become child overrides. A subagent's memory actions do not update its parent or siblings.
 
-For a same-agent compaction or handoff, retain both enabled and disabled override sets and their scope in the agent's supplied context summary when the host supports that operation. Do not write a shared session-state file to simulate memory. A skill invocation alone installs no lifecycle hooks and guarantees neither cross-turn reinjection nor recovery after context loss.
+For a same-agent compaction or handoff, retain both enabled and disabled override sets, child-setting overrides, and any task boundary required by the child in the agent's supplied context summary when the host supports that operation. Do not write a shared session-state file to simulate memory. A skill invocation alone installs no lifecycle hooks and guarantees neither cross-turn reinjection nor recovery after context loss.
 
 ## Guardrails
 
