@@ -5,8 +5,8 @@
 1. Resolve the target project and action scope from the explicit request; keep catalog publication, project selection, and agent memory separate.
 2. Obtain canonical selectors and applicability from the named child, then validate the complete request.
 3. Read only the state sources defined under **State Sources** and derive the result using **Effective Selection**.
-4. Apply the requested action's mutation boundary from [actions.md](actions.md), using **Managed Project Files** for project writes.
-5. For substantive work, apply only effective, applicable guidance through [composition.md](composition.md), including the selected examples and judgment notes when needed.
+4. Apply the requested shared action's mutation boundary from [actions.md](actions.md), using **Managed Project Files** for project writes. Explicit Brooks review follows **Review Criteria and Reports** without an activation transition.
+5. For ordinary substantive work, apply only effective, applicable guidance through [composition.md](composition.md), including the selected examples and judgment notes when needed. Explicit review uses its separately resolved invocation criteria.
 6. Report actual scope and effects; preserve agent identity and explicit negative overrides across any supported handoff.
 
 If the task does not map cleanly to these steps, use the native planning tool to preserve the caller's scope, validated selectors, and independent agent contexts without inventing persistence.
@@ -76,6 +76,12 @@ Effective selection expresses configured intent. A selected principle is applied
 Agent-memory guidance overrides conflicting project-scope mentality guidance, including conflicts between different principle IDs. Preserve both definitions and report the task-specific precedence decision; a conflict does not edit either scope. Same-scope conflicts follow explicit task requirements and documented judgment notes; if still material and unresolved, surface the choice instead of inventing rule priorities.
 
 This override policy is part of the project mentality contract itself. It does not allow mentality rules to bypass unrelated repository instructions, system or developer instructions, explicit user requirements, or tool and permission constraints.
+
+## Review Criteria and Reports
+
+[Brooks review](../subskills/brooks/references/review.md) defaults to effective selection. Explicit user selectors replace criteria only for that review, including a named principle ordinarily disabled in agent memory. This is an explicit task instruction, not another persistent scope or a memory enable. Later recall and ordinary work still use the unchanged project and memory selections.
+
+Review returns findings in chat by default. An explicitly requested saved report may record the criteria assessed, findings, and evidence limits as a historical review snapshot. It must not serialize the agent's enabled/disabled memory record. Reports are never read as activation state, handoff memory, catalog discovery, or project selection. Save through the review contract's unique output directory without changing the managed project blocks.
 
 ## Managed Project Files
 
@@ -156,7 +162,7 @@ For a same-agent compaction or handoff, retain both enabled and disabled overrid
 ## Guardrails
 
 - DO NOT infer activation from catalogs, discovery references, or a deployed rule count.
-- DO NOT store agent-memory overrides or effective selections in project files.
+- DO NOT store agent-memory records or reusable effective-selection state in project files; an explicitly requested review report may record its assessed criteria solely as historical evidence.
 - DO NOT make project enable/disable actions rewrite catalogs or agent memory.
 - DO NOT discard negative memory overrides during recall, compaction, or delegation.
 - DO NOT override an agent's memory just because a later action changed project scope.

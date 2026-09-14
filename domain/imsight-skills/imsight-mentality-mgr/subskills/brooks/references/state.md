@@ -2,10 +2,10 @@
 
 ## Workflow
 
-1. Resolve the caller's action and scope through the shared [actions](../../../references/actions.md) and [runtime contract](../../../references/runtime-injection.md).
+1. Resolve the caller's action and scope through the shared [actions](../../../references/actions.md) and [runtime contract](../../../references/runtime-injection.md), or the invocation-only criteria in [review](review.md).
 2. Normalize every supplied Brooks selector using **Selector Resolution** and the canonical [principles](principles.md).
 3. Validate the complete selection before changing either project scope or this agent's memory.
-4. Execute the shared action using Brooks IDs only; for recall or application, preserve the project or agent-memory source of each effective principle.
+4. Execute the selected action using Brooks IDs only; for recall or application, preserve the project or agent-memory source of each effective principle. Review selectors name criteria without mutating either scope.
 5. Report canonical IDs, affected scope, and any unresolved state without mutating sibling mentalities.
 
 If the task does not map cleanly to these steps, use the native planning tool to preserve atomic selector validation, explicit scope, and independent agent memory.
@@ -24,6 +24,8 @@ If the task does not map cleanly to these steps, use the native planning tool to
 Selectors are case-insensitive and normalize to lowercase canonical IDs. Accept canonical hyphenated names and unambiguous natural variants. Resolve groups completely, remove duplicates, and retain catalog order for output. IDs are local to Brooks; a Docs Writer ID is invalid here.
 
 Enable/disable actions require explicit selectors. Missing selectors do not mean `all`, and an empty request or `none` is not a selection mutation. Unknown or ambiguous selectors reject the entire request; list valid codes, names, and groups without partial application. To disable every principle in a scope, use that scope's disable action with `all`.
+
+Review accepts the same codes, names, and groups. Omitted review selectors use effective selection; explicit selectors replace review criteria for this invocation only. Uppercase upstream risk labels normalize to the same lowercase IDs and never create separate diagnostic state. Selection, applicability, and reporting details live in the review contract.
 
 ## Scope Binding
 

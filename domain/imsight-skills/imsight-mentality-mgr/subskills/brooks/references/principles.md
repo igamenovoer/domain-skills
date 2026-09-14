@@ -353,10 +353,10 @@ These examples are likewise illustrative. Preserve the observable contract and r
 
 ## Provenance
 
-The diagnostic taxonomy and exceptions originate from [Brooks Lint](https://github.com/hyhmrright/brooks-lint). This mentality does not copy its audit workflow, severity system, health score, or Iron Law because its purpose is preventive authorship rather than post-hoc diagnosis.
+The diagnostic taxonomy and exceptions originate from [Brooks Lint](https://github.com/hyhmrright/brooks-lint). These constructive definitions guide authorship and remain independent of review reporting. The mentality manager separately bundles an explicit Brooks review procedure using the same rule IDs; publishing this catalog neither starts that procedure nor enables any principle.
 
 ## Guardrails
 
 - DO NOT turn a compact reminder into an unconditional numeric threshold.
-- DO NOT apply principles outside the effective selection or suppressed by an agent-memory override.
+- DO NOT apply constructive guidance outside the effective selection or suppressed by an agent-memory override; explicit review criteria are resolved separately by the review contract.
 - DO NOT reproduce Brooks Lint report language when guiding implementation.

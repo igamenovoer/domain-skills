@@ -1,6 +1,6 @@
 interface:
   display_name: "imsight-mentality-mgr"
-  short_description: "Deploy principles and control project or agent scope"
-  default_prompt: "Use $imsight-mentality-mgr to deploy catalogs, enable or disable named rules in project scope or your memory, or recall the effective mentality."
+  short_description: "Manage scoped principles and run Brooks code reviews"
+  default_prompt: "Use $imsight-mentality-mgr to deploy catalogs, enable or disable named rules in project scope or your memory, recall the effective mentality, or explicitly review existing code with Brooks."
 policy:
   allow_implicit_invocation: false
