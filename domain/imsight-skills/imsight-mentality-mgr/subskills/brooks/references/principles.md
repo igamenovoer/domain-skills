@@ -4,10 +4,10 @@ This catalog converts Brooks Lint's diagnostic risks into preventive reminders f
 
 ## Workflow
 
-1. Load the current selected codes from Brooks state.
-2. Use only the matching compact reminders from **Production Rules** and **Test Rules**.
-3. Ground each selected rule in its **Representative Do / Don't comparison**, then apply its judgment note while planning, implementing, and verifying the current change.
-4. Render selected reminders without diagnostic scoring or unselected content.
+1. For application, resolve effective rule IDs and their source scope through the shared runtime contract; for deployment, publish every catalog rule using the child entrypoint's Catalog Publication contract.
+2. For application, select the matching definitions from **Production Rules** and **Test Rules**; deployment includes both complete sections.
+3. For application, ground each effective rule in its **Representative Do / Don't comparison**, then apply its judgment note while planning, implementing, and verifying the current change.
+4. Render effective, applicable reminders with their project or agent-memory source, without diagnostic scoring. Publication includes all examples and judgment notes but never activation state.
 
 If the task does not map cleanly to these steps, use the native planning tool to apply the selected reminders proportionately to the code and tests in scope.
 
@@ -349,7 +349,7 @@ These examples are likewise illustrative. Preserve the observable contract and r
 - Apply production rules to new or modified production code, architecture, APIs, and dependency decisions.
 - Apply test rules when adding, changing, selecting, or reviewing tests for the requested implementation.
 - A selected test rule may influence production seams only when doing so serves a real testability and architecture boundary.
-- If the task is non-coding, Brooks is not applicable and renders no injection.
+- If the task is non-coding, Brooks guidance is not applicable. Read-only recall can still report its configured selection.
 
 ## Provenance
 
@@ -358,5 +358,5 @@ The diagnostic taxonomy and exceptions originate from [Brooks Lint](https://gith
 ## Guardrails
 
 - DO NOT turn a compact reminder into an unconditional numeric threshold.
-- DO NOT inject rules that are absent from the selected state.
+- DO NOT apply principles outside the effective selection or suppressed by an agent-memory override.
 - DO NOT reproduce Brooks Lint report language when guiding implementation.

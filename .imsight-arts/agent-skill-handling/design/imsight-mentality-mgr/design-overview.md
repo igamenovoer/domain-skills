@@ -1,17 +1,17 @@
-# `imsight-inject-mentality` Design Overview
+# `imsight-mentality-mgr` Design Overview
 
 Status: implemented locally; runtime persistence adapter remains future work.
 
 ## Purpose
 
-`imsight-inject-mentality` gives an Imsight agent named, persistent ways of thinking that can be activated and adjusted independently. A mentality changes what the agent habitually notices and remembers while working; it does not replace the user's task, impose a workflow, or grant additional authority.
+`imsight-mentality-mgr` gives an Imsight agent named, persistent ways of thinking that can be activated and adjusted independently. A mentality changes what the agent habitually notices and remembers while working; it does not replace the user's task, impose a workflow, or grant additional authority.
 
 The first mentality is `brooks`, which teaches the agent to produce maintainable code and tests that are unlikely to attract findings from Brooks Lint. Future mentalities may address unrelated domains and do not need to use Brooks concepts, principles, or state shapes.
 
 The top-level namespace therefore contains **mentality names**, not state-changing commands:
 
 ```text
-imsight-inject-mentality
+imsight-mentality-mgr
 ├── brooks
 │   ├── on()
 │   ├── off()
@@ -31,7 +31,7 @@ imsight-inject-mentality
 
 ```yaml
 ---
-name: imsight-inject-mentality
+name: imsight-mentality-mgr
 description: >
   Use when the user asks an Imsight agent to select, activate, deactivate, inspect,
   or adjust a named mentality such as Brooks, or when an active host injector
@@ -77,7 +77,7 @@ An injection is a compact rendering of the active, applicable parts of a mentali
 The parent is a thin router and composer. Every mentality with its own private rules and state is a parent-scoped subskill.
 
 ```text
-domain/imsight-skills/imsight-inject-mentality/
+domain/imsight-skills/imsight-mentality-mgr/
 ├── SKILL.md
 ├── agents/
 │   └── openai.yaml
@@ -125,13 +125,13 @@ It does **not** own:
 - Brooks-specific aliases or defaults;
 - another mentality's state migration or reset behavior.
 
-Invoking `$imsight-inject-mentality` without a mentality name should show concise help and list the registered mentality names. It must not guess `brooks`.
+Invoking `$imsight-mentality-mgr` without a mentality name should show concise help and list the registered mentality names. It must not guess `brooks`.
 
 ## Top-Level Mentalities
 
 ### `brooks`
 
-- Object path: `imsight-inject-mentality->brooks`
+- Object path: `imsight-mentality-mgr->brooks`
 - Intended use: influence coding and test-design decisions using principles derived from Brooks Lint's concerns.
 - Private resources: Brooks principles, groups, aliases, defaults, calibration guidance, and provenance.
 - Route here when the user names Brooks, asks for Brooks-style coding discipline, or controls a Brooks reminder.
@@ -141,8 +141,8 @@ Invoking `$imsight-inject-mentality` without a mentality name should show concis
 A future mentality is added as a sibling under `subskills/`, for example:
 
 ```text
-imsight-inject-mentality->brooks
-imsight-inject-mentality-><unrelated-mentality>
+imsight-mentality-mgr->brooks
+imsight-mentality-mgr-><unrelated-mentality>
 ```
 
 The new mentality must define its own scope and state. It must not be placed beneath `brooks`, forced into Brooks' atom identifiers, or silently inherit Brooks defaults.
@@ -162,27 +162,27 @@ The Brooks child exposes these controls:
 Canonical object designators are:
 
 ```text
-imsight-inject-mentality->brooks
-imsight-inject-mentality->brooks->on()
-imsight-inject-mentality->brooks->off()
-imsight-inject-mentality->brooks->status()
-imsight-inject-mentality->brooks->rules()
-imsight-inject-mentality->brooks->rules()->list()
-imsight-inject-mentality->brooks->rules()->add()
-imsight-inject-mentality->brooks->rules()->remove()
-imsight-inject-mentality->brooks->rules()->set()
-imsight-inject-mentality->brooks->rules()->reset()
-imsight-inject-mentality->brooks->help()
+imsight-mentality-mgr->brooks
+imsight-mentality-mgr->brooks->on()
+imsight-mentality-mgr->brooks->off()
+imsight-mentality-mgr->brooks->status()
+imsight-mentality-mgr->brooks->rules()
+imsight-mentality-mgr->brooks->rules()->list()
+imsight-mentality-mgr->brooks->rules()->add()
+imsight-mentality-mgr->brooks->rules()->remove()
+imsight-mentality-mgr->brooks->rules()->set()
+imsight-mentality-mgr->brooks->rules()->reset()
+imsight-mentality-mgr->brooks->help()
 ```
 
 Natural user-facing forms may be concise:
 
 ```text
-$imsight-inject-mentality brooks on
-$imsight-inject-mentality brooks rules add production
-$imsight-inject-mentality brooks rules remove r4
-$imsight-inject-mentality brooks rules set production t1 t2
-$imsight-inject-mentality brooks status
+$imsight-mentality-mgr brooks on
+$imsight-mentality-mgr brooks rules add production
+$imsight-mentality-mgr brooks rules remove r4
+$imsight-mentality-mgr brooks rules set production t1 t2
+$imsight-mentality-mgr brooks status
 ```
 
 `rules()->add()` and `rules()->remove()` act on Brooks principles; they are not top-level commands and cannot mutate another mentality. Conversational “remember” and “forget” phrasing may map to these canonical operations.
@@ -323,7 +323,7 @@ For a runtime composition request:
 ### Enable Brooks
 
 ```text
-User: $imsight-inject-mentality brooks on
+User: $imsight-mentality-mgr brooks on
 Agent: Brooks mentality is on. Its retained production and test principles will be
        injected for applicable coding work.
 ```
@@ -331,7 +331,7 @@ Agent: Brooks mentality is on. Its retained production and test principles will 
 ### Disable one Brooks concern
 
 ```text
-User: $imsight-inject-mentality brooks rules remove r4
+User: $imsight-mentality-mgr brooks rules remove r4
 Agent: Brooks R4 (essential complexity) is no longer injected. Other Brooks
        principles are unchanged.
 ```
@@ -339,7 +339,7 @@ Agent: Brooks R4 (essential complexity) is no longer injected. Other Brooks
 ### Inspect the parent
 
 ```text
-User: $imsight-inject-mentality
+User: $imsight-mentality-mgr
 Agent: Available mentalities: brooks. Select a mentality to see or change its state.
 ```
 
@@ -348,7 +348,7 @@ Agent: Available mentalities: brooks. Select a mentality to see or change its st
 Suppose a future `skeptical-researcher` mentality is added. Its controls and state live under:
 
 ```text
-imsight-inject-mentality->skeptical-researcher
+imsight-mentality-mgr->skeptical-researcher
 ```
 
 It may use evidence rules rather than Brooks atoms. Turning Brooks off must not affect it, and controlling it must not load Brooks references.
