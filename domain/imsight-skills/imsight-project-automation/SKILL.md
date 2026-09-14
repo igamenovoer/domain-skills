@@ -1,6 +1,6 @@
 ---
 name: imsight-project-automation
-description: Use when the user explicitly invokes imsight-project-automation or requests a maintained routine for adding subtask-plan tracking guidance to OpenSpec tasks, running an OpenSpec lifecycle in one pass, or testing followed by minimal OpenSpec bug fixes.
+description: Use when the user explicitly invokes imsight-project-automation or requests a maintained routine for OpenSpec subtask tracking, a one-pass OpenSpec lifecycle, test-driven OpenSpec bug fixes, or keeping chat interactive while long-running processes execute with background monitoring.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -27,6 +27,7 @@ Use this skill only when explicitly invoked by name or when the request clearly 
 - a request to run OpenSpec explore, propose, apply, sync, and archive in one pass,
 - a request to execute user-provided test cases, collect unexpected outcomes, and fix confirmed product bugs through OpenSpec,
 - a request to add subtask-plan progress tracking guidance to an OpenSpec change's `tasks.md`,
+- a request to keep chatting while an authorized long-running process executes and is monitored in the background,
 - explicit mention of `imsight-project-automation` or one of its subcommands,
 - a routed command or message that names this skill as the handler.
 
@@ -40,8 +41,9 @@ Do not activate it implicitly for ordinary development tasks that do not name `i
 4. For `openspec-subtask-planning`, load `commands/openspec-subtask-planning.md`.
 5. For `openspec-one-pass`, load `commands/openspec-one-pass.md`.
 6. For `openspec-test-and-fix`, load `commands/openspec-test-and-fix.md`.
-7. Ask for the smallest clarification when the subcommand or request body is ambiguous.
-8. Do not invent additional stages; add a command page when a new automation routine becomes reusable.
+7. For `talk-to-me`, load `commands/talk-to-me.md`.
+8. Ask for the smallest clarification when the subcommand or request body is ambiguous.
+9. Do not invent additional stages; add a command page when a new automation routine becomes reusable.
 
 If the task does not map cleanly to these steps, use your native planning tool only with the existing subcommands and constraints; report when no maintained routine matches.
 
@@ -70,6 +72,7 @@ This contract does not relocate OpenSpec changes, implementation edits, or initi
 | `openspec-subtask-planning` | Add a concise reminder to an OpenSpec `tasks.md` requiring task-specific plan documents for progress tracking, with optional subagent planning when requested. | [commands/openspec-subtask-planning.md](commands/openspec-subtask-planning.md) |
 | `openspec-one-pass` | Given one development request, run an OpenSpec lifecycle in one pass: explore, propose, apply, sync, and archive. | [commands/openspec-one-pass.md](commands/openspec-one-pass.md) |
 | `openspec-test-and-fix` | Run user-provided tests, document unexpected outcomes, make minimal continuation patches, then propose and apply confirmed bug fixes through OpenSpec. | [commands/openspec-test-and-fix.md](commands/openspec-test-and-fix.md) |
+| `talk-to-me` | Run or retain authorized long-running work in the background, use native background monitoring, and return chat control without waiting for completion. | [commands/talk-to-me.md](commands/talk-to-me.md) |
 
 ## Guardrails
 
