@@ -1,6 +1,6 @@
 ---
 name: imsight-init
-description: Use when an agent must recover or verify Imsight skill discovery because its harness omitted sibling imsight-* skills, reported an incomplete skill inventory, or exposed this bootstrap skill as the only reliable Imsight entrypoint. Do not use for installing, updating, or removing skills.
+description: Invoke only when the user explicitly requests imsight-init or asks to run this bootstrap skill to recover or verify sibling Imsight skill discovery. Do not invoke automatically because the harness inventory is incomplete or an Imsight skill is missing. Do not use for installing, updating, or removing skills.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -18,11 +18,11 @@ metadata:
 
 ## Overview
 
-Use this bootstrap skill to recover awareness of Imsight skills that already exist beside it but were omitted from an agent harness's inventory. Its scripts report valid sibling skill entrypoints without installing, loading, or modifying them.
+This manually invoked bootstrap skill recovers awareness of Imsight skills that already exist beside it but were omitted from an agent harness's inventory. Its scripts report valid sibling skill entrypoints without installing, loading, or modifying them.
 
 ## When to Use
 
-Use this skill when the visible skill inventory appears incomplete, an Imsight skill requested by the user is missing from harness-provided discovery, or a host exposes `imsight-init` as a fallback bootstrap entrypoint.
+Use this skill only when the user explicitly invokes `$imsight-init` or asks to run `imsight-init` to recover or verify sibling skill discovery. An incomplete inventory, a missing requested skill, or exposure as a fallback entrypoint does not authorize automatic invocation. A request to inspect or edit this skill does not invoke its discovery workflow.
 
 Do not use it to install or update skills, recursively inspect bundled subskills, or replace normal harness discovery when the harness inventory is complete.
 
@@ -61,6 +61,7 @@ The scripts exit successfully when at least one valid sibling is found. They wri
 
 ## Guardrails
 
+- DO NOT invoke this skill without an explicit user request to run it.
 - DO NOT treat discovery output as proof that skills were installed or registered persistently.
 - DO NOT invoke or fully load every listed skill merely because it was discovered.
 - DO NOT search beyond the direct sibling directory unless the user explicitly expands the scope.
