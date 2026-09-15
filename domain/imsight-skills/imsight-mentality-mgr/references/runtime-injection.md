@@ -4,7 +4,7 @@
 
 1. Resolve the target project and action through the [enable/disable decision tree](actions.md#enabledisable-decision-tree) when applicable. Inspect project deployment and selections first; omitted enable/disable scope means agent memory, while project scope must be explicit.
 2. Obtain canonical selectors and applicability from the named child, then validate the complete request.
-3. Resolve activation and configured values only from **State Sources** and derive the result using **Effective Selection**. Read and retain their meanings through **Definition Retention**.
+3. Resolve activation, family priorities, and configured values only from **State Sources** and derive the result using **Effective Selection** and [priorities.md](priorities.md). Read and retain their meanings through **Definition Retention**.
 4. Apply the requested shared action's mutation boundary from [actions.md](actions.md), using **Managed Project Files** for project writes. Child configuration follows **Child Settings**; explicit review follows **Review Criteria and Reports** without an activation transition.
 5. For ordinary substantive work, apply only effective, applicable guidance through [composition.md](composition.md), including the selected examples and judgment notes when needed. Explicit review uses its separately resolved invocation criteria.
 6. Report actual scope and effects through **Memory Confirmation** when applicable; preserve agent identity, definitions, and explicit negative overrides across any supported handoff.
@@ -17,8 +17,9 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | --- | --- | --- |
 | `.imsight-arts/mentality/<mentality>-principles.md` | Complete shared definitions and examples; no activation state. | Explicit `deploy`, or required deployment within an explicit project action. |
 | `AGENTS.md` catalog discovery block | Location and purpose of available principles; no activation state. | Explicit `deploy`, or discovery reconciliation within an explicit project action. |
-| `AGENTS.md` project-selection block | Canonical principles enabled project-wide and explicitly configured child settings. | Explicit project actions or a child's declared project configuration action. |
-| Current agent's chat context | Explicit enabled and disabled rule overrides and child-setting overrides for this agent only. | Explicit memory actions or a child's declared memory configuration action. |
+| `AGENTS.md` project-selection block | Canonical principles enabled project-wide, their family priority, and explicitly configured child settings. | Explicit project actions or a child's declared project configuration action. |
+| `AGENTS.md` project-priority sequence block | Next project priority; retains allocation history after families are removed and enables no rules. | Explicit project enable or a child configuration that enables a preset. |
+| Current agent's chat context | Explicit enabled and disabled rule overrides, family priorities, next memory priority, and child-setting overrides for this agent only. | Explicit memory actions or a child's declared memory configuration action. |
 
 Resolve the project root from the user-provided directory, otherwise the current version-control root, otherwise the current working directory. These project-facing files intentionally live under that root; a generic report-output override does not relocate them.
 
@@ -54,21 +55,21 @@ M- = this agent's explicitly disabled rule IDs
 Effective selection = (P union M+) minus M-
 ```
 
-Memory actions remove the opposite override before adding the requested one, so an ID never belongs to both `M+` and `M-`. Repeated actions are idempotent. If restored state contains both and no explicit instruction order resolves them, report inconsistent memory rather than guessing or persisting a repair.
+Memory actions remove the opposite override before adding the requested one, so an ID never belongs to both `M+` and `M-`. Repeated set operations preserve the same IDs, but a fresh explicit enable also raises the family's priority through [Priority Assignment](priorities.md#priority-assignment). If restored state contains both and no explicit instruction order resolves them, report inconsistent memory rather than guessing or persisting a repair.
 
-The most recent explicit memory instruction for a rule replaces its earlier memory override. A shared project rule action changes only `P`; declared child configuration may also change that child's project settings. Neither cancels an agent's existing overrides, even when requested later. No project-scoped disabled tombstones are needed: removing a project requirement still permits an explicit local enable.
+The most recent explicit memory instruction for a rule replaces its earlier memory override. A shared project rule action changes `P` and its associated project priority state; declared child configuration may also change that child's project settings. Neither cancels an agent's existing overrides or changes its memory priorities, even when requested later. No project-scoped disabled tombstones are needed: removing a project requirement still permits an explicit local enable.
 
 An explicit memory disable must remain remembered even when the project currently leaves the rule disabled. Absence of an override means inheritance; clearing an override is conceptually distinct from disabling and is not an alias of any declared action.
 
 ### Agent Record
 
-Retain canonical enabled and disabled IDs, explicit child-setting values, and the definition references or content specified below in the current agent's conversation context. No file or prescribed serialization schema is needed. Expand selector groups before retention. Qualify IDs by mentality when composing or reporting several children so one child's identifiers cannot mutate another's selection.
+Retain canonical enabled and disabled IDs, each nonempty memory family's priority, the next memory priority bound to the project root, explicit child-setting values, and the definition references or content specified below in the current agent's conversation context. No file or prescribed serialization schema is needed. Expand selector groups before retention. Qualify IDs by mentality or flavor when composing or reporting several children so one family's identifiers cannot mutate another's selection. Preserve the counter after disabling every memory rule; see [Storage](priorities.md#storage).
 
 ### Applicability and conflicts
 
 Effective selection expresses configured intent. A selected principle is applied only when its documented applicability matches the current task. Recall distinguishes configured selection from current-task application.
 
-Agent-memory guidance overrides conflicting project-scope mentality guidance, including conflicts between different principle IDs. Preserve both definitions and report the task-specific precedence decision; a conflict does not edit either scope. Same-scope conflicts follow explicit task requirements and documented judgment notes; if still material and unresolved, surface the choice instead of inventing rule priorities.
+Agent-memory guidance overrides conflicting project-scope mentality guidance, including conflicts between different principle IDs, regardless of numeric priority. Within the same scope, higher family priority wins under [Conflict Resolution](priorities.md#conflict-resolution). Preserve both definitions and report the task-specific precedence decision; a conflict does not edit either scope. Internal family tensions follow documented applicability and judgment notes. Surface material unresolved conflicts or unavailable priority evidence rather than fabricating an order.
 
 This override policy is part of the project mentality contract itself. It does not allow mentality rules to bypass unrelated repository instructions, system or developer instructions, explicit user requirements, or tool and permission constraints.
 
@@ -88,13 +89,13 @@ All retention happens in the current conversation or a host-supported context su
 
 ### Memory Confirmation
 
-After a memory action or memory configuration, state the mentality, canonical selections and explicit overrides, effective result, and scope `agent-memory`. Summarize each requested rule or setting's practical meaning in plain language so the user can verify understanding. Identify project-reference paths and IDs for deployed details, and mark meanings retained as inline-content; group items sharing a path. Confirm that no files were written and state any unresolved context limits without promising durable memory.
+After a memory action or memory configuration, state the mentality or flavor, canonical selections and explicit overrides, effective result, scope `agent-memory`, and the family's memory priority or `none` when its memory-enabled set is empty. Report a fresh enable's priority change even when no IDs changed. Summarize each requested rule or setting's practical meaning in plain language so the user can verify understanding. Identify project-reference paths and IDs for deployed details, and mark meanings retained as inline-content; group items sharing a path. Confirm that no files were written and state any unresolved context limits without promising durable memory.
 
 For recall, use the same definition summary for remembered and effective items, preserving their actual source scopes. Ordinary work need not repeat the full confirmation. A compact user-facing summary does not replace the operative inline content required in the agent's context or handoff.
 
 ## Child Settings
 
-Children may declare additional settings without changing shared per-rule precedence. [Ponytail state](../subskills/ponytail/references/state.md) defines an intensity preset replacement operation and an independent `edit-scope` field. Intensity is stored as expanded canonical rule selections, not a competing mode flag; recall derives a preset label only when a selection exactly matches it. Individual rule actions keep their union/subtraction semantics and preserve child settings.
+Children may declare additional settings without changing shared per-rule precedence. [Ponytail state](../subskills/ponytail/references/state.md) defines an intensity preset replacement operation and an independent `edit-scope` field. Intensity is stored as expanded canonical rule selections, not a competing mode flag; recall derives a preset label only when a selection exactly matches it. Explicit intensity configuration allocates a fresh family priority in the selected scope; edit-scope-only configuration preserves priorities. Individual rule actions keep their union/subtraction semantics and preserve child settings.
 
 For Ponytail, an agent's explicit edit-scope override wins over the project's field; no setting means `new-code-only`. An explicit edit-scope setting enables no principles. Child project configuration uses the existing mentality project block and concurrent-write protocol; memory configuration stays in that agent's chat context. Recall and same-agent handoffs include setting provenance and unresolved context. A changed intensity never changes edit scope implicitly, and configuration never authorizes an unrelated task.
 
@@ -108,7 +109,7 @@ Review returns findings in chat by default. An explicitly requested saved report
 
 ## Managed Project Files
 
-Catalog discovery and project selection use independent blocks. Write only the blocks owned by the requested action and its required deployment preparation; preserve unrelated contents and ordering. Explicit project enable/disable and child project configuration include **Project application preparation** before updating application or settings blocks.
+Catalog discovery and project selection use independent blocks. Write only the blocks owned by the requested action and its required deployment preparation; preserve unrelated contents and ordering. Explicit project enable/disable and child project configuration include **Project application preparation** before updating application or settings blocks. Enabling actions also update the shared [project-priority sequence](priorities.md#storage) in the same `AGENTS.md` write as their family blocks.
 
 ### Catalog artifact
 
@@ -147,6 +148,7 @@ Use this separate discovery block, substituting the actual mentality, title, and
 - Principle catalog: [Brooks principles](.imsight-arts/mentality/brooks-principles.md), including definitions, examples, and judgment notes.
 - Availability only: this listing enables no principles. Apply rules only when selected in the project block or this agent's chat memory.
 - Scope resolution: agent-memory enabled or disabled overrides take precedence over project selection; absent memory overrides inherit project settings. Apply only task-relevant rules.
+- Conflict resolution: within one scope, the family with the higher priority overrides conflicting guidance; agent scope takes precedence regardless of priority. Deployment assigns no priority.
 <!-- imsight-skill:imsight-mentality-mgr/brooks-catalog:end -->
 ```
 
@@ -161,19 +163,20 @@ Create or update this block only for an explicit project action, including a chi
 ## Project Mentality Rules: Brooks
 
 - Project-enabled principles: `r1` (`comprehension`), `r5` (`dependency-direction`).
+- Family priority: 0.
 - Definitions and examples: [Brooks principles](.imsight-arts/mentality/brooks-principles.md).
-- Application: these principles apply project-wide when relevant to the task, except where this agent has an explicit in-memory enabled or disabled override. Agent scope wins in conflicts with project-scope mentality guidance.
+- Application: these principles apply project-wide when relevant to the task, except where this agent has an explicit in-memory enabled or disabled override. Agent scope wins over project scope; within one scope, the family with the higher priority overrides conflicting guidance.
 - Independence: each agent retains its own overrides; do not write an agent's remembered selection or effective result into this block.
 <!-- imsight-skill:imsight-mentality-mgr/brooks-project:end -->
 ```
 
-Use canonical IDs beside their names for enabled rules; handle empty selections below. Do not copy examples or complete rule text into `AGENTS.md`; its project index references the complete catalog. Keep source markers exact and on their own lines outside code fences; adapt visible headings to the surrounding document.
+Use canonical IDs beside their names for enabled rules and the actual allocated family priority; `0` above is illustrative. Handle empty selections below. Include the shared counter through [Priority Storage](priorities.md#storage), without copying it into every family block. Do not copy examples or complete rule text into `AGENTS.md`; its project index references the complete catalog. Keep source markers exact and on their own lines outside code fences; adapt visible headings to the surrounding document.
 
 ### Empty project selection
 
 After an explicit project disable, remove the affected project-selection block when no enabled rules or independently configured child settings remain. Delete both markers and everything between them, including the heading, catalog link, application or required-use instructions, and independence reminders. An absent block already means no project-enabled rules; retaining `none`, disabled-status prose, or memory-only loading instructions wastes context. Also remove a pre-existing empty block when the requested disable changes no IDs.
 
-If explicit child settings remain, preserve their values in the same marked block with only a heading, `Project-enabled principles: none.`, and the setting fields. Do not retain rule-application instructions or discard explicit settings merely because they equal a default. Unresolved IDs or state are not an empty selection.
+If explicit child settings remain, preserve their values in the same marked block with only a heading, `Project-enabled principles: none.`, and the setting fields. Remove the family's priority when no project rules remain, but preserve the shared next-priority counter; it never keeps an empty family block alive. Do not retain rule-application instructions or discard explicit settings merely because they equal a default. Unresolved IDs or state are not an empty selection.
 
 For example, after required deployment and discovery preparation, disabling all Brooks project rules removes only the `brooks-project` block. Keep the `brooks-catalog` discovery block, deployed catalog and sources, other mentalities, and every agent's memory overrides. Disabling only `r1` while `r5` remains keeps the application block for `r5`. A memory-only disable never edits either block.
 
@@ -192,9 +195,9 @@ Explicit project enable, project disable, and child project configuration author
 1. Read the latest target contents and validate the complete requested outputs before writing.
 2. Locate the exact start/end markers for the action's block. Replace one well-formed matching block in place, or remove it when **Empty project selection** requires deletion. When neither marker exists, insert a block or create the required file only if the requested action needs stored content; an already absent block targeted for removal is a no-op.
 3. Reject partial, reversed, nested, or duplicate matching markers. An existing catalog artifact without its matching markers is not owned output and must not be overwritten. If existing mentality directives use an incompatible scope or representation, report the conflict for explicit reconciliation instead of guessing which rules are project-wide.
-4. Preserve other mentalities' blocks, unrelated guidance, and unrelated artifact content. Immediately before writing shared `AGENTS.md`, check for intervening changes; if it changed, re-read and recompute the targeted edit rather than writing a stale whole-file snapshot. Use a lock or conditional write when the host supports one; otherwise report any detected concurrent conflict instead of claiming atomic multi-agent writes.
+4. Preserve other mentalities' blocks, unrelated guidance, and unrelated artifact content. For an enable or preset configuration, update its family blocks and the shared next-priority counter together. Immediately before writing shared `AGENTS.md`, check for intervening changes; if it changed, re-read all project priorities and the counter and recompute the targeted edit and allocation rather than writing a stale whole-file snapshot. Use a lock or conditional write when the host supports one; otherwise report any detected concurrent conflict instead of claiming atomic multi-agent writes.
 5. For deployment, publish any offline source bundle, then the validated catalog, then its discovery reference so new references never point to unwritten files. If a write fails, report actual partial effects and complete or safely recover only the action's owned changes.
-6. Verify exactly one matching block for each retained or published artifact, and no matching markers or residual application text for each removed block. Check source-bundle identity and local links when applicable, correct canonical IDs and retained settings, preserved out-of-scope state, and a no-op result when applying the same action again to unchanged inputs.
+6. Verify exactly one matching block for each retained or published artifact, and no matching markers or residual application text for each removed block. Check source-bundle identity and local links when applicable, canonical IDs, family priorities and counter consistency, retained settings, and preserved out-of-scope state. Retrying the same completed write must not allocate again; a fresh user enable intentionally receives a new priority even if its IDs are unchanged.
 
 ### Missing and inconsistent material
 
@@ -208,7 +211,7 @@ Shared files never carry an agent-specific active selection. Two agents reading 
 
 When delegating work, state the intended principle overrides in the subagent's task message if they should transfer. Sharing a repository or spawning a subagent alone does not authorize copying the parent's personal selection. If a harness inherits conversation history, distinguish the delegated agent's explicit assignment from records belonging to the parent; ambiguous ownership must not silently become child overrides. A subagent's memory actions do not update its parent or siblings.
 
-For a same-agent compaction or handoff, retain enabled and disabled override sets, child-setting values and source scopes, and any required task boundary in the host-supported context summary. Preserve project-bound paths plus identifiers for project-reference items, and operative content for inline-content items. Keep explicit false values and negative overrides; never reduce inline definitions to IDs or skill paths. Do not write a session-state file to simulate memory. A skill invocation alone installs no lifecycle hooks and guarantees neither cross-turn reinjection nor recovery after context loss.
+For a same-agent compaction or handoff, retain enabled and disabled override sets, per-family memory priorities and the project-bound next-memory-priority counter, child-setting values and source scopes, and any required task boundary in the host-supported context summary. Re-read project priorities from project files instead of copying them into memory priority state. Preserve project-bound paths plus identifiers for project-reference items, and operative content for inline-content items. Keep explicit false values and negative overrides; never reduce inline definitions to IDs or skill paths. Do not write a session-state file to simulate memory. A skill invocation alone installs no lifecycle hooks and guarantees neither cross-turn reinjection nor recovery after context loss.
 
 ## Guardrails
 

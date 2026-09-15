@@ -49,7 +49,7 @@ The following exchange is illustrative. Learn its intent and response shape; do 
 >
 > User: mark-life-style.
 >
-> Agent: Enabled `human-speak/mark-life-style:h1` through `h8` in this agent's memory. [Summarize the eight meanings and their actual project-reference or inline-content retention.] No files written.
+> Agent: Enabled `human-speak/mark-life-style:h1` through `h8` in this agent's memory with family priority [allocated number]. [Summarize the eight meanings and their actual project-reference or inline-content retention.] No files written.
 
 ## Subcommands
 

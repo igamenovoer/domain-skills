@@ -32,6 +32,8 @@ Preset names belong to configuration and review, not shared additive enable/disa
 
 Use the existing project rule set P and current-agent overrides M+ and M-. The formula remains `E = (P union M+) minus M-`. Configuration expands a preset into IDs; there is no separately persisted intensity flag. Derive a selection's label as safe, normal, or extreme only on an exact match with the current preset; otherwise report custom, none, or unresolved. Individual edits can make a preset custom. Re-reading a catalog never re-expands stored IDs or enables new rules.
 
+Ponytail is one rule family in the shared [priority contract](../../../references/priorities.md). Explicit rule enable and intensity configuration allocate a fresh priority for its complete enabled set in the selected scope, even if the IDs are unchanged. Disabling preserves the priority while rules remain; edit-scope-only configuration, recall, and review do not reprioritize it. Agent scope still wins over project scope, then higher family priority wins same-scope conflicts. Priority never widens the edit boundary.
+
 Edit scope is a separate optional scalar. Resolve this agent's explicit value first, then the project's explicit value, then new-code-only. Missing agent value means inherit, not a remembered new-code-only override. An explicit remembered new-code-only must mask a later project destructive setting. Rule enable/disable operations preserve this field, and a scope-only configuration changes no rule IDs.
 
 Unknown or malformed settings are unresolved, not permission for destructive edits. Preserve unknown rule IDs visibly as unresolved state under the shared runtime contract; do not silently drop them while configuring known IDs. Resolve or obtain an explicit replacement of inconsistent state before a configuration would erase it. Apply the shared lost-context rules: an unavailable memory record is not an empty one. Recover a same-agent handoff when available; otherwise disclose uncertainty and do not modify existing infrastructure based on a guessed scope. Other agents' records never supply local overrides.
@@ -41,11 +43,11 @@ Unknown or malformed settings are unresolved, not permission for destructive edi
 - Catalog: `.imsight-arts/mentality/ponytail-principles.md`.
 - Discovery marker key: `imsight-skill:imsight-mentality-mgr/ponytail-catalog`.
 - Project block marker key: `imsight-skill:imsight-mentality-mgr/ponytail-project`.
-- Memory namespace: ponytail, with enabled_rules, disabled_rules, and optional edit_scope.
+- Memory namespace: ponytail, with enabled_rules, disabled_rules, family priority when enabled_rules is nonempty, and optional edit_scope; the shared next-memory-priority counter belongs to this agent and project.
 
 Retain rule and setting meanings through shared [Definition Retention](../../../references/runtime-injection.md#definition-retention). Check whether the project's deployed details define each preset or edit boundary; a principle catalog alone does not imply coverage of every setting. Keep the setting's value and source independently of its definition reference or content.
 
-For example, `configure-memory normal new-code-only` remembers enabled IDs p1 through p9, disabled IDs p10 through p12, and the explicit edit-scope value. If deployed details define the rules and preset but omit edit scope, retain their project-bound paths and identifiers. Retain the operative **New-code-only** boundary below as inline content, including allowed wiring, explicit task-authority exceptions, and the distinction between new code and rewritten infrastructure. This example requires no memory file or new storage schema.
+For example, `configure-memory normal new-code-only` remembers enabled IDs p1 through p9, disabled IDs p10 through p12, a fresh memory family priority, and the explicit edit-scope value. If deployed details define the rules and preset but omit edit scope, retain their project-bound paths and identifiers. Retain the operative **New-code-only** boundary below as inline content, including allowed wiring, explicit task-authority exceptions, and the distinction between new code and rewritten infrastructure. This example requires no memory file or prescribed serialization schema.
 
 The project block uses the shared managed-file protocol. Its additional field is `Edit scope: new-code-only.` or `Edit scope: destructive.`; an absent field uses the default. Preserve this field in rule-only changes. Write canonical project IDs and names as usual, without a redundant authoritative intensity field. Include the catalog link when rules are enabled and the catalog is deployed. When no rules remain, follow [Empty project selection](../../../references/runtime-injection.md#empty-project-selection): retain only the heading, `Project-enabled principles: none.`, and any explicit edit-scope field inside the markers; remove the whole block if no explicit setting remains. Settings-only blocks contain no rule-application or required-use instructions.
 
@@ -56,24 +58,25 @@ The following abbreviated shape illustrates a configured project block; populate
 ## Project Mentality Rules: Ponytail
 
 - Project-enabled principles: p1 (reuse-existing), p2 (prefer-proven-primitives).
+- Family priority: 1.
 - Edit scope: new-code-only.
-- Application: agent-memory rule and edit-scope overrides take precedence. Apply only task-relevant guidance within the assigned task boundary; destructive scope still requires minimal impact on task-related infrastructure.
+- Application: agent-memory rule and edit-scope overrides take precedence. Within one scope, higher family priority wins conflicting guidance. Apply only task-relevant guidance within the assigned task boundary; destructive scope still requires minimal impact on task-related infrastructure.
 <!-- imsight-skill:imsight-mentality-mgr/ponytail-project:end -->
 ```
 
 ## Configure Project
 
 1. Require project scope and at least one validated axis. Run shared [Project application preparation](../../../references/runtime-injection.md#project-application-preparation), including any required deployment and discovery updates without a separate request. A scope-only setting still enables no rules.
-2. Read current P and the project edit-scope field. If intensity is supplied, replace P with that preset's exact ID set. If edit scope is supplied, replace that field. Preserve every omitted axis, agent override, and unrelated block.
-3. After preparation, update the Ponytail project block using the shared marker validation and concurrent-write protocol; use a compact settings-only block when no rules are enabled.
-4. Verify canonical IDs, settings, deployment/discovery, unrelated contents, and idempotence. Report the resulting project selection, edit scope, and changed paths; agent overrides may produce different effective results.
+2. Read current P, project family priority, the shared counter, and the project edit-scope field. If intensity is supplied, replace P with that preset's exact ID set and allocate a fresh project priority through the shared contract. If edit scope is supplied, replace that field. Preserve every omitted axis, agent override, and unrelated family block; an edit-scope-only request preserves priority and counter.
+3. After preparation, update the Ponytail project block and any allocated counter together using the shared marker validation and concurrent-write protocol; use a compact settings-only block with no family priority when no rules are enabled.
+4. Verify canonical IDs, priority and counter, settings, deployment/discovery, and unrelated contents. Report the resulting project selection, family priority, edit scope, and changed paths; agent overrides may produce different effective results. A fresh intensity request reprioritizes Ponytail even when its rule IDs already match.
 
 ## Configure Memory
 
 1. Require memory scope and at least one validated axis; no deployment is needed. Use only the current agent's record. Read the requested rule, preset, and edit-scope meanings through shared [Definition Retention](../../../references/runtime-injection.md#definition-retention).
-2. If intensity is supplied, let S be its expansion and U the current twelve Ponytail IDs. Replace this child's overrides with `M+ = S` and `M- = U minus S`. This intentionally replaces earlier Ponytail rule overrides, including individual ones; it masks project rules above the chosen preset. Other mentalities are unaffected.
+2. If intensity is supplied, let S be its expansion and U the current twelve Ponytail IDs. Replace this child's overrides with `M+ = S` and `M- = U minus S`, then allocate a fresh memory family priority. This intentionally replaces earlier Ponytail rule overrides, including individual ones; it masks project rules above the chosen preset. Other families' stored selections and priorities are unchanged.
 3. If edit scope is supplied, remember that scalar; otherwise preserve the existing override or inheritance. The explicit parameter `edit-scope=inherit`, accepted only by this memory configuration action, removes this agent's scope override without changing any rule override.
-4. Retain each affected rule or setting's definition reference or content, then report E, derived intensity, effective edit scope, and each setting's source through [Memory Confirmation](../../../references/runtime-injection.md#memory-confirmation). Summarize practical behavior and the permitted edit surface; write no files. Later individual enable/disable actions modify M+/M- normally, without rewriting edit scope.
+4. Retain the family priority and shared next-memory-priority counter with each affected rule or setting's definition reference or content, then report E, family priorities, derived intensity, effective edit scope, and each setting's source through [Memory Confirmation](../../../references/runtime-injection.md#memory-confirmation). Summarize practical behavior and the permitted edit surface; write no files. Later individual enable/disable actions modify M+/M- and priority through the shared contract, without rewriting edit scope.
 
 Configuration is explicit replacement, while shared individual rule actions remain additive/subtractive. For example, setting safe after extreme makes E exactly p1–p7 for that agent, even if the project selects extreme. A later explicit enable-memory p8 makes its selection custom. Disabling all rules does not reset edit scope or create an off mode; recall shows no effective rules and the retained scope separately.
 
@@ -99,12 +102,12 @@ Do not undertake opportunistic cleanup or codebase-wide refactoring unless that 
 
 Follow the shared recall action, then add:
 
-- Project IDs and derived project intensity, this agent's enabled/disabled overrides, and E with its derived effective intensity. Show custom selections as IDs instead of claiming a preset.
+- Project IDs, project family priority, and derived project intensity, this agent's enabled/disabled overrides and memory family priority, and E with its derived effective intensity. Show custom selections as IDs instead of claiming a preset.
 - Project edit scope, this agent's edit-scope override or inherit, effective edit scope, and its source. Label unavailable memory separately.
 - For a supplied task, the known starting boundary and which selected rules are applicable, blocked by the edit boundary, or unresolved. Without a task, applicability is not evaluated.
 - Any review-only overrides belong to that report, not subsequent configured recall. No report is a memory or policy input.
 
-Same-agent handoffs retain both negative overrides and the optional edit-scope override, plus the task baseline. Preserve definition paths and identifiers or operative inline content for rules and settings through the shared retention contract. Subagents receive only their explicitly assigned overrides and boundary; sharing the project does not transfer this agent's settings.
+Same-agent handoffs retain both negative overrides and the optional edit-scope override, the family priority and shared memory counter, plus the task baseline. Preserve definition paths and identifiers or operative inline content for rules and settings through the shared retention contract. Subagents receive only their explicitly assigned overrides and boundary; sharing the project does not transfer this agent's settings or priority sequence.
 
 ## Guardrails
 
