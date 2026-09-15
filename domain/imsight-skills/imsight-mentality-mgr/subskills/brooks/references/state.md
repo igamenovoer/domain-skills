@@ -32,8 +32,7 @@ Review accepts the same codes, names, and groups. Omitted review selectors use e
 The shared runtime contract owns state transitions, precedence, and [definition retention](../../../references/runtime-injection.md#definition-retention). Brooks supplies these bindings:
 
 - Project artifact: `.imsight-arts/mentality/brooks-principles.md`.
-- Catalog discovery marker key: `imsight-skill:imsight-mentality-mgr/brooks-catalog`.
-- Project-selection marker key: `imsight-skill:imsight-mentality-mgr/brooks-project`.
+- Instruction entry: `brooks` in the shared [unified mentality section](../../../references/runtime-injection.md#unified-mentality-section); no separate discovery or application block.
 - Agent-memory namespace: `brooks`, with separate explicit enabled and disabled rule sets.
 - Built-in selection: no project rules and no memory overrides; deployment never changes that default.
 

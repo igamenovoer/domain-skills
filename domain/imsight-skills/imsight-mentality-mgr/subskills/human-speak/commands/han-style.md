@@ -18,7 +18,7 @@ Han Style helps a capable reader understand an answer without reconstructing the
 
 Supply an optional shared action followed by its normal arguments. Accepted actions are `deploy`, `enable-project`, `disable-project`, `enable-memory`, `disable-memory`, `recall`, and `help`. Natural `enable` and `disable` use the manager's agent-memory default unless project scope is explicit. Project rule actions require explicit selectors or `all`; memory rule actions with no selectors select all five current rules of this flavor.
 
-For example, `imsight-mentality-mgr->human-speak->han-style()` with arguments `enable-memory h1 h5` remembers reader-context and preserve-precision for this agent. With `disable-project all`, it ensures deployment and removes this flavor's application block. The peer action `imsight-mentality-mgr->human-speak->enable-memory()` with arguments `han-style h1 h5` resolves identically. Actions are arguments to the flavor command, not nested subcommands.
+For example, `imsight-mentality-mgr->human-speak->han-style()` with arguments `enable-memory h1 h5` remembers reader-context and preserve-precision for this agent. With `disable-project all`, it ensures deployment and reduces this flavor's entry to a reference-only catalog link, removing application text and family priority. The peer action `imsight-mentality-mgr->human-speak->enable-memory()` with arguments `han-style h1 h5` resolves identically. Actions are arguments to the flavor command, not nested subcommands.
 
 ## Applying the Flavor
 

@@ -30,17 +30,17 @@ Priorities order enabled families; they do not select additional rules, change d
 
 ## Storage
 
-Store `- Family priority: <integer>.` in each nonempty project-selection block in the selected coding-agent instruction files (`AGENTS.md`, `CLAUDE.md`, etc.). Follow [Instruction File Selection](runtime-injection.md#instruction-file-selection). Keep one compact shared counter block per target file, mirroring the same project sequence rather than allocating independently per file:
+State each enabled family's nonnegative integer priority beside its selected IDs in the [unified mentality section](runtime-injection.md#unified-mentality-section), for example `Brooks, priority 2`. Wording and layout may vary; the number and family association must be unambiguous. Follow [Instruction File Selection](runtime-injection.md#instruction-file-selection) for `AGENTS.md`, `CLAUDE.md`, and other targets.
+
+Keep the known next-priority value once inside that section as a compact bookkeeping comment, not a separate block or repeated field per family:
 
 ```markdown
-<!-- imsight-skill:imsight-mentality-mgr/project-priority-sequence:start -->
-- Next project priority: 3.
-<!-- imsight-skill:imsight-mentality-mgr/project-priority-sequence:end -->
+<!-- imsight-skill:imsight-mentality-mgr/next-project-priority: 3 -->
 ```
 
-The example counter means the next project enable receives priority `3`; it enables nothing. Create the counter with the first project enable. Keep it after deleting family blocks, including when all project rules are disabled, so later enables do not reuse old numbers. A project enable updates this counter and its affected family blocks together in every selected file through the shared [write protocol](runtime-injection.md#write-protocol). Re-read project priorities and counters if another writer intervenes, and recompute allocation before a conditional or locked write.
+The example means the next project enable receives priority `3`; it enables nothing. Introduce the counter with the first project enable. Keep it after every family becomes reference-only so later enables do not reuse old numbers. Preserve its value when consolidating older owned blocks or refreshing catalogs. A project enable updates the counter and affected family entries in the same section rewrite through [Write protocol](runtime-injection.md#write-protocol). Re-read project state after concurrent changes and recompute before writing.
 
-Before a project selection or configuration action, inspect sequence state across the discovered project-wide instruction files and explicit targets, including any discovered files excluded from writing by an explicit target choice. Use the greatest valid stored next-priority value; it must exceed every assigned project priority in the inspected files. Lower counters can remain after a file-specific action and must never move the sequence backward. Matching copies of one family are one allocation, not duplicate priorities. Missing mirrors may inherit known sequence state; a missing or invalid sequence cannot be reconstructed from current family numbers alone because removed families may have left gaps. Mirror the resulting known counter only to the selected targets and report any differences left by an explicit file choice. Disable and edit-scope-only configuration may copy the known counter but never increment it; deployment alone does neither.
+Before a project selection or configuration action, inspect sequence state across the discovered project-wide instruction files and explicit targets, including any discovered files excluded from writing by an explicit target choice. Use the greatest valid stored next-priority value; it must exceed every assigned project priority in the inspected files. Lower counters can remain after a file-specific action and must never move the sequence backward. Matching entries for one family are one allocation, not duplicate priorities. Missing mirrors may inherit known sequence state; a missing or invalid sequence cannot be reconstructed from current family numbers alone because removed families may have left gaps. Mirror the resulting known counter only to the selected targets and report any differences left by an explicit file choice. Disable and edit-scope-only configuration may copy the known counter but never increment it; deployment alone preserves sequence values and creates no new sequence.
 
 Agent priorities and their next-priority value live only in that agent's chat context, bound to the project root. Memory actions write no files and never increment the project counter. Preserve the counter, family priorities, enabled and disabled IDs, and definition retention during same-agent handoffs. A subagent starts its own memory sequence for explicitly assigned rules; it does not copy a parent's numbers or counter implicitly.
 
@@ -48,7 +48,7 @@ Validate nonnegative integer priorities, distinct numbers for different enabled 
 
 ## Removal
 
-Disabling some rules preserves the family's priority for its remaining enabled rules. When its scope's enabled set becomes empty, remove that scope's family priority. Preserve memory-disabled overrides, independent child settings, and the scope's next-priority value. Remove empty project application blocks through the existing runtime contract; a settings-only block has no family priority.
+Disabling some rules preserves the family's priority for its remaining enabled rules. When its scope's enabled set becomes empty, remove that scope's family priority. Preserve memory-disabled overrides, independent child settings, and the scope's next-priority value. Reduce empty project selections to reference-only entries through [Empty project selection](runtime-injection.md#empty-project-selection). Retain explicit settings in their entry without a family priority.
 
 Never renumber surviving families, compact gaps, or decrease the counter. Re-enabling a removed family receives the next fresh number.
 

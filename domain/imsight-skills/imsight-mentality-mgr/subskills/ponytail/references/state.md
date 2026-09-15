@@ -41,34 +41,20 @@ Unknown or malformed settings are unresolved, not permission for destructive edi
 ### Storage
 
 - Catalog: `.imsight-arts/mentality/ponytail-principles.md`.
-- Discovery marker key: `imsight-skill:imsight-mentality-mgr/ponytail-catalog`.
-- Project block marker key: `imsight-skill:imsight-mentality-mgr/ponytail-project`.
+- Instruction entry: `ponytail` in the shared unified mentality section.
 - Memory namespace: ponytail, with enabled_rules, disabled_rules, family priority when enabled_rules is nonempty, and optional edit_scope; the shared next-memory-priority counter belongs to this agent and project.
 
 Retain rule and setting meanings through shared [Definition Retention](../../../references/runtime-injection.md#definition-retention). Check whether the project's deployed details define each preset or edit boundary; a principle catalog alone does not imply coverage of every setting. Keep the setting's value and source independently of its definition reference or content.
 
 For example, `configure-memory normal new-code-only` remembers enabled IDs p1 through p9, disabled IDs p10 through p12, a fresh memory family priority, and the explicit edit-scope value. If deployed details define the rules and preset but omit edit scope, retain their project-bound paths and identifiers. Retain the operative **New-code-only** boundary below as inline content, including allowed wiring, explicit task-authority exceptions, and the distinction between new code and rewritten infrastructure. This example requires no memory file or prescribed serialization schema.
 
-The project block uses the shared managed-file protocol. Its additional field is `Edit scope: new-code-only.` or `Edit scope: destructive.`; an absent field uses the default. Preserve this field in rule-only changes. Write canonical project IDs and names as usual, without a redundant authoritative intensity field. Include the catalog link when rules are enabled and the catalog is deployed. When no rules remain, follow [Empty project selection](../../../references/runtime-injection.md#empty-project-selection): retain only the heading, `Project-enabled principles: none.`, and any explicit edit-scope field inside the markers; remove the whole block if no explicit setting remains. Settings-only blocks contain no rule-application or required-use instructions.
-
-The following abbreviated shape illustrates a configured project block; populate all actual selected IDs and names rather than using a range as stored state:
-
-```markdown
-<!-- imsight-skill:imsight-mentality-mgr/ponytail-project:start -->
-## Project Mentality Rules: Ponytail
-
-- Project-enabled principles: p1 (reuse-existing), p2 (prefer-proven-primitives).
-- Family priority: 1.
-- Edit scope: new-code-only.
-- Application: agent-memory rule and edit-scope overrides take precedence. Within one scope, higher family priority wins conflicting guidance. Apply only task-relevant guidance within the assigned task boundary; destructive scope still requires minimal impact on task-related infrastructure.
-<!-- imsight-skill:imsight-mentality-mgr/ponytail-project:end -->
-```
+The Ponytail entry follows the shared [unified-section contract](../../../references/runtime-injection.md#unified-mentality-section). Keep its selected IDs, priority, catalog link, and any explicit `edit-scope` value together; an absent setting uses the default. Preserve explicit settings in rule-only changes and avoid a redundant authoritative intensity flag. With no selected rules, retain the setting in a reference-only entry without a family priority or instructions to apply the catalog. See [settings-only example](../../../references/instruction-examples.md#retain-an-independent-setting) for an illustrative rewrite; exact wording and layout are flexible.
 
 ## Configure Project
 
-1. Require project scope and at least one validated axis. Run shared [Project application preparation](../../../references/runtime-injection.md#project-application-preparation), including any required deployment and discovery updates without a separate request. A scope-only setting still enables no rules.
-2. Read current P, project family priority, the shared counter, and the project edit-scope field. If intensity is supplied, replace P with that preset's exact ID set and allocate a fresh project priority through the shared contract. If edit scope is supplied, replace that field. Preserve every omitted axis, agent override, and unrelated family block; an edit-scope-only request preserves priority and counter.
-3. After preparation, update the Ponytail project block and any allocated counter together using the shared marker validation and concurrent-write protocol; use a compact settings-only block with no family priority when no rules are enabled.
+1. Require project scope and at least one validated axis. Run shared [Project application preparation](../../../references/runtime-injection.md#project-application-preparation), including required catalog publication and preparation of final references without an intermediate instruction-file write. A scope-only setting still enables no rules.
+2. Read current P, project family priority, the shared counter, and the project edit-scope field. If intensity is supplied, replace P with that preset's exact ID set and allocate a fresh project priority through the shared contract. If edit scope is supplied, replace that field. Preserve every omitted axis, agent override, and unrelated family entry; an edit-scope-only request preserves priority and counter.
+3. After resolving the final settings and selection, rewrite the unified section once per target with the Ponytail entry and any allocated counter through the shared write protocol. Keep common scope guidance once and use a reference-only entry with retained settings and no family priority when no rules are enabled.
 4. Verify canonical IDs, priority and counter, settings, deployment/discovery, and unrelated contents. Report the resulting project selection, family priority, edit scope, and changed paths; agent overrides may produce different effective results. A fresh intensity request reprioritizes Ponytail even when its rule IDs already match.
 
 ## Configure Memory

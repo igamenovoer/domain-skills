@@ -27,8 +27,7 @@ Use the shared [enable/disable decision tree](../../../references/actions.md#ena
 The shared runtime contract owns state transitions, precedence, and [definition retention](../../../references/runtime-injection.md#definition-retention). Docs Writer supplies these bindings:
 
 - Project artifact: `.imsight-arts/mentality/docs-writer-principles.md`.
-- Catalog discovery marker key: `imsight-skill:imsight-mentality-mgr/docs-writer-catalog`.
-- Project-selection marker key: `imsight-skill:imsight-mentality-mgr/docs-writer-project`.
+- Instruction entry: `docs-writer` in the shared [unified mentality section](../../../references/runtime-injection.md#unified-mentality-section); no separate discovery or application block.
 - Agent-memory namespace: `docs-writer`, with separate explicit enabled and disabled rule sets.
 - Built-in selection: no project rules and no memory overrides; deployment never changes that default.
 

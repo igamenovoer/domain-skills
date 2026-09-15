@@ -27,8 +27,7 @@ Use the shared [enable/disable decision tree](../../../references/actions.md#ena
 The shared runtime owns state transitions, precedence, and [definition retention](../../../references/runtime-injection.md#definition-retention). This child supplies only these bindings:
 
 - Project artifact: `.imsight-arts/mentality/agile-experimenter-principles.md`.
-- Catalog discovery marker key: `imsight-skill:imsight-mentality-mgr/agile-experimenter-catalog`.
-- Project-selection marker key: `imsight-skill:imsight-mentality-mgr/agile-experimenter-project`.
+- Instruction entry: `agile-experimenter` in the shared [unified mentality section](../../../references/runtime-injection.md#unified-mentality-section); no separate discovery or application block.
 - Agent-memory namespace: `agile-experimenter`, with separate explicit enabled and disabled rule sets.
 - Built-in selection: no project rules and no memory overrides; deployment enables nothing.
 

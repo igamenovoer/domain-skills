@@ -18,7 +18,7 @@ STE Style helps readers interpret a statement without guessing its terms, relati
 
 Supply an optional shared action followed by its normal arguments. Accepted actions are `deploy`, `enable-project`, `disable-project`, `enable-memory`, `disable-memory`, `recall`, and `help`. Natural `enable` and `disable` use the manager's agent-memory default unless project scope is explicit. Project rule actions require explicit selectors or `all`; memory rule actions with no selectors select all five current rules of this flavor.
 
-For example, `imsight-mentality-mgr->human-speak->ste-style()` with arguments `enable-memory h1 h4` remembers stable-terminology and preserve-claim-strength for this agent. With `disable-project all`, it ensures deployment and removes this flavor's application block. The peer action `imsight-mentality-mgr->human-speak->enable-memory()` with arguments `ste-style h1 h4` resolves identically. Actions are arguments to the flavor command, not nested subcommands.
+For example, `imsight-mentality-mgr->human-speak->ste-style()` with arguments `enable-memory h1 h4` remembers stable-terminology and preserve-claim-strength for this agent. With `disable-project all`, it ensures deployment and reduces this flavor's entry to a reference-only catalog link, removing application text and family priority. The peer action `imsight-mentality-mgr->human-speak->enable-memory()` with arguments `ste-style h1 h4` resolves identically. Actions are arguments to the flavor command, not nested subcommands.
 
 ## Applying the Flavor
 

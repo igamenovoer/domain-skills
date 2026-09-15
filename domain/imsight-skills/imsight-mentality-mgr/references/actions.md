@@ -42,17 +42,17 @@ flowchart TD
     JV --> L{"Complete self-contained<br/>catalog deployed?"}
     L -- "No" --> M["Deploy self-contained catalog<br/>under .imsight-arts/mentality/"]
     L -- "Yes" --> N["Reuse deployed definitions"]
-    M --> O["Ensure catalog discovery<br/>in every target instruction file"]
+    M --> O["Prepare catalog links and current state<br/>Do not write a discovery block"]
     N --> O
     O --> P{"Enable or disable?"}
-    P -- "Enable" --> Q["Add selected project rules<br/>Allocate one fresh priority per family<br/>Mirror family block and counter to every target"]
+    P -- "Enable" --> Q["Add selected project rules<br/>Allocate one fresh priority per family"]
     P -- "Disable" --> R["Subtract selected project rules"]
     R --> S{"Any project-enabled rules remain?"}
-    S -- "Yes" --> T["Update remaining rules<br/>Preserve family priority and counter"]
+    S -- "Yes" --> T["Retain remaining rules<br/>Preserve family priority and counter"]
     S -- "No" --> U{"Independent project settings remain?"}
-    U -- "Yes" --> V["Keep compact settings-only block<br/>Remove family priority; preserve counter"]
-    U -- "No" --> W["Remove entire application block<br/>including heading, instructions, and markers<br/>Preserve shared priority counter"]
-    Q --> X["Verify every target reflects requested state<br/>Preserve discovery, other mentalities,<br/>unselected files, and agent-memory overrides"]
+    U -- "Yes" --> V["Retain settings in reference-only entry<br/>Remove family priority; preserve counter"]
+    U -- "No" --> W["Reduce to reference-only catalog entry<br/>Remove application text and family priority<br/>Preserve shared priority counter"]
+    Q --> X["Rewrite one coherent mentality section per target<br/>Combine availability, selection, settings, and counter<br/>Preserve unrelated state; verify final meaning"]
     T --> X
     V --> X
     W --> X
@@ -61,7 +61,7 @@ flowchart TD
 
 Validate the mentality, complete selector set, and scope before either branch changes files or memory. Resolve mixed deployed/undeployed definitions per rule through [Definition Retention](runtime-injection.md#definition-retention); an ID alone is insufficient without its project-bound locator. Memory disable remains an explicit negative override even when project rules are enabled. Both project enable and project disable include [Project application preparation](runtime-injection.md#project-application-preparation), without a separate deployment request or confirmation.
 
-Every project action reconciles all selected instruction files with the requested state, including one priority allocation per family when enabling. [Instruction File Selection](runtime-injection.md#instruction-file-selection) supplies the targets: explicit files only, otherwise all existing project-wide coding-agent files (`AGENTS.md`, `CLAUDE.md`, etc.), with root `AGENTS.md` created only when none exist. This includes removing empty application blocks in every target and retaining catalog discovery. Non-enabling actions whose resulting contents already match need no physical rewrite. Rule-only actions preserve independent settings such as Ponytail edit scope; “all rules” does not grant destructive edit scope. These defaults do not activate a bare child invocation or change deployment-only, review, or configuration argument semantics.
+Every project action reconciles all selected instruction files with the requested state, including one priority allocation per family when enabling. [Instruction File Selection](runtime-injection.md#instruction-file-selection) supplies the targets: explicit files only, otherwise all existing project-wide coding-agent files (`AGENTS.md`, `CLAUDE.md`, etc.), with root `AGENTS.md` created only when none exist. This includes reducing inactive families to concise reference-only entries in every target while removing obsolete application prose. Non-enabling actions whose resulting contents already match need no physical rewrite. Rule-only actions preserve independent settings such as Ponytail edit scope; “all rules” does not grant destructive edit scope. These defaults do not activate a bare child invocation or change deployment-only, review, or configuration argument semantics.
 
 Apply [family priority assignment](priorities.md#priority-assignment) to each enabling action. A fresh explicit enable raises the selected family's priority even when its IDs already match; it is not a no-op. Disable never renumbers surviving families or decreases either scope's counter. Preserve agent-over-project precedence, then use higher family priority for conflicts within a scope.
 
@@ -72,10 +72,10 @@ Apply [family priority assignment](priorities.md#priority-assignment) to each en
 | `enable Brooks` | Enable all current Brooks rules in this agent's memory; no file changes. |
 | `disable Brooks r5` | Remember an explicit memory disable for `r5`, even if project-enabled; no file changes. |
 | `enable Brooks r1 in project scope` | Ensure complete deployment, then add discovery and the resolved Brooks selection to every discovered project-wide instruction file; one priority allocation is shared by all copies. |
-| `disable all Brooks rules in AGENTS.md` | Ensure deployment and discovery, then remove the Brooks application block only in `AGENTS.md`; leave `CLAUDE.md` and other unselected files unchanged. |
+| `disable all Brooks rules in AGENTS.md` | Ensure deployment and discovery, then reduce Brooks to a reference-only entry only in `AGENTS.md`; leave `CLAUDE.md` and other unselected files unchanged. |
 | `enable Brooks r1 in CLAUDE.md` | Ensure deployment and discovery, then update only `CLAUDE.md`; create it if absent. |
 | `enable Brooks r1 in AGENTS.md and CLAUDE.md` | Update both named files with the same resolved selection and priority; leave other instruction files unchanged. |
-| `disable all Brooks rules in project scope` | Remove the Brooks application block from every discovered project-wide instruction file; preserve catalog discovery and independent settings. |
+| `disable all Brooks rules in project scope` | Reduce Brooks to a reference-only entry in every discovered project-wide instruction file; remove application text and preserve independent settings. |
 | `enable Brooks in project scope` | Clarify which rules or `all` before any writes; project selectors are not implicit. |
 | `enable human-speak` | List flavor origins and summaries and ask for a choice; do not infer Mark-Life Style or enable rules. |
 | `enable human-speak mark-life-style` | Enable all current rules of that explicitly named flavor in agent memory. |
@@ -84,42 +84,42 @@ Apply [family priority assignment](priorities.md#priority-assignment) to each en
 
 **Input:** one or more named mentalities and a target project, including explicit flavors when required. Naming particular principles identifies their owning mentality, but never substitutes for a Human Speak flavor choice. Deployment publishes each selected target's complete catalog; a Human Speak flavor does not publish its siblings.
 
-1. Resolve and validate all instruction-file targets through [Instruction File Selection](runtime-injection.md#instruction-file-selection). Read the complete maintained catalog and its **Catalog Publication** contract in the child's entrypoint or selected flavor command. Resolve its declared storage key; external reference tables are not publication inputs.
-2. Render all canonical principles with maintained definitions, original examples, judgment notes, and applicability into `.imsight-arts/mentality/<mentality>-principles.md`. Follow [External references](runtime-injection.md#external-references): exclude source links, third-party material, and reference tables; create no source directory.
-3. Add or refresh only the catalog discovery block in every target instruction file, following **Managed Project Files** in the runtime reference.
-4. Verify the complete catalog and each file's discovery reference resolve within the project without network access or an installed skill. Confirm project selection and every agent's remembered overrides are unchanged.
+1. Resolve and validate instruction-file targets through [Instruction File Selection](runtime-injection.md#instruction-file-selection). Read current mentality guidance and each selected child's catalog and **Catalog Publication** contract. Resolve its storage key; external reference tables are not publication inputs.
+2. Render complete maintained definitions, original examples, judgment notes, and applicability into `.imsight-arts/mentality/<mentality>-principles.md`. Follow [Catalog artifact](runtime-injection.md#catalog-artifact) and [External references](runtime-injection.md#external-references); publish no source directory or reference table.
+3. Rewrite the [unified mentality section](runtime-injection.md#unified-mentality-section) in every target to include the catalog reference. Keep an already enabled family's selection and priority beside its link; otherwise use a minimal reference-only entry. Preserve all selections, settings, memory, and counter values. Consolidate older owned blocks when present; do not append a discovery block to existing application text.
+4. Verify catalog self-containment and every target's relative links, coherent final section, and unchanged activation state. If a catalog refresh requires no instruction-text change, leave that text as it is.
 
-**File effects:** the deployed catalog and the catalog's discovery blocks in all target instruction files only. Deployment never creates a project-enabled selection, even when the caller names all principles. Refreshing a catalog does not enable newly added principles.
+**File effects:** the deployed catalogs and availability references within the unified sections. Deployment changes neither project activation nor memory; it does not enable newly added principles or allocate priorities.
 
-**Output:** mentality names, deployed canonical rule index, catalog and discovery paths, and whether catalogs were created or refreshed. State that deployment alone enables no rules.
+**Output:** mentality names, deployed rule index, catalog and instruction paths, and whether each was created, refreshed, reorganized, or unchanged. State that deployment alone enables no rules.
 
 ## Enable Project
 
 **Input:** named mentalities and explicit rule selectors, including `all` within a named mentality. Child intensity configuration is a separate replacement action, not an alias for this union operation.
 
-1. Resolve selectors against each child's complete canonical catalog.
-2. Run [Project application preparation](runtime-injection.md#project-application-preparation): deploy missing or incomplete material automatically, reuse complete deployment, and ensure discovery in every target instruction file.
-3. Read and reconcile current project selections from the target files, family priorities, and the shared next-priority counter. Union the resolved IDs into each affected set and allocate a fresh priority once per family in caller order through [Priority Assignment](priorities.md#priority-assignment), irrespective of target-file count.
-4. Update the affected project-selection blocks and shared priority counter together in every target instruction file, following the shared write protocol.
-5. Verify the resulting project sets and any deployment/discovery changes while preserving complete existing catalogs, unrelated instructions, independent settings, and all memory overrides.
+1. Resolve selectors against each child's complete canonical catalog and validate the whole request.
+2. Run [Project application preparation](runtime-injection.md#project-application-preparation): resolve target files and prior state, publish missing or incomplete catalogs, and prepare links without writing a preliminary discovery section.
+3. Union the resolved IDs into each affected project set. Allocate a fresh priority once per family in caller order through [Priority Assignment](priorities.md#priority-assignment), irrespective of target-file count.
+4. Rewrite each target's unified section with the resulting selection, family priority, catalog reference, and shared counter. Replace any reference-only entry for an enabled family; keep common application and precedence guidance once. Follow [Write protocol](runtime-injection.md#write-protocol) and use [adjustment examples](instruction-examples.md) for presentation choices.
+5. Verify resulting state by meaning while preserving other families, complete existing catalogs, unrelated instructions, independent settings, and all memory overrides.
 
-**File effects:** required catalog deployment, catalog discovery, and project-selection blocks in every target instruction file. These rules become project-wide requirements subject to agent-local overrides.
+**File effects:** required catalog publication and the final unified section in each target instruction file. Only the selected IDs become additional project requirements; catalog availability supplies no further activation.
 
-**Output:** newly enabled IDs, unchanged IDs, resulting project selection, old and new family priorities, deployment effects, and changed paths including every target instruction file. When IDs already match, report the priority change from the new enable request. Do not claim that these are every agent's effective rules.
+**Output:** newly enabled and unchanged IDs, resulting project selection, old and new family priorities, deployment effects, and changed paths. Report the fresh priority even when IDs already matched. Do not claim these are every agent's effective rules.
 
 ## Disable Project
 
 **Input:** named mentalities and explicit rule selectors.
 
-1. Validate all selectors using the child's canonical catalog before any writes.
-2. Run [Project application preparation](runtime-injection.md#project-application-preparation), including automatic deployment and discovery when needed, even if no project rules are currently enabled.
-3. Re-read the resolved project selections across the target files and subtract the resolved IDs. A selection absent from all targets is empty; a missing mirror does not cancel an existing selection. Preserve each remaining family's priority and the shared allocation counter; remove the family priority when its project selection becomes empty.
-4. Update affected project-selection blocks in every target using [Empty project selection](runtime-injection.md#empty-project-selection). When no rules or independent child settings remain, remove the whole application block, including its heading, instructions, and markers. Do this even when an existing block already lists `none`. Preserve independently configured settings in a compact settings-only block. Mirror any remaining resolved rules or settings into missing target blocks; when the resolved state is empty, an absent block stays absent. Prerequisite deployment may still create catalog discovery in every target instruction file.
-5. Verify any deployment/discovery changes and the resulting project selection. Preserve complete existing catalogs, unrelated project rules, independent settings, and every agent's memory overrides.
+1. Validate all selectors before writes.
+2. Run [Project application preparation](runtime-injection.md#project-application-preparation), including required catalog publication even if no project rules are enabled. Prepare the final availability reference without an intermediate instruction-file write.
+3. Subtract the resolved IDs from the resolved project selections. A selection absent from all targets is empty; a missing mirror does not cancel another target's selection. Preserve a remaining family's priority; remove that priority when its set becomes empty. Preserve the known shared counter without incrementing it.
+4. Rewrite the unified section in every target through [Empty project selection](runtime-injection.md#empty-project-selection). For a partial disable, state only the remaining rules. For the last rule, replace application language with a minimal reference-only entry, retaining any explicit settings in that entry. Remove superseded text instead of appending disabled flags or a history of the operation. Mirror the resulting meaning into all selected files.
+5. Verify the result, available catalog links, retained settings and counter, and preserved unrelated state. When every family is inactive, shorten shared prose to availability and selective reading; it must not instruct agents to apply the catalogs.
 
-**File effects:** required catalog deployment and discovery updates, plus updates or removal of affected project-selection blocks in every target instruction file. Disabling a project rule removes the shared requirement; it does not prohibit an agent from explicitly enabling that rule in memory.
+**File effects:** required catalog publication and the rewritten unified sections. Removing a project requirement still permits explicit agent-memory activation.
 
-**Output:** removed IDs, unchanged IDs, resulting project selection and family priority or `none`, deployment effects, changed paths, and whether the application block was updated, removed, retained for settings only, or already absent. Report an empty selection in chat; do not leave a disabled family placeholder in any target instruction file. The shared next-priority counter remains available for later enables.
+**Output:** removed and unchanged IDs, resulting selection and family priority or `none`, retained settings, deployment effects, and changed paths. Explain whether the entry retains active rules or is now reference-only; keep the operation report in chat rather than in the instruction file.
 
 ## Enable Memory
 

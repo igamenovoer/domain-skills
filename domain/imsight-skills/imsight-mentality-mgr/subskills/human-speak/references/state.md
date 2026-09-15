@@ -24,27 +24,21 @@ For Mark-Life Style:
 
 - Catalog: `.imsight-arts/mentality/human-speak-mark-life-style-principles.md`.
 - Catalog marker key: `imsight-skill:imsight-mentality-mgr/human-speak-mark-life-style-principles`.
-- Discovery marker key: `imsight-skill:imsight-mentality-mgr/human-speak-mark-life-style-catalog`.
-- Project marker key: `imsight-skill:imsight-mentality-mgr/human-speak-mark-life-style-project`.
 - Agent-memory namespace: `human-speak/mark-life-style`, with separate enabled and disabled rule sets.
 
 For Han Style:
 
 - Catalog: `.imsight-arts/mentality/human-speak-han-style-principles.md`.
 - Catalog marker key: `imsight-skill:imsight-mentality-mgr/human-speak-han-style-principles`.
-- Discovery marker key: `imsight-skill:imsight-mentality-mgr/human-speak-han-style-catalog`.
-- Project marker key: `imsight-skill:imsight-mentality-mgr/human-speak-han-style-project`.
 - Agent-memory namespace: `human-speak/han-style`, with separate enabled and disabled rule sets.
 
 For STE Style:
 
 - Catalog: `.imsight-arts/mentality/human-speak-ste-style-principles.md`.
 - Catalog marker key: `imsight-skill:imsight-mentality-mgr/human-speak-ste-style-principles`.
-- Discovery marker key: `imsight-skill:imsight-mentality-mgr/human-speak-ste-style-catalog`.
-- Project marker key: `imsight-skill:imsight-mentality-mgr/human-speak-ste-style-project`.
 - Agent-memory namespace: `human-speak/ste-style`, with separate enabled and disabled rule sets.
 
-Use the state identity for memory, composition, and user-facing provenance. Qualify cross-flavor or cross-mentality rules as `human-speak/mark-life-style:h1`, `human-speak/han-style:h1`, or `human-speak/ste-style:h1`; these are different rules despite sharing a local ID. Within a correctly identified flavor block, store canonical local IDs such as `h1` beside their names. Use the storage key in the manager's generic `<mentality>` path and marker templates. Visible headings identify both Human Speak and the selected flavor.
+Use the state identity for memory, composition, and user-facing provenance. Qualify cross-flavor or cross-mentality rules as `human-speak/mark-life-style:h1`, `human-speak/han-style:h1`, or `human-speak/ste-style:h1`; these are different rules despite sharing a local ID. Within a correctly identified flavor entry, store canonical local IDs such as `h1` beside their names. Use the storage key in the manager's catalog paths and catalog markers. Each flavor has its own entry within the shared [unified mentality section](../../../references/runtime-injection.md#unified-mentality-section), identified by both Human Speak and the flavor; it has no separate discovery or application block.
 
 ## Rule Selection
 
@@ -54,7 +48,7 @@ Unqualified enable/disable defaults to agent memory. Omitted memory selectors ex
 
 Keep `P`, `M+`, and `M-` independently for each flavor, using `E = (P union M+) minus M-`. Each flavor is a separate rule family under the shared [priority contract](../../../references/priorities.md); there is no Human Speak-wide priority. A fresh enable raises that flavor's scoped family priority and advances the shared counter without changing other flavors' stored selections or numbers. Adding a future flavor does not enable it or copy rules from an existing one. These actions do not silently replace another flavor; any intended combination or removal names the affected flavors explicitly. Resolve conflicts by agent-memory-over-project precedence, then higher family priority within the same scope, never inventory order.
 
-No registered flavor has independent child settings. Disabling a flavor's last project rule removes its entire application block and family priority after required deployment preparation, preserving discovery, the shared next-project-priority counter, and agent memory. A partial disable preserves the family priority. Disabling its last memory-enabled rule removes only that memory priority, retaining explicit negative overrides and the shared next-memory-priority counter; it writes no files.
+No registered flavor has independent child settings. Disabling a flavor's last project rule replaces its application text with a minimal reference-only catalog entry and removes its family priority after required deployment preparation, preserving the shared next-project-priority counter and agent memory. A partial disable preserves the family priority. Disabling its last memory-enabled rule removes only that memory priority, retaining explicit negative overrides and the shared next-memory-priority counter; it writes no files.
 
 ## Recall and Retention
 
@@ -68,6 +62,6 @@ Read definitions before retaining them. For each deployed, usable rule, retain t
 
 - DO NOT fill an omitted flavor from project state, remembered use, or the sole available option.
 - DO NOT apply `all` across flavors or accept unqualified rule IDs before the flavor is chosen.
-- DO NOT share a project block, catalog path, or memory namespace between different flavors.
+- DO NOT combine different flavors into one undifferentiated entry, catalog path, or memory namespace.
 - DO NOT write memory overrides or a pending chooser request into project files.
 - DO NOT silently replace another flavor when enabling the requested one.

@@ -18,7 +18,7 @@ Mark-Life Style treats the reader's attention as scarce. Put the conclusion wher
 
 Supply an optional shared action followed by its normal arguments. Accepted actions are `deploy`, `enable-project`, `disable-project`, `enable-memory`, `disable-memory`, `recall`, and `help`. The natural verbs `enable` and `disable` follow the manager's agent-memory default unless project scope is explicit. Project rule actions require explicit selectors or `all`; memory rule actions with no selectors select all current rules of this flavor.
 
-For example, `imsight-mentality-mgr->human-speak->mark-life-style()` with `enable-memory h1 h4` enables those two rules in chat context. The same command with `disable-project all` ensures deployment and removes this flavor's application block. These actions are arguments to the flavor command, not nested subcommands. `agent-to-human` is the upstream title, not another registered flavor or invocation alias.
+For example, `imsight-mentality-mgr->human-speak->mark-life-style()` with `enable-memory h1 h4` enables those two rules in chat context. The same command with `disable-project all` ensures deployment and reduces this flavor's entry to a reference-only catalog link, removing application text and family priority. These actions are arguments to the flavor command, not nested subcommands. `agent-to-human` is the upstream title, not another registered flavor or invocation alias.
 
 ## Applying the Flavor
 
