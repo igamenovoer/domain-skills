@@ -21,7 +21,7 @@ This catalog describes available principles, not activation state. Project or ag
 
 Safe contains p1–p7. Normal adds p8 and p9. Extreme adds p10–p12. Presets select increasingly broad simplification opportunities; they do not weaken the validity requirements below or imply permission to revise existing infrastructure. Edit scope is independent: new-code-only preserves established infrastructure; destructive permits only minimal revisions of infrastructure related to the assigned task. Broad codebase refactoring requires that explicit assignment.
 
-The **Representative Do / Don't comparisons** below follow the Brooks catalog style: a named rule, a linked source, contrasting code, and a judgment note. They adapt official Ponytail examples at the pinned revision; added teaching cases are identified explicitly. Read each comparison with its stated contract. Snippets show the relevant change, not a complete application; the examples and their assumptions are included here so applying or deploying the catalog requires no upstream checkout.
+The **Representative Do / Don't comparisons** are original illustrative scenarios. Their stated contracts explain the intended design move; snippets are teaching fragments, not complete applications or evidence about this repository. Preserve those contracts and use the judgment notes when adapting the ideas.
 
 ## Safe Rules
 
@@ -29,25 +29,23 @@ The **Representative Do / Don't comparisons** below follow the Brooks catalog st
 
 Search the relevant codebase for a helper, type, or convention before writing another implementation. Check its input, error, normalization, and side-effect contract; similarity in name is not proof of suitability.
 
-**Representative Do / Don't comparison** ([Ponytail — reuse-money benchmark](sources/benchmark-cases.md#reuse-money)). Adapted from the upstream good/bad implementations with type annotations. The existing `money.format_money` helper returns the project's currency format, including thousands separators.
+**Representative Do / Don't comparison.** A project already owns title normalization, reserved names, and collision handling in `project_slugs.for_title`.
 
-**Don't:** Reimplement the display format in a new invoice caller and lose the established grouping behavior.
-
-```python
-def line_item(name: str, cents: int, qty: int) -> str:
-    return f"{name} x{qty} - ${cents * qty / 100:.2f}"
-# line_item("Pallet", 61728, 2) -> "Pallet x2 - $1234.56"
-```
-
-**Do:** Call the existing helper through its supported interface.
+**Don't:** Create a second naming policy in the new document caller.
 
 ```python
-from money import format_money
-
-def line_item(name: str, cents: int, qty: int) -> str:
-    return f"{name} x{qty} - {format_money(cents * qty)}"
-# line_item("Pallet", 61728, 2) -> "Pallet x2 - $1,234.56"
+slug = title.lower().replace(" ", "-")
+document_store.create(slug, content)
 ```
+
+**Do:** Use the established naming operation.
+
+```python
+slug = project_slugs.for_title(title)
+document_store.create(slug, content)
+```
+
+The caller still handles the store's documented failure cases. Reuse does not permit bypassing validation or changing the existing helper.
 
 **Judgment:** Reuse must not force callers into the wrong bounded context or require restructuring an unrelated module. Under new-code-only, call the existing helper as supported; do not rewrite it merely to make the new caller shorter.
 
@@ -55,23 +53,24 @@ def line_item(name: str, cents: int, qty: int) -> str:
 
 Prefer a standard-library or native platform facility when its actual semantics, supported versions, and accessibility meet the task. Compare behavior before accepting a smaller implementation.
 
-**Representative Do / Don't comparison** ([Ponytail — Group By](sources/group-by.md)). The target runtime supports `Object.groupBy`; callers need groups indexed by status strings, including names such as `constructor`.
+**Representative Do / Don't comparison.** A command receives a list of hashable option names and must remove duplicates while preserving their first occurrence, including for empty input.
 
-**Don't:** Maintain a plain-object accumulator that mistakes inherited property names for existing groups.
+**Don't:** Maintain a separate scan when a supported language primitive supplies that behavior.
 
-```javascript
-const byStatus = orders.reduce((acc, order) => {
-  (acc[order.status] ??= []).push(order);
-  return acc;
-}, {});
+```python
+unique_names = []
+for name in names:
+    if name not in unique_names:
+        unique_names.append(name)
 ```
 
-**Do:** Use the native grouping operation and account for its null-prototype result in consumers.
+**Do:** Use insertion-ordered dictionary keys on the project's supported Python runtime.
 
-```javascript
-const byStatus = Object.groupBy(orders, order => order.status);
-const hasPending = Object.hasOwn(byStatus, "pending");
+```python
+unique_names = list(dict.fromkeys(names))
 ```
+
+This choice requires hashable values and ordinary equality semantics. Unhashable records or domain-specific equality need a different implementation.
 
 **Judgment:** Standard availability is not universal equivalence. A native primitive that lacks required timezone, validation, or platform behavior does not satisfy the task. If new-code-only scope requires a caller to use an established infrastructure abstraction, reuse that abstraction rather than bypassing it to reach a primitive directly.
 
@@ -79,23 +78,23 @@ const hasPending = Object.hasOwn(byStatus, "pending");
 
 Before adding a package, compare suitable installed dependencies, native facilities, and a small maintainable implementation. Consider ongoing updates and integration costs, not just the number of package entries.
 
-**Representative Do / Don't comparison** ([Ponytail — Deep Clone](sources/deep-clone.md)). The task copies structured-cloneable data, including dates and cycles, on a supported runtime; it does not require functions or custom class behavior to survive cloning.
+**Representative Do / Don't comparison.** A new report only needs the sum of at most 10,000 nonnegative integer counts, each at most one million. No array computation or array return type is required.
 
-**Don't:** Add Lodash solely for this new copy operation when the built-in meets that contract.
+**Don't:** Add an array package solely to calculate this scalar total.
 
-```javascript
-import { cloneDeep } from "lodash"; // Newly added dependency.
+```python
+import numpy as np  # New dependency for this report alone.
 
-const copy = cloneDeep(original);
+total = int(np.asarray(counts, dtype=np.int64).sum())
 ```
 
-**Do:** Use the built-in clone operation.
+**Do:** Use integer arithmetic already supplied by the language.
 
-```javascript
-const copy = structuredClone(original);
+```python
+total = sum(counts)
 ```
 
-Do not substitute a JSON stringify/parse round trip: it changes supported types and fails on cycles. `structuredClone` is also not a universal replacement for every `cloneDeep` use; inspect the actual values and required semantics.
+The result is an integer and empty input gives zero. This example does not suggest replacing a package already needed for vectorized calculations elsewhere.
 
 **Judgment:** This rule concerns avoiding unnecessary additions. It does not by itself call for removing an existing dependency; that is p11 and still subject to edit scope. Adding a small feature must not become a dependency migration project.
 
@@ -103,34 +102,30 @@ Do not substitute a JSON stringify/parse round trip: it changes supported types 
 
 Read the affected flow and relevant callers before choosing a fix location. Prefer one correct change at the decision's owner over repeated symptom patches, when that location is permitted by the task and edit scope.
 
-**Representative Do / Don't comparison** ([Ponytail — trace-transfer benchmark](sources/benchmark-cases.md#trace-transfer)). These excerpts assume positive integer cents have already been validated and the enclosing operation supplies the required transaction/serialization boundary. A task-authorized shared repair or destructive scope permits this fix.
+**Representative Do / Don't comparison.** Both a command-line tool and an HTTP endpoint rename documents through `set_label`. The assigned fix permits changing that shared operation, and blank labels violate its contract.
 
-**Don't:** Guard only the transfer named in the report while withdrawals still reach the unguarded debit.
-
-```python
-def _debit(acct: str, cents: int) -> None:
-    balances[acct] = balances.get(acct, 0) - cents
-
-def transfer(src: str, dst: str, cents: int) -> None:
-    if balances.get(src, 0) < cents:
-        raise ValueError("insufficient funds")
-    _debit(src, cents)
-    deposit(dst, cents)
-
-def withdraw(acct: str, cents: int) -> int:
-    _debit(acct, cents)
-    return cents
-```
-
-**Do:** Protect the shared debit; both existing callers keep using it.
+**Don't:** Reject blank labels in only the HTTP caller while leaving other callers able to store them.
 
 ```python
-def _debit(acct: str, cents: int) -> None:
-    balance = balances.get(acct, 0)
-    if balance < cents:
-        raise ValueError("insufficient funds")
-    balances[acct] = balance - cents
+def rename_http(document, label):
+    if not label.strip():
+        raise InvalidLabel()
+    set_label(document, label)
+
+def set_label(document, label):
+    document.label = label
 ```
+
+**Do:** Protect the invariant in the shared operation that both callers use.
+
+```python
+def set_label(document, label):
+    if not label.strip():
+        raise InvalidLabel()
+    document.label = label
+```
+
+Keep each caller's required error translation. Normalization, authorization, and persistence retain their existing owners.
 
 **Judgment:** New-code-only cannot silently widen into a shared-infrastructure repair. If the valid fix requires that change, use a precise existing task authorization or surface the boundary conflict; do not create a misleading caller-only workaround. In destructive scope, update only the affected boundary and necessary callers, not surrounding services that happen to be nearby.
 
@@ -138,25 +133,24 @@ def _debit(acct: str, cents: int) -> None:
 
 Remove dead code, duplicated calculations, or repeated checks only after establishing that no supported behavior depends on them. Examine actual callers, entry points, and invariants; a text search with no hits may miss reflective or external uses.
 
-**Representative Do / Don't comparison** ([Ponytail — Debounce](sources/debounce.md)). The redundant-guard variant is added here to explain upstream's unconditional `clearTimeout`. This browser-local variable contains only `undefined` or a timer identifier; canceling an absent or expired timer has no effect.
+**Representative Do / Don't comparison.** The task iterates a local dictionary while no code mutates it. Each key obtained from that iteration is already present in the same dictionary.
 
-**Don't:** Add a separate presence branch that supplies no additional guarantee.
+**Don't:** Recheck membership before reading each value.
 
-```javascript
-if (debounceTimer !== undefined) {
-  clearTimeout(debounceTimer);
-}
-debounceTimer = setTimeout(() => runSearch(query), 300);
+```python
+for key in limits:
+    if key in limits:
+        render_limit(key, limits[key])
 ```
 
-**Do:** Rely on the timer API's defined cancellation behavior.
+**Do:** Iterate the known key/value pairs directly.
 
-```javascript
-clearTimeout(debounceTimer);
-debounceTimer = setTimeout(() => runSearch(query), 300);
+```python
+for key, value in limits.items():
+    render_limit(key, value)
 ```
 
-The existing `runSearch` still owns input policy, request failures, and stale-result handling. Removing this redundant branch gives no reason to remove those distinct safeguards.
+This reasoning does not remove validation of externally supplied keys or protections against concurrent mutation.
 
 **Judgment:** A rare condition is not an impossible one. Preserve checks that defend different boundaries, prevent data loss, or express distinct domain constraints. Under new-code-only, cleanup is limited to new task code; established infrastructure is context, not a cleanup target.
 
@@ -166,33 +160,25 @@ Match verification effort to the plausible regression and its consequence. First
 
 Test the observable product contract at a suitable existing boundary. Avoid suites for every private helper, assertions about internal call order, duplicated coverage at multiple levels without a distinct risk, and exhaustive checks of trusted runtime features unrelated to the product's inputs. After required checks pass and the material changed risks have sufficient evidence, stop; broaden verification when a failure, further change, or specific unresolved risk warrants it.
 
-**Representative Do / Don't comparison** ([Ponytail — Deep Clone](sources/deep-clone.md)). This added teaching case applies the upstream replacement inside `openSettingsDraft`, the editor's existing public operation for making an independent draft. This path accepts validated plain settings data, with no dates, cycles, maps, or functions. An existing regression already checks that draft edits leave the saved settings unchanged.
+**Representative Do / Don't comparison.** A report loader now uses the standard UTF-8 text-reading operation. Its existing product regression covers a non-ASCII heading, and the required missing-file behavior has not changed.
 
-**Don't:** Add a runtime conformance suite for unrelated value types just because the implementation now calls `structuredClone`.
+**Don't:** Add a separate conformance suite for the standard library's unrelated encodings and argument combinations merely because the call changed.
 
-```javascript
-import assert from "node:assert/strict";
-
-assert.deepEqual(structuredClone(new Date(0)), new Date(0));
-assert.deepEqual(structuredClone(new Map([["x", 1]])), new Map([["x", 1]]));
-const cyclic = {};
-cyclic.self = cyclic;
-const copy = structuredClone(cyclic);
-assert.equal(copy.self, copy);
-assert.throws(() => structuredClone({ callback() {} }), { name: "DataCloneError" });
+```python
+for encoding in ("utf-8", "utf-16", "utf-32"):
+    path.write_text("sample", encoding=encoding)
+    assert path.read_text(encoding=encoding) == "sample"
 ```
 
-**Do:** Reuse the existing product regression shown below. Add or adapt it only if this behavior lacks adequate coverage.
+**Do:** Reuse the existing product regression; add or adapt it only if the relevant behavior lacks adequate coverage.
 
-```javascript
-import assert from "node:assert/strict";
-
-const saved = { appearance: { theme: "light" } };
-const draft = openSettingsDraft(saved);
-draft.appearance.theme = "dark";
-
-assert.equal(saved.appearance.theme, "light");
+```python
+path.write_text("Résumé\n", encoding="utf-8")
+report = load_report(path)
+assert report.heading == "Résumé"
 ```
+
+A change to missing-file handling or error translation would introduce a separate product risk. That risk needs suitable evidence, not an exhaustive file-library suite.
 
 **Judgment:** One focused regression can be sufficient; test count and coverage percentages are not completion targets. A low-impact change with clear semantics may need only inspection or an existing check. Money, security, persistence, or a changed boundary can justify more evidence when concrete failure consequences warrant it; that still does not imply every case at every test level. Preserve required edge-case defenses without inventing a new test for each unchanged safeguard. Frameworks and fixtures are acceptable when they help test the actual behavior. In read-only review, identify a specific material evidence gap before recommending more tests, and do not execute or write them automatically.
 
@@ -200,26 +186,24 @@ assert.equal(saved.appearance.theme, "light");
 
 Record a deliberate simplification's actual ceiling and the condition that would justify changing it when those facts matter to future maintainers. Preserve necessary tuning, calibration, and operational controls.
 
-**Representative Do / Don't comparison** ([Ponytail — Rules](sources/ponytail-rules.md#rules)). The upstream global-lock comment is expanded into a teaching fragment; the validated transfer and lock are existing infrastructure. Current throughput requirements permit serialization.
+**Representative Do / Don't comparison.** An interactive tool deliberately retains only the most recent 250 diagnostics. Its current requirements do not include a durable audit history.
 
-**Don't:** Present a global lock as a solution without a concurrency ceiling.
-
-```python
-# Concurrency solved.
-with global_lock:
-    move_cents(src, dst, cents)
-```
-
-**Do:** Name the actual limit and the evidence that would justify revisiting it.
+**Don't:** Present a bounded in-memory buffer as permanent storage.
 
 ```python
-# Serializes all transfers; consider ordered per-account locks
-# if measured lock contention prevents meeting the throughput requirement.
-with global_lock:
-    move_cents(src, dst, cents)
+# Preserve the complete diagnostic history.
+recent_diagnostics = deque(maxlen=250)
 ```
 
-A hardware calibration parameter remains necessary when physical tolerances require it, even if a fixed value would be shorter. A documented limit never substitutes for meeting the current requirement.
+**Do:** Describe the actual retention boundary and its revisit trigger.
+
+```python
+# Keeps the latest 250 diagnostics for the current session.
+# Add durable storage if an audit-history requirement is introduced.
+recent_diagnostics = deque(maxlen=250)
+```
+
+The documented bound must satisfy the current task. It cannot excuse discarding records that users already require.
 
 **Judgment:** Use the repository's established comment or decision-record convention; a `ponytail:` prefix is optional when compatible. Add a note only for a real limitation, not every simple implementation. A comment does not make a violated requirement acceptable, and an unknown ceiling should not be presented as measured. New-code-only scope does not authorize editing unrelated old comments.
 
@@ -229,37 +213,28 @@ A hardware calibration parameter remains necessary when physical tolerances requ
 
 Actively consider collapsing wrappers, factories, interfaces, or layers when they add coordination cost without hiding a useful decision, protecting a contract, or serving a current requirement.
 
-**Representative Do / Don't comparison** ([Ponytail — Debounce](sources/debounce.md)). Adapted to call an established `runSearch` that owns validation, request errors, rendering, and stale-result policy. This is one new input lasting for the page lifetime, with no existing debounce helper or independent wrapper contract.
+**Representative Do / Don't comparison.** A new local operation loads one fixed settings file through an existing validated reader. The proposed factory hides no variation, lifecycle, or dependency boundary.
 
-**Don't:** Introduce an otherwise unneeded general wrapper for this one local timer.
+**Don't:** Add a factory and class solely to forward the call.
 
-```javascript
-function debounce(func, delay) {
-  let timeoutId;
-  return function (...args) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
-  };
-}
+```python
+class SettingsLoader:
+    def load(self):
+        return read_settings(SETTINGS_PATH)
 
-const debouncedSearch = debounce(runSearch, 300);
-searchInput.addEventListener("input", event => {
-  debouncedSearch(event.target.value);
-});
+def make_settings_loader():
+    return SettingsLoader()
+
+settings = make_settings_loader().load()
 ```
 
-**Do:** Keep the timer with its sole new caller and preserve the existing search operation.
+**Do:** Keep the existing reader's contract and call it directly.
 
-```javascript
-let debounceTimer;
-searchInput.addEventListener("input", event => {
-  const query = event.target.value;
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => runSearch(query), 300);
-});
+```python
+settings = read_settings(SETTINGS_PATH)
 ```
 
-If the input can unmount, retain listener/timer cleanup. If an established helper already supplies required cancellation, receiver binding, or shared behavior, use it; a single caller alone is not grounds to bypass it.
+This comparison concerns proposed new scaffolding. An established loader with injection, lifecycle, or compatibility responsibilities remains infrastructure under new-code-only scope.
 
 **Judgment:** One implementation or caller alone is not enough evidence. Retain interfaces that isolate volatile dependencies, test seams that protect behavior, public contracts, and adapters with real translation responsibilities. A new-code-only task preserves those established structures even if a reviewer would design them differently today.
 
@@ -267,36 +242,29 @@ If the input can unmount, retain listener/timer cleanup. If an established helpe
 
 Consider consolidating functions, files, and control flow when it reduces the concepts and locations needed to maintain the task's behavior. Prefer explicit readable control flow over line-count targets.
 
-**Representative Do / Don't comparison** ([Ponytail — CSV Sum](sources/csv-sum.md)). Adapted to retain explicit file lifetime and decimal arithmetic. Existing input validation has checked the required `amount` header, row structure, and finite decimal values; both variants preserve that validation and propagate unexpected conversion or I/O failures.
+**Representative Do / Don't comparison.** The input is a list of already validated destination names. Each name is stripped, empty results are omitted, and duplicates remain in their original order.
 
-**Don't:** Keep unnecessary accumulator plumbing when the transformation is just a sum.
-
-```python
-import csv
-from decimal import Decimal
-
-total = Decimal("0")
-with open("sales.csv", encoding="utf-8", newline="") as sales:
-    for row in csv.DictReader(sales):
-        total += Decimal(row["amount"])
-print(total)
-```
-
-**Do:** Express the sum directly while retaining the resource boundary and empty-input result.
+**Don't:** Separate a single transformation into several temporary collections without improving clarity.
 
 ```python
-import csv
-from decimal import Decimal
-
-with open("sales.csv", encoding="utf-8", newline="") as sales:
-    total = sum(
-        (Decimal(row["amount"]) for row in csv.DictReader(sales)),
-        start=Decimal("0"),
-    )
-print(total)
+stripped = [name.strip() for name in names]
+present = [name for name in stripped if name]
+destinations = []
+for name in present:
+    destinations.append(name)
 ```
 
-The loop remains preferable if rows need distinct validation, error reporting, or multiple coordinated updates. Unlike upstream's shortest snippet, this comparison does not postpone file closing or required malformed-input handling.
+**Do:** Keep the transformation together in readable control flow.
+
+```python
+destinations = []
+for name in names:
+    name = name.strip()
+    if name:
+        destinations.append(name)
+```
+
+The loop remains explicit so a later per-item error or additional transformation can be added at its natural location. No shorter expression is required.
 
 **Judgment:** Fewer files is not universally better. Preserve repository placement conventions, clear ownership boundaries, and useful names. Under new-code-only, compact only the newly introduced implementation; moving existing infrastructure into a new file is still an existing-code change.
 
@@ -306,47 +274,25 @@ The loop remains preferable if rows need distinct validation, error reporting, o
 
 Consider removing configuration, extension points, optional branches, and supported variations only when evidence establishes that they have no required consumer or operational role within the assigned task.
 
-**Representative Do / Don't comparison** ([Ponytail — Debounce, advanced options](sources/debounce.md#advanced-debounce-with-cancel--immediate-options)). The task needs a trailing-edge callback and cancellation on teardown; no consumer requires leading-edge execution. Both variants below retain cancellation and clear timer state when canceled.
+**Representative Do / Don't comparison.** A new private report exporter has one caller and one required delimiter: a tab. The proposed delimiter argument has no public or configuration contract.
 
-**Don't:** Add an unused immediate mode and its argument/state machinery to this new helper.
+**Don't:** Introduce unused format variation for hypothetical consumers.
 
-```javascript
-function debounce(func, delay, options = {}) {
-  let timeoutId;
-  let lastArgs;
-  const debounced = (...args) => {
-    lastArgs = args;
-    clearTimeout(timeoutId);
-    if (options.immediate && !timeoutId) func(...args);
-    timeoutId = setTimeout(() => {
-      if (!options.immediate) func(...lastArgs);
-      timeoutId = undefined;
-    }, delay);
-  };
-  debounced.cancel = () => {
-    clearTimeout(timeoutId);
-    timeoutId = undefined;
-  };
-  return debounced;
-}
+```python
+def export_report(rows, delimiter="\t"):
+    writer = csv.writer(output, delimiter=delimiter)
+    writer.writerows(rows)
 ```
 
-**Do:** Keep the required trailing-edge behavior and cancellation without the unused variation point.
+**Do:** State the supported format and retain the CSV writer's quoting behavior.
 
-```javascript
-function debounce(func, delay) {
-  let timeoutId;
-  const debounced = (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func(...args), delay);
-  };
-  debounced.cancel = () => {
-    clearTimeout(timeoutId);
-    timeoutId = undefined;
-  };
-  return debounced;
-}
+```python
+def export_report(rows):
+    writer = csv.writer(output, delimiter="\t")
+    writer.writerows(rows)
 ```
+
+The surrounding operation still owns the output stream and its error handling. Removing an existing public parameter would require a task-authorized interface change and evidence about its consumers.
 
 **Judgment:** No in-repository setter is not proof that an environment option is unused. Preserve external consumers, rollback controls, accessibility features, and calibration knobs required by the actual contract. Under destructive scope, investigate only relevant variation points; do not scan the codebase for unrelated flags to delete.
 
@@ -354,31 +300,23 @@ function debounce(func, delay) {
 
 Consider replacing a dependency with a suitable runtime facility or smaller maintained solution after accounting for semantic differences, affected consumers, and transition costs.
 
-**Representative Do / Don't comparison** ([Ponytail — Number Formatting](sources/number-formatting.md)). This task explicitly concerns replacing an existing formatter in destructive scope. Its relevant consumers need US-dollar display with two decimals and percentages with one decimal; supported values and rounding behavior must be checked before accepting the migration.
+**Representative Do / Don't comparison.** A task-authorized migration replaces an existing slug package. All affected callers accept only lowercase ASCII words separated by spaces, and the required output joins those words with hyphens. Inspection has established that transliteration, punctuation removal, and collision handling are outside this boundary.
 
-**Don't:** Retain the package solely because these calls already use it, once the task's equivalence checks establish a suitable built-in replacement.
+**Don't:** Keep the package solely because the existing implementation already imports it, after confirming that its other features have no relevant consumers.
 
-```javascript
-import numeral from "numeral";
+```python
+from slugify import slugify
 
-const price = numeral(1234567.89).format("$1,234.00");
-const percentage = numeral(0.745).format("0.0%");
+slug = slugify(validated_label)
 ```
 
-**Do:** Use explicit native formatting options for the required precision.
+**Do:** Express this narrow, validated transformation directly.
 
-```javascript
-const price = new Intl.NumberFormat("en-US", {
-  style: "currency", currency: "USD",
-  minimumFractionDigits: 2, maximumFractionDigits: 2,
-}).format(1234567.89); // "$1,234,567.89"
-
-const percentage = new Intl.NumberFormat("en-US", {
-  style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1,
-}).format(0.745); // "74.5%"
+```python
+slug = "-".join(validated_label.split())
 ```
 
-The explicit percent precision corrects the upstream example: default percent formatting does not preserve one fractional digit. Compact suffixes, rounding, signs, and locale behavior can also differ. Keep the dependency for consumers whose required behavior is not covered, and remove it from the manifest only after accounting for all uses within an authorized migration.
+Retain the package if any affected consumer requires its broader text behavior. Remove the dependency declaration only after all authorized consumers are accounted for.
 
 **Judgment:** Security, parser, internationalization, and platform edge behavior often justify a mature dependency. Do not hand-roll those contracts to reduce package count. Under new-code-only, a rule whose target is an existing dependency replacement is inapplicable; adding new code that avoids an unnecessary new dependency is instead covered by p3. Destructive scope still requires the replacement to serve the assigned task.
 
@@ -386,44 +324,23 @@ The explicit percent precision corrects the upstream example: default percent fo
 
 Question mechanisms justified only by hypothetical future scale, consumers, or variation. Choose a smaller complete solution when it meets every assigned requirement; explain a meaningful deferred option and its trigger when useful.
 
-**Representative Do / Don't comparison** ([Ponytail — Countdown Timer](sources/react-countdown.md)). The requested new component is a plain, automatically starting seconds display with a fixed initial value per mount. It tolerates timer scheduling drift and does not need pause/reset controls. The helper and controls in the first version are proposed new machinery, not an existing interface to remove.
+**Representative Do / Don't comparison.** The requested new endpoint returns one in-process status value from an existing function. There is no current need for provider registration, remote polling, or persistent caching.
 
-**Don't:** Build an unrequested control surface and supporting hook before delivering that display.
+**Don't:** Build an extension system before delivering that endpoint.
 
-```jsx
-export function TimerWithHook() {
-  const { seconds, isActive, start, pause, reset } = useCountdown(60);
-  return (
-    <div>
-      <div>{seconds}s</div>
-      <button onClick={isActive ? pause : start}>
-        {isActive ? "Pause" : "Start"}
-      </button>
-      <button onClick={reset}>Reset</button>
-    </div>
-  );
-}
+```python
+providers = StatusProviderRegistry()
+providers.register("local", LocalStatusProvider())
+status = providers.resolve("local").read()
 ```
 
-**Do:** Implement the requested readout, retaining interval cleanup and the zero boundary.
+**Do:** Return the required result through the existing operation.
 
-```jsx
-import { useEffect, useState } from "react";
-
-export function CountdownTimer({ seconds }) {
-  const [remaining, setRemaining] = useState(seconds);
-  useEffect(() => {
-    if (remaining <= 0) return;
-    const timer = setInterval(() => {
-      setRemaining(value => Math.max(0, value - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [remaining]);
-  return <div>{remaining}s</div>;
-}
+```python
+status = read_local_status()
 ```
 
-The owner supplies a finite nonnegative integer duration; changing the initial duration starts a new mount. If the actual task requires prop-driven resets, pause/resume, completion callbacks, or elapsed-time accuracy, implement those requirements. A tick counter is not a deadline clock, and deleting a requested capability is not simplification.
+Authentication, response schema, and failure handling remain part of the endpoint contract. A later requirement for remote providers would justify reconsidering the design; it does not authorize extra machinery now.
 
 **Judgment:** Do not ship a reduced requirement and ask whether the user wanted the full version. Preserve requested features and explanations. Extreme intensity changes the opportunities considered, not the user's goal. Repository-wide deletion or restructuring requires that explicit assignment even in destructive scope.
 
@@ -442,21 +359,3 @@ Preserve the assigned task boundary as well as behavior. In destructive scope, m
 Apply selected rules to coding, design, fixes, and explicit simplification reviews within the resolved task and edit scope. Existing code may be read as context even when it cannot be revised. A selected rule without a permitted target is inapplicable; it does not grant a broader edit surface. Non-coding prose is outside this mentality, and requested explanations remain part of the task.
 
 The ordered reuse preferences apply only when their rules are selected and alternatives satisfy the contract. Deployment lists all principles for discovery without enabling them. Review may use explicit criteria for one invocation while leaving project and agent selections unchanged.
-
-## Provenance
-
-Adapted from [Ponytail by DietrichGebert](sources/index.md), revision `356918eba965ee1eac64bd3a7f0dd02108350de5`, under the MIT license. Each comparison links a bundled source file; origin URLs and revision details live in those files. Examples are shortened or adapted for the selected rule; p5's redundant branch, p6's behavioral checks, and p7's surrounding lock code are added teaching material. Conditions, type annotations, precision settings, file handling, and cleanup adaptations are not verbatim benchmark output. Source line-count and safety claims are not guarantees of this catalog.
-
-This adaptation replaces persistent persona/intensity hooks and blanket shortest-code rules with scoped principle selection, three cumulative intensities, independent edit boundaries, and explicit behavior-preservation requirements. All comparison code and judgment needed for use appear in this catalog; the bundled source directory supplies offline originals and attribution, with no required web lookup. No upstream installation, mode file, or service is needed to use these definitions.
-
-### Example License
-
-MIT License
-
-Copyright (c) 2026 DietrichGebert
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

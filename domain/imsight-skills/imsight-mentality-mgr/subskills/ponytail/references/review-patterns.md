@@ -68,7 +68,3 @@ For p6, start with existing coverage and observable product behavior. Reusing a 
 | extreme + new-code-only; add an exporter | Challenge new speculative flexibility; keep existing dependencies and infrastructure intact. |
 | safe + destructive; fix a shared validator | Consider the task-related root-cause repair and proven redundancy; do not begin broader structural cleanup. |
 | extreme + destructive; add one endpoint | Inspect only opportunities tied to that endpoint and required infrastructure changes; do not propose a repository-wide refactor. |
-
-## Provenance
-
-The delete/stdlib/native/yagni/shrink tags originate in the upstream Ponytail reviewer. This adaptation adds explicit reuse, dependency, boundary, check, and limit evidence, maps all patterns to the shared Ponytail principle IDs, and replaces unconditional deletion/line-count verdicts with task and contract checks. The [source inventory and MIT notice](../org/README.md) are bundled for provenance, not runtime execution.

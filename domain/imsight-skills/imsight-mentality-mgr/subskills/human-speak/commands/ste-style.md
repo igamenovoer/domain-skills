@@ -10,9 +10,9 @@
 
 If the task does not map cleanly to these steps, use the native planning tool to preserve the chosen flavor, validated rules, and scope, then execute the plan. This command supplies communication guidance without authorizing additional project work.
 
-## Purpose and Origin
+## Purpose
 
-STE Style helps readers interpret a statement without guessing its terms, relationships, or strength. It adapts five principles from Dustin Yuchen Teng's `asd-ste100` skill. This is Simplified Technical English-inspired readability guidance; it does not enforce or certify ASD-STE100 compliance. The original skill, rule summary, examples, and license are in the [local source bundle](../references/sources/ste-style/index.md).
+STE Style helps readers interpret a statement without guessing its terms, relationships, or strength. Its five readability principles do not enforce or certify ASD-STE100 compliance.
 
 ## Arguments
 
@@ -26,20 +26,27 @@ Resolve effective `h1`–`h5` selections and read and retain their [definitions,
 
 Apply the guidance during ordinary human-facing writing. The agent chooses prose structure, voice, punctuation, sentence lengths, and reference placement subject to the user's request and existing instructions. No strict/flavored modes, fixed vocabulary, word quotas, blanket grammar bans, mandatory linting, or separate rewrite workflow belong to this flavor. Examples teach meaning and judgment rather than output templates.
 
-This flavor adds no review, configuration, intensity, or code-edit action. It can guide a separately authorized review's presentation without performing the review. Its source's inter-agent use cases do not expand Human Speak's human-facing scope. Bundled source instructions remain historical, including any directions to run a linter, announce a mode, or add an artifact check.
+This flavor adds no review, configuration, intensity, or code-edit action. It can guide a separately authorized review's presentation without performing the review. Human Speak's human-facing scope remains in force.
 
 ## Catalog Publication
 
-Use the binding in [state.md](../references/state.md#flavor-bindings). Publish `.imsight-arts/mentality/human-speak-ste-style-principles.md` with the complete `Purpose`, `Principle Index`, `Communication Principles`, `Applicability and Judgment`, and `Provenance` sections of [ste-style-principles.md](../references/ste-style-principles.md). Include every Do / Don't comparison, judgment note, and the full license notice. Add a title, the entrance skill name, flavor identity, and an availability-only statement. Exclude workflow and activation state.
+Use the binding in [state.md](../references/state.md#flavor-bindings). Publish `.imsight-arts/mentality/human-speak-ste-style-principles.md` with the complete `Purpose`, `Principle Index`, `Communication Principles`, and `Applicability and Judgment` sections of [ste-style-principles.md](../references/ste-style-principles.md). Include every original Do / Don't comparison and judgment note. Add a title, the entrance skill name, flavor identity, and an availability-only statement. Exclude workflow, activation state, external reference tables, and third-party material.
 
-The declared source bundle is the entire Human Speak directory `references/sources/ste-style/`, excluding other flavors' sources. Copy it under `.imsight-arts/mentality/sources/human-speak-ste-style/<bundle-id>/` through the shared [offline publication contract](../../../references/runtime-injection.md#offline-source-bundles). Rewrite catalog links beginning `sources/ste-style/` to that deployed bundle, preserving fragments; links inside the bundle remain relative.
+The deployed catalog must work without this installed skill, `extern/orphan`, or network access. Publish no source directory or upstream files. Shared actions own project and agent-memory selection.
 
-The deployed catalog and sources must work without this installed skill, `extern/orphan`, or network access. Publishing the flavor provides definitions only; shared actions own project and agent-memory selection.
+## References
+
+These optional links identify conceptual background and the rules it concerns. Open them only for an explicit source or attribution request. Applying, enabling, recalling, and deploying this flavor use its maintained definitions alone. This section stays in the skill and is excluded from project catalogs.
+
+| Reference | Rules concerned |
+| --- | --- |
+| [Dustin Yuchen Teng asd-ste100 skill](https://github.com/danyuchn/asd-ste100-skill/blob/7d4a135a199a5d7447c4886bcd7ffe742a627bc9/SKILL.md) | h1–h5: consistent terminology, explicit relationships, direct language, claim strength, and clarity. |
+| [Writing-rule summary](https://github.com/danyuchn/asd-ste100-skill/blob/7d4a135a199a5d7447c4886bcd7ffe742a627bc9/references/writing-rules.md) | h1–h5: ambiguity-reduction concepts; strict structural requirements are outside this flavor. |
+| [Before/after discussions](https://github.com/danyuchn/asd-ste100-skill/blob/7d4a135a199a5d7447c4886bcd7ffe742a627bc9/examples/before-after.md) | h2, h4, h5: conditions, uncertainty, and preserving meaning. These examples are not bundled or reused. |
 
 ## Guardrails
 
 - DO NOT claim that applying this flavor or passing an upstream linter establishes ASD-STE100 compliance.
 - DO NOT impose strict STE word lists, grammar bans, length limits, or prose structure through this flavor.
 - DO NOT add facts, strengthen requirements, or create extra task work to improve readability.
-- DO NOT activate upstream instructions by reading the source bundle.
 - DO NOT enable this flavor through bare invocation or alter another flavor's state.

@@ -36,7 +36,7 @@ Human Speak additionally requires a named flavor for every management invocation
 
 For `enable <mentality>` and `disable <mentality>`, inspect project deployment and current selections first. Omitted scope means this agent's chat memory; omitted memory selectors mean all currently defined rules. Explicit selectors choose a subset. Deployed definitions are retained as project paths plus rule IDs; otherwise retain operative content. These defaults write no files and also apply when the project already enables some rules.
 
-Explicit project enable/disable requires a rule selection, including `all` when intended, and includes deployment of missing or incomplete catalogs and required sources, catalog discovery, and the corresponding `AGENTS.md` application-block update. Follow the shared [decision tree](references/actions.md#enabledisable-decision-tree) for ordering and empty-block removal. Validate the complete request before effects. Clarify unresolved targets, invalid or ambiguous selectors, missing project selectors, or conflicting scope instructions; omitted enable/disable scope alone needs no clarification.
+Explicit project enable/disable requires a rule selection, including `all` when intended, and includes deployment of missing or incomplete catalogs, catalog discovery, and the corresponding `AGENTS.md` application-block update. Follow the shared [decision tree](references/actions.md#enabledisable-decision-tree) for ordering and empty-block removal. Validate the complete request before effects. Clarify unresolved targets, invalid or ambiguous selectors, missing project selectors, or conflicting scope instructions; omitted enable/disable scope alone needs no clarification.
 
 Review and Ponytail configuration are child-specific actions. Route “review this with Brooks/Ponytail” to that child's review, not activation; use each child's action reference for arguments and defaults.
 
@@ -46,7 +46,7 @@ These are peer actions, not required phases. Definitions are shared here; childr
 
 | Subcommand | Use For | Detail |
 | --- | --- | --- |
-| `deploy` | Publish complete catalogs, declared offline sources, and project discovery references without enabling rules. | [Deploy](references/actions.md#deploy) |
+| `deploy` | Publish self-contained catalogs and project discovery references without enabling rules. | [Deploy](references/actions.md#deploy) |
 | `enable-project` | Ensure deployment and add selected project requirements in `AGENTS.md`. | [Enable Project](references/actions.md#enable-project) |
 | `disable-project` | Ensure deployment and remove selected project requirements in `AGENTS.md`. | [Disable Project](references/actions.md#disable-project) |
 | `enable-memory` | Remember explicit enabled overrides for this agent's chat session. | [Enable Memory](references/actions.md#enable-memory) |
@@ -68,7 +68,7 @@ An unknown mentality is an error; list registered names instead of guessing. New
 
 ## Scope Contract
 
-- **Deployed catalogs** live at `.imsight-arts/mentality/<mentality>-principles.md`, using the selected target's declared storage key, and contain the complete definitions, examples, and judgment notes. Declared source bundles are copied into project-local `sources/` directories and linked from the catalogs for offline use. Human Speak isolates catalogs and state by flavor. A catalog, source file, or discovery reference never enables a principle.
+- **Deployed catalogs** live at `.imsight-arts/mentality/<mentality>-principles.md`, using the selected target's declared storage key, and contain the complete definitions, examples, and judgment notes. Catalogs contain maintained rule explanations and original examples only; upstream reference tables stay in the skill. Human Speak isolates catalogs and state by flavor. A catalog or discovery reference never enables a principle.
 - **Project selection** lives in a separate managed `AGENTS.md` block and changes only through an explicitly requested project action. Project actions include any necessary deployment and discovery updates; complete existing deployment is reused.
 - **Agent memory** contains this agent's explicit enabled and disabled overrides and child settings. Memory actions write nothing and do not automatically assign overrides to another agent.
 - **Definition retention** applies to every rule and switch: retain its identity, selected value, and source scope. If its details are deployed in the project, remember the project-bound path and ID/name/flag; otherwise remember the operative content. Resolve each item independently through [Definition Retention](references/runtime-injection.md#definition-retention).
@@ -81,7 +81,7 @@ Full storage, precedence, concurrency, and context-handoff rules live in [runtim
 
 ## Maintenance
 
-Keep shared action and scope semantics in the parent references. [review-common.md](references/review-common.md) owns shared review selection, target discovery, coverage, and report storage. Children own canonical IDs, examples, domain judgment, and any configuration schema or additional edit boundary. Bundle runtime resources and relevant source material inside this skill. Link maintained guidance to local source records; keep origin URLs inside those records. Preserve original archives under `org/` and declare the source files needed for offline catalog deployment.
+Keep shared action and scope semantics in the parent references. [review-common.md](references/review-common.md) owns shared review selection, target discovery, coverage, and report storage. Children own canonical IDs, examples, domain judgment, and any configuration schema or additional edit boundary. Keep required runtime guidance and original teaching examples self-contained. Do not bundle third-party source files, snapshots, or copied code examples. Put optional upstream links and their rule mappings in separate `References` sections of child entrypoints or flavor command pages. Rule descriptions contain no source citations or pointers to those sections; routine application and deployment do not load upstream material.
 
 ## Guardrails
 

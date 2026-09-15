@@ -59,7 +59,7 @@ Publish `.imsight-arts/mentality/agile-experimenter-principles.md` using the sha
 
 Include a title, entrance skill name, canonical index, and availability-only statement. Exclude the source workflow, activation state, and skill-control instructions. The catalog must stand alone inside the target project; publication never enables rules or starts experiments.
 
-The original teaching examples and judgment notes are complete in the catalog. No separate source bundle is declared; application and deployment require neither the originating repository nor network access.
+The original teaching examples and judgment notes are complete in the catalog; application and deployment require neither another repository nor network access.
 
 ## Rationalization Table
 

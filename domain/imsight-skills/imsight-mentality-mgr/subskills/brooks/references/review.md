@@ -10,7 +10,7 @@ Review existing code for maintainability and test risks using the Brooks princip
 2. **Resolve review criteria** using **Rule Selection** and [state.md](state.md). Stop the diagnostic scan if there are no selected criteria or their resolution is materially uncertain; report the scope issue without changing state.
 3. **Establish code scope** using **Code Scope**. Read the purpose, applicable repository instructions, relevant definitions, changed code, callers, and related tests. Record the revision or working-tree evidence inspected.
 4. **Inspect selected dimensions** using **Diagnostic Pass** and the matching entries in [review-risks.md](review-risks.md). Load selected constructive definitions from the deployed catalog when valid, otherwise [principles.md](principles.md), following the shared runtime's definition policy.
-5. **Validate each candidate** against **Evidence and Severity** and [review-sources.md](review-sources.md). Complete diagnosis before proposing a remedy; check counterexamples, causal consequences, and duplicate findings.
+5. **Validate each candidate** against **Evidence and Severity** and [review-judgment.md](review-judgment.md). Complete diagnosis before proposing a remedy; check counterexamples, causal consequences, and duplicate findings.
 6. **Report coverage and findings** using **Report Contract**. Save only when explicitly requested, following **Saved Reports**. Preserve project and agent-memory selections throughout.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a bounded review from the requested criteria, available evidence, and read-only contract without assuming activation or expanding into a repository-wide audit.
@@ -38,9 +38,9 @@ Follow [shared code scope](../../../references/review-common.md#code-scope), inc
 
 ## Diagnostic Pass
 
-Read each selected rule's definition, diagnostic entry, and relevant source notes. Inspect production dimensions in this order when selected and applicable: r2 change boundaries, r1 comprehension, r3 decision ownership, r4 essential complexity, r5 dependencies, then r6 domain fidelity. This order guides investigation and does not establish rule priority.
+Read each selected rule's definition, diagnostic entry, and relevant judgment notes. Inspect production dimensions in this order when selected and applicable: r2 change boundaries, r1 comprehension, r3 decision ownership, r4 essential complexity, r5 dependencies, then r6 domain fidelity. This order guides investigation and does not establish rule priority.
 
-For selected test dimensions, inspect related test bodies and fixtures, including existing tests for changed behavior. Assess t5 behavior protection, t4 boundary doubles, t1 readable intent, t2 resilience, t3 shared knowledge, and t6 suite placement/seams as applicable. Test-only changes still receive selected test checks. The bundled diagnostics cover all six test IDs; this is not limited to the upstream three-signal quick check.
+For selected test dimensions, inspect related test bodies and fixtures, including existing tests for changed behavior. Assess t5 behavior protection, t4 boundary doubles, t1 readable intent, t2 resilience, t3 shared knowledge, and t6 suite placement/seams as applicable. Test-only changes still receive selected test checks. The maintained diagnostics cover all six test IDs.
 
 No new test file is not proof of missing protection: trace the changed behavior to existing assertions, including integration evidence. Likewise, absence of tests from a pasted snippet is missing evidence, not proof the repository lacks tests. For t6, examine relevant seams and test configuration when available; a single diff rarely establishes suite-wide timings or architecture. Report that limit without inventing suite metrics or automatically launching a broader audit.
 
@@ -51,7 +51,7 @@ Follow [shared read-only effects](../../../references/review-common.md#read-only
 Every finding follows **Symptom → Source → Consequence → Remedy**:
 
 - **Symptom:** observable behavior or structure, with exact file and line evidence and relevant callers. For pasted code, use snippet line numbers or a named symbol; never invent repository locations.
-- **Source:** canonical rule ID/name and the matching conceptual source from the bundled source notes. Book attribution explains the principle; it does not prove a code defect. Avoid unverified quotations or page numbers.
+- **Source:** canonical rule ID/name and the operative reason it applies to the observed code. Identify the violated contract or design obligation from the maintained definition; external attribution is not evidence of a defect.
 - **Consequence:** a concrete failure or maintenance cost with a supported causal path. Distinguish demonstrated behavior from a conditional risk and state the condition. Hypothetical future consumers do not justify speculative findings.
 - **Remedy:** a specific target, action, and reason proportional to the observed problem. Explain a necessary design choice when evidence cannot determine it. Describing a remedy does not authorize applying it.
 

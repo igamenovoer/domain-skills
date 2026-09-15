@@ -34,8 +34,8 @@ flowchart TD
 
     C -- "Yes" --> J{"Explicit project selectors or all?"}
     J -- "No" --> K["Clarify rule selection<br/>No deployment or state change"]
-    J -- "Yes" --> L{"Complete catalog and<br/>required sources deployed?"}
-    L -- "No" --> M["Deploy complete catalog and required sources<br/>under .imsight-arts/mentality/"]
+    J -- "Yes" --> L{"Complete self-contained<br/>catalog deployed?"}
+    L -- "No" --> M["Deploy self-contained catalog<br/>under .imsight-arts/mentality/"]
     L -- "Yes" --> N["Reuse deployed definitions"]
     M --> O["Ensure catalog discovery in AGENTS.md"]
     N --> O
@@ -47,7 +47,7 @@ flowchart TD
     S -- "No" --> U{"Independent project settings remain?"}
     U -- "Yes" --> V["Keep compact settings-only block<br/>Remove family priority; preserve counter"]
     U -- "No" --> W["Remove entire application block<br/>including heading, instructions, and markers<br/>Preserve shared priority counter"]
-    Q --> X["Verify AGENTS.md reflects requested state<br/>Preserve discovery, sources, other mentalities,<br/>and all agent-memory overrides"]
+    Q --> X["Verify AGENTS.md reflects requested state<br/>Preserve discovery, other mentalities,<br/>and all agent-memory overrides"]
     T --> X
     V --> X
     W --> X
@@ -76,14 +76,14 @@ Apply [family priority assignment](priorities.md#priority-assignment) to each en
 
 **Input:** one or more named mentalities and a target project, including explicit flavors when required. Naming particular principles identifies their owning mentality, but never substitutes for a Human Speak flavor choice. Deployment publishes each selected target's complete catalog; a Human Speak flavor does not publish its siblings.
 
-1. Read the complete maintained catalog and its **Catalog Publication** contract in the child's entrypoint or selected flavor command. Resolve its declared storage key and source directory.
-2. Publish any source bundle declared by the child using [Offline source bundles](runtime-injection.md#offline-source-bundles). Render all canonical principles with definitions, examples, judgment notes, applicability, and provenance into `.imsight-arts/mentality/<mentality>-principles.md`, rewriting source links to the project-local copy.
+1. Read the complete maintained catalog and its **Catalog Publication** contract in the child's entrypoint or selected flavor command. Resolve its declared storage key; external reference tables are not publication inputs.
+2. Render all canonical principles with maintained definitions, original examples, judgment notes, and applicability into `.imsight-arts/mentality/<mentality>-principles.md`. Follow [External references](runtime-injection.md#external-references): exclude source links, third-party material, and reference tables; create no source directory.
 3. Add or refresh only the catalog discovery block in `AGENTS.md`, following **Managed Project Files** in the runtime reference.
-4. Verify the complete catalog, source links, and discovery reference resolve within the project without network access or an installed skill. Confirm project selection and every agent's remembered overrides are unchanged.
+4. Verify the complete catalog and discovery reference resolve within the project without network access or an installed skill. Confirm project selection and every agent's remembered overrides are unchanged.
 
-**File effects:** the deployed catalog, any child-declared offline source bundle, and the catalog's `AGENTS.md` discovery block only. Deployment never creates a project-enabled selection, even when the caller names all principles. Refreshing a catalog does not enable newly added principles.
+**File effects:** the deployed catalog and the catalog's `AGENTS.md` discovery block only. Deployment never creates a project-enabled selection, even when the caller names all principles. Refreshing a catalog does not enable newly added principles.
 
-**Output:** mentality names, deployed canonical rule index, catalog and discovery paths, any source-bundle path, and whether catalogs were created or refreshed. State that deployment alone enables no rules.
+**Output:** mentality names, deployed canonical rule index, catalog and discovery paths, and whether catalogs were created or refreshed. State that deployment alone enables no rules.
 
 ## Enable Project
 
@@ -95,7 +95,7 @@ Apply [family priority assignment](priorities.md#priority-assignment) to each en
 4. Update the affected project-selection blocks and shared priority counter together in `AGENTS.md`, following the shared write protocol.
 5. Verify the resulting project sets and any deployment/discovery changes while preserving complete existing catalogs, unrelated instructions, independent settings, and all memory overrides.
 
-**File effects:** required catalog/source deployment, catalog discovery, and project-selection blocks in `AGENTS.md`. These rules become project-wide requirements subject to agent-local overrides.
+**File effects:** required catalog deployment, catalog discovery, and project-selection blocks in `AGENTS.md`. These rules become project-wide requirements subject to agent-local overrides.
 
 **Output:** newly enabled IDs, unchanged IDs, resulting project selection, old and new family priorities, deployment effects, and changed paths including `AGENTS.md`. When IDs already match, report the priority change from the new enable request. Do not claim that these are every agent's effective rules.
 
@@ -109,7 +109,7 @@ Apply [family priority assignment](priorities.md#priority-assignment) to each en
 4. Update existing affected project-selection blocks using [Empty project selection](runtime-injection.md#empty-project-selection). When no rules or independent child settings remain, remove the whole application block, including its heading, instructions, and markers. Do this even when an existing block already lists `none`. Preserve independently configured settings in a compact settings-only block. An absent application block stays absent; prerequisite deployment may still create catalog discovery in `AGENTS.md`.
 5. Verify any deployment/discovery changes and the resulting project selection. Preserve complete existing catalogs, unrelated project rules, independent settings, and every agent's memory overrides.
 
-**File effects:** required catalog/source deployment and discovery updates, plus updates or removal of affected project-selection blocks in `AGENTS.md`. Disabling a project rule removes the shared requirement; it does not prohibit an agent from explicitly enabling that rule in memory.
+**File effects:** required catalog deployment and discovery updates, plus updates or removal of affected project-selection blocks in `AGENTS.md`. Disabling a project rule removes the shared requirement; it does not prohibit an agent from explicitly enabling that rule in memory.
 
 **Output:** removed IDs, unchanged IDs, resulting project selection and family priority or `none`, deployment effects, changed paths, and whether the application block was updated, removed, retained for settings only, or already absent. Report an empty selection in chat; do not leave a disabled family placeholder in `AGENTS.md`. The shared next-priority counter remains available for later enables.
 

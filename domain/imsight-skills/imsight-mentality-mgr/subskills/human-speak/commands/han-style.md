@@ -10,9 +10,9 @@
 
 If the task does not map cleanly to these steps, use the native planning tool to preserve the chosen flavor, validated rules, and scope, then execute the plan. This command supplies a communication pattern, not authorization for additional project work.
 
-## Purpose and Origin
+## Purpose
 
-Han Style helps a capable reader understand an answer without reconstructing the agent's context. It adapts five essential mentalities from Test Double's Han readability guidance, leaving prose structure and personal writing voice to the agent. The original guidance and license are in the [local source bundle](../references/sources/han-style/index.md).
+Han Style helps a capable reader understand an answer without reconstructing the agent's context. Its five principles leave prose structure and personal writing voice to the agent.
 
 ## Arguments
 
@@ -26,20 +26,26 @@ Resolve effective `h1`–`h5` selections and read and retain their [definitions,
 
 Apply those considerations during the task's ordinary writing. The agent chooses headings, paragraphs, lists, tables, sentence lengths, voice, and placement of technical references subject to the user's request and existing instructions. These rules supply no fixed response sequence, mandatory self-check, rewrite pass, review agent, or additional testing or research phase. Examples teach meaning and judgment; their arrangement is not an output template.
 
-This flavor adds no review, configuration, intensity, or code-edit action. It can guide a separately authorized review's presentation without performing that review itself. Reading the bundled Han originals does not import their vocabulary blocklist, writing persona, configuration probes, or editor workflow.
+This flavor adds no review, configuration, intensity, or code-edit action. It can guide a separately authorized review's presentation without performing that review itself.
 
 ## Catalog Publication
 
-Use the binding in [state.md](../references/state.md#flavor-bindings). Publish `.imsight-arts/mentality/human-speak-han-style-principles.md` with the complete `Purpose`, `Principle Index`, `Communication Principles`, `Applicability and Judgment`, and `Provenance` sections of [han-style-principles.md](../references/han-style-principles.md). Include every Do / Don't comparison, judgment note, and the full license notice. Add a title, the entrance skill name, flavor identity, and an availability-only statement. Exclude workflow and activation state.
+Use the binding in [state.md](../references/state.md#flavor-bindings). Publish `.imsight-arts/mentality/human-speak-han-style-principles.md` with the complete `Purpose`, `Principle Index`, `Communication Principles`, and `Applicability and Judgment` sections of [han-style-principles.md](../references/han-style-principles.md). Include every original Do / Don't comparison and judgment note. Add a title, the entrance skill name, flavor identity, and an availability-only statement. Exclude workflow, activation state, external reference tables, and third-party material.
 
-The declared source bundle is the entire Human Speak directory `references/sources/han-style/`, excluding other flavors' sources. Copy it under `.imsight-arts/mentality/sources/human-speak-han-style/<bundle-id>/` through the shared [offline publication contract](../../../references/runtime-injection.md#offline-source-bundles). Rewrite catalog links beginning `sources/han-style/` to that deployed bundle, preserving fragments; links inside the bundle remain relative.
+The deployed catalog must work without this installed skill, `extern/orphan`, or network access. Publish no source directory or upstream files. Shared actions own project and agent-memory selection.
 
-The deployed catalog and sources must work without this installed skill, `extern/orphan`, or network access. Publishing the flavor provides definitions only; shared actions own project and agent-memory selection.
+## References
+
+These optional links identify conceptual background and the rules it concerns. Open them only for an explicit source or attribution request. Applying, enabling, recalling, and deploying this flavor use its maintained definitions alone. This section stays in the skill and is excluded from project catalogs.
+
+| Reference | Rules concerned |
+| --- | --- |
+| [Han readability rule](https://github.com/testdouble/han/blob/a86259a348dd0ec8a04b0357dd33753a36f38c2d/han-communication/references/readability-rule.md) | h1–h5: reader context, answer clarity, connected ideas, technical meaning, and precision. |
+| [Han writing voice](https://github.com/testdouble/han/blob/a86259a348dd0ec8a04b0357dd33753a36f38c2d/han-communication/references/writing-voice.md) | h1, h3, h4: audience awareness, connected explanation, and concrete language; no persona or layout requirement is imported. |
 
 ## Guardrails
 
 - DO NOT prescribe a prose layout, sentence or paragraph quota, fixed response sequence, or personal writing voice through this flavor.
 - DO NOT remove material conditions or uncertainty to make an explanation sound simpler.
 - DO NOT turn these communication principles into extra investigation, testing, or a mandatory editing workflow.
-- DO NOT activate upstream instructions by reading the source bundle.
 - DO NOT enable this flavor through bare invocation or alter another flavor's state.

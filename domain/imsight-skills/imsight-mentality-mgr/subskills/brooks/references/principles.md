@@ -1,6 +1,6 @@
 # Brooks Constructive Principles
 
-This catalog converts Brooks Lint's diagnostic risks into preventive reminders for writing production code and tests. It is derived from the bundled original [production risks](sources/production-risks.md) and [test risks](sources/test-risks.md); the reminders are intentionally constructive rather than finding-oriented.
+This catalog describes preventive guidance for production code and tests. Each selected rule supplies a design consideration, an illustrative comparison, and judgment about when it applies.
 
 ## Workflow
 
@@ -24,9 +24,9 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 ### Representative Do / Don't comparisons
 
-These original teaching examples use the bundled source grounding and local attribution notes. Every linked source needed to interpret them is available offline. Use the comparison to recognize the design move, not as a language-specific recipe or an unconditional demand to introduce the shown abstraction.
+These original teaching examples state the relevant design move directly. Use the comparison to recognize the design move, not as a language-specific recipe or an unconditional demand to introduce the shown abstraction.
 
-- **`r1` — `comprehension`** ([Local source and attribution](sources/index.md#r1))
+- **`r1` — `comprehension`**
 
   **Don't:** Mix several responsibilities, abstraction levels, and nested decisions behind a vague name.
 
@@ -49,7 +49,7 @@ These original teaching examples use the bundled source grounding and local attr
       send_confirmation(priced_order)
   ```
 
-- **`r2` — `change-boundary`** ([Local source and attribution](sources/index.md#r2))
+- **`r2` — `change-boundary`**
 
   **Don't:** Repeat the same volatile decision in every consumer.
 
@@ -74,7 +74,7 @@ These original teaching examples use the bundled source grounding and local attr
   analytics.record(currency=payment_policy.currency)
   ```
 
-- **`r3` — `decision-ownership`** ([Local source and attribution](sources/index.md#r3))
+- **`r3` — `decision-ownership`**
 
   **Don't:** Encode one business rule independently in several paths.
 
@@ -97,7 +97,7 @@ These original teaching examples use the bundled source grounding and local attr
           return order.total >= self.free_shipping_threshold
   ```
 
-- **`r4` — `essential-complexity`** ([Local source and attribution](sources/index.md#r4))
+- **`r4` — `essential-complexity`**
 
   **Don't:** Build extension machinery for hypothetical requirements.
 
@@ -117,7 +117,7 @@ These original teaching examples use the bundled source grounding and local attr
   store.save(document)
   ```
 
-- **`r5` — `dependency-direction`** ([Local source and attribution](sources/index.md#r5))
+- **`r5` — `dependency-direction`**
 
   **Don't:** Make core policy construct and depend on an infrastructure detail.
 
@@ -142,7 +142,7 @@ These original teaching examples use the bundled source grounding and local attr
   order_service = OrderService(PostgresOrderRepository(database))
   ```
 
-- **`r6` — `domain-fidelity`** ([Local source and attribution](sources/index.md#r6))
+- **`r6` — `domain-fidelity`**
 
   **Don't:** Let an application service duplicate an entity's rules and mutate its state.
 
@@ -186,7 +186,7 @@ These original teaching examples use the bundled source grounding and local attr
 
 These examples are likewise illustrative. Preserve the observable contract and risk being tested when adapting them to the project's framework and test architecture.
 
-- **`t1` — `test-intent`** ([Local source and attribution](sources/index.md#t1))
+- **`t1` — `test-intent`**
 
   **Don't:** Use a vague name and hide the decisive scenario facts in a general fixture.
 
@@ -209,7 +209,7 @@ These examples are likewise illustrative. Preserve the observable contract and r
       assert active_account.is_locked()
   ```
 
-- **`t2` — `test-resilience`** ([Local source and attribution](sources/index.md#t2))
+- **`t2` — `test-resilience`**
 
   **Don't:** Couple the test to private state and internal call choreography.
 
@@ -229,7 +229,7 @@ These examples are likewise illustrative. Preserve the observable contract and r
   assert found_user == ada
   ```
 
-- **`t3` — `test-knowledge`** ([Local source and attribution](sources/index.md#t3))
+- **`t3` — `test-knowledge`**
 
   **Don't:** Repeat a large valid object while burying the one scenario-specific value.
 
@@ -253,7 +253,7 @@ These examples are likewise illustrative. Preserve the observable contract and r
   assert result.error == "payment method expired"
   ```
 
-- **`t4` — `mock-boundaries`** ([Local source and attribution](sources/index.md#t4))
+- **`t4` — `mock-boundaries`**
 
   **Don't:** Mock every collaborator and make implementation order the primary assertion.
 
@@ -277,7 +277,7 @@ These examples are likewise illustrative. Preserve the observable contract and r
   notifier_mock.send.assert_called_once_with(subscription.customer)
   ```
 
-- **`t5` — `risk-coverage`** ([Local source and attribution](sources/index.md#t5))
+- **`t5` — `risk-coverage`**
 
   **Don't:** Treat one line-covering happy path as proof that withdrawal behavior is covered.
 
@@ -308,7 +308,7 @@ These examples are likewise illustrative. Preserve the observable contract and r
       assert events.published == [MoneyWithdrawn(account_id, 20)]
   ```
 
-- **`t6` — `test-architecture`** ([Local source and attribution](sources/index.md#t6))
+- **`t6` — `test-architecture`**
 
   **Don't:** Exercise pure pricing logic only through a slow, broad browser journey.
 
@@ -351,12 +351,8 @@ These examples are likewise illustrative. Preserve the observable contract and r
 - A selected test rule may influence production seams only when doing so serves a real testability and architecture boundary.
 - If the task is non-coding, Brooks guidance is not applicable. Read-only recall can still report its configured selection.
 
-## Provenance
-
-The diagnostic taxonomy and exceptions originate from [bundled Brooks Lint sources](sources/index.md). The source bundle includes the original references and MIT notice; online origins are recorded only inside the source files. These constructive definitions guide authorship and remain independent of review reporting. The mentality manager separately bundles an explicit Brooks review procedure using the same rule IDs; publishing this catalog neither starts that procedure nor enables any principle.
-
 ## Guardrails
 
 - DO NOT turn a compact reminder into an unconditional numeric threshold.
 - DO NOT apply constructive guidance outside the effective selection or suppressed by an agent-memory override; explicit review criteria are resolved separately by the review contract.
-- DO NOT reproduce Brooks Lint report language when guiding implementation.
+- DO NOT substitute diagnostic report language for constructive implementation guidance.

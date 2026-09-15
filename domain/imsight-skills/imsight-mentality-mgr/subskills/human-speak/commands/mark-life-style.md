@@ -10,9 +10,9 @@
 
 If the task does not map cleanly to these steps, use the native planning tool to preserve the chosen flavor, validated rules, and scope. This command supplies a communication pattern, not authorization for additional project work.
 
-## Purpose and Origin
+## Purpose
 
-Mark-Life Style treats the reader's attention as scarce. Put the conclusion where it is easy to find, retain useful evidence and limits, and make the surrounding language easy to read. It adapts Mark-Life's `agent-to-human`; provenance and the original text are available in the [local source bundle](../references/sources/mark-life-style/index.md).
+Mark-Life Style treats the reader's attention as scarce. Put the conclusion where it is easy to find, retain useful evidence and limits, and make the surrounding language easy to read.
 
 ## Arguments
 
@@ -32,16 +32,22 @@ This flavor adds no review, configuration, intensity, or code-edit action. It ca
 
 ## Catalog Publication
 
-Use the binding in [state.md](../references/state.md#flavor-bindings). Publish `.imsight-arts/mentality/human-speak-mark-life-style-principles.md` with the complete `Purpose`, `Principle Index`, `Communication Principles`, `Applicability and Judgment`, and `Provenance` sections of [mark-life-style-principles.md](../references/mark-life-style-principles.md). Include every Do / Don't comparison, judgment note, and the full license notice. Add a title, the entrance skill name, flavor identity, and an availability-only statement. Exclude workflow and activation state.
+Use the binding in [state.md](../references/state.md#flavor-bindings). Publish `.imsight-arts/mentality/human-speak-mark-life-style-principles.md` with the complete `Purpose`, `Principle Index`, `Communication Principles`, and `Applicability and Judgment` sections of [mark-life-style-principles.md](../references/mark-life-style-principles.md). Include every original Do / Don't comparison and judgment note. Add a title, the entrance skill name, flavor identity, and an availability-only statement. Exclude workflow, activation state, external reference tables, and third-party material.
 
-The declared source bundle is the entire Human Speak directory `references/sources/mark-life-style/`, not other flavors' sources. Copy it under `.imsight-arts/mentality/sources/human-speak-mark-life-style/<bundle-id>/` through the shared [offline publication contract](../../../references/runtime-injection.md#offline-source-bundles). Rewrite catalog links beginning `sources/mark-life-style/` to that deployed bundle, preserving fragments; links inside the bundle remain relative.
+The deployed catalog must work without this installed skill, `extern/orphan`, or network access. Publish no source directory or upstream files. Shared actions own project and agent-memory selection.
 
-The deployed catalog and sources must work without this installed skill, `extern/orphan`, or network access. Publishing the flavor provides definitions only; shared actions own project and agent-memory selection.
+## References
+
+These optional links identify conceptual background and the rules it concerns. Open them only for an explicit source or attribution request. Applying, enabling, recalling, and deploying this flavor use its maintained definitions alone. This section stays in the skill and is excluded from project catalogs.
+
+| Reference | Rules concerned |
+| --- | --- |
+| [Mark-Life agent-to-human](https://github.com/Mark-Life/agent-skills/blob/0696ebb51867d4a89ce747527e4899f5306ed464/skills/communication/agent-to-human/SKILL.md) | h1–h8: answer priority, relevant detail, evidence status, language, sentence focus, actors, layout, and references. |
 
 ## Guardrails
 
 - DO NOT claim tests, observations, or tool results that were not obtained.
 - DO NOT treat sentence-length or list-size heuristics as fixed quotas.
 - DO NOT remove requested depth or material uncertainty merely to shorten an answer.
-- DO NOT enable this flavor by inspecting its source or invoking it without an action.
+- DO NOT enable this flavor through inspection or invocation without an action.
 - DO NOT change another flavor's selections through this command.

@@ -1,8 +1,7 @@
 # Brooks Review Risks
 
-These diagnostic lenses use the canonical IDs and constructive definitions in [principles.md](principles.md). They do not introduce selectable state. Follow [review.md](review.md) for selection, evidence, severity, and reporting; use [review-sources.md](review-sources.md) for conceptual attribution and tradeoffs. Read only the entries selected for the review.
+These diagnostic lenses use the canonical IDs and constructive definitions in [principles.md](principles.md). They do not introduce selectable state. Follow [review.md](review.md) for selection, evidence, severity, and reporting; use [review-judgment.md](review-judgment.md) for practical tradeoffs. Read only the entries selected for the review.
 
-Adapted from Brooks Lint's production and test risk references; source inventory and MIT notice are preserved in [provenance](../org/README.md).
 
 ## Rule Mapping
 
@@ -21,7 +20,7 @@ Adapted from Brooks Lint's production and test risk references; source inventory
 | t5 | risk-coverage | Coverage Illusion |
 | t6 | test-architecture | Architecture Mismatch |
 
-Upstream uppercase codes are aliases of these lowercase IDs. Each entry supplies signals, evidence to seek, a representative finding/remedy, and counterexamples. Severity comes from the actual consequence, not a per-risk numeric threshold.
+Selector codes normalize to lowercase IDs. Each entry supplies signals, evidence to seek, a representative finding/remedy, and counterexamples. Severity comes from the actual consequence, not a per-risk numeric threshold.
 
 ## r1 — comprehension
 
@@ -33,7 +32,6 @@ Upstream uppercase codes are aliases of these lowercase IDs. Each entry supplies
 
 **Counterexamples:** A long, linear, cohesive routine with clear names and guards can be easier to understand than fragmented helpers. Domain terminology may be unfamiliar to a reviewer yet correct. A deep module can hide substantial internal complexity behind a simple interface.
 
-**Sources:** McConnell — Code Complete, routine design and naming; Fowler — Refactoring, Long Method, Flag Arguments, Primitive Obsession; Ousterhout — A Philosophy of Software Design, deep modules; Evans — Domain-Driven Design, Ubiquitous Language.
 
 ## r2 — change-boundary
 
@@ -45,7 +43,6 @@ Upstream uppercase codes are aliases of these lowercase IDs. Each entry supplies
 
 **Counterexamples:** Coordinated changes within one bounded context, deliberate API migrations, generated fan-out, and composition-root wiring may be coherent. A supported public API creates an intentional obligation rather than automatic debt. Do not invent external users to argue against an authorized breaking change.
 
-**Sources:** Fowler — Refactoring, Shotgun Surgery and Divergent Change; Hunt and Thomas — The Pragmatic Programmer, orthogonality; Brooks — The Mythical Man-Month, coordination costs; Winters, Manshreck, and Wright — Software Engineering at Google, Hyrum's Law; Ousterhout — information hiding.
 
 ## r3 — decision-ownership
 
@@ -57,7 +54,6 @@ Upstream uppercase codes are aliases of these lowercase IDs. Each entry supplies
 
 **Counterexamples:** Similar logic across bounded contexts can have independent ownership and lifecycles. Small repeated setup or protocol literals at explicit boundaries may preserve clarity. Temporary duplication in a documented extraction can be a deliberate migration step.
 
-**Sources:** Hunt and Thomas — The Pragmatic Programmer, DRY as knowledge ownership; Fowler — Refactoring, Duplicate Code and Parallel Inheritance Hierarchies; Evans — Ubiquitous Language within a bounded context.
 
 ## r4 — essential-complexity
 
@@ -67,9 +63,8 @@ Upstream uppercase codes are aliases of these lowercase IDs. Each entry supplies
 
 **Example and remedy:** One local export format gains a plugin registry, lifecycle hooks, and unused compatibility modes. Identify the extra paths maintainers must coordinate; implement the current export through a focused boundary and remove unsupported variation points when they provide no present value.
 
-**Counterexamples:** A thin adapter can earn its cost by containing vendor churn. A single implementation can still justify an interface at a real boundary. A switch over a closed enum or wire format can be clearer than polymorphism. A larger replacement is not a Second-System Effect finding without unnecessary generality.
+**Counterexamples:** A thin adapter can earn its cost by containing vendor churn. A single implementation can still justify an interface at a real boundary. A switch over a closed enum or wire format can be clearer than polymorphism. A larger replacement does not establish unnecessary generality by itself.
 
-**Sources:** Fowler — Refactoring, Speculative Generality and Middle Man; Brooks — The Mythical Man-Month, Second-System Effect; McConnell — Code Complete, design in construction; Hunt and Thomas — good-enough software; Ousterhout — strategic versus tactical programming.
 
 ## r5 — dependency-direction
 
@@ -81,7 +76,6 @@ Upstream uppercase codes are aliases of these lowercase IDs. Each entry supplies
 
 **Counterexamples:** Composition roots intentionally depend on implementations. Adapters can import both sides of a boundary. Orchestration modules and stable facades may have high fan-out. Direct access within a cohesive aggregate need not violate encapsulation.
 
-**Sources:** Martin — Clean Architecture, Dependency Inversion, Acyclic Dependencies, Stable Dependencies, Stable Abstractions, and Interface Segregation; Brooks — conceptual integrity; Hunt and Thomas — decoupling; Winters and colleagues — dependency management.
 
 ## r6 — domain-fidelity
 
@@ -93,7 +87,6 @@ Upstream uppercase codes are aliases of these lowercase IDs. Each entry supplies
 
 **Counterexamples:** DTOs, persistence records, and API payloads can be data-only. Simple CRUD or transaction scripts may suit a simple domain. A functional design can own invariants in functions without methods on every data type. Do not impose a rich object model solely to remove data bags.
 
-**Sources:** Evans — Domain-Driven Design, Ubiquitous Language, Bounded Context, aggregates, entities and value objects; Fowler — Refactoring, Feature Envy and Refused Bequest; Martin — Liskov Substitution.
 
 ## t1 — test-intent
 
@@ -105,7 +98,6 @@ Upstream uppercase codes are aliases of these lowercase IDs. Each entry supplies
 
 **Counterexamples:** Multiple assertions with clear framework diagnostics can tell one coherent story. Shared setup is appropriate when its values matter to nearly every test. Concise names are sufficient when the scenario and outcome remain obvious.
 
-**Sources:** Meszaros — xUnit Test Patterns, Assertion Roulette, Mystery Guest, and General Fixture; Osherove — The Art of Unit Testing, readable scenario/outcome naming.
 
 ## t2 — test-resilience
 
@@ -117,7 +109,6 @@ Upstream uppercase codes are aliases of these lowercase IDs. Each entry supplies
 
 **Counterexamples:** Published events, emitted commands, and ordering explicitly required by a protocol are behavior. A fake adapter is useful when it preserves that contract. Several assertions can support one behavioral claim.
 
-**Sources:** Meszaros — xUnit Test Patterns, Eager Test and Erratic Test; Osherove — implementation-independent tests and isolation; Hunt and Thomas — orthogonality.
 
 ## t3 — test-knowledge
 
@@ -129,7 +120,6 @@ Upstream uppercase codes are aliases of these lowercase IDs. Each entry supplies
 
 **Counterexamples:** Unit and integration tests can exercise a similar scenario to verify logic and serialization separately. Small local setup duplication can be clearer than a fixture maze. Similar assertions for independently owned domain rules are not automatically duplication.
 
-**Sources:** Meszaros — xUnit Test Patterns, Test Code Duplication and Lazy Test; Hunt and Thomas — DRY as shared knowledge.
 
 ## t4 — mock-boundaries
 
@@ -141,7 +131,6 @@ Upstream uppercase codes are aliases of these lowercase IDs. Each entry supplies
 
 **Counterexamples:** An interaction assertion is appropriate when the interaction is the required behavior, such as publishing one cancellation command. A few mocks around slow or nondeterministic boundaries are useful. Testability seams that improve production boundaries are not test-only contamination.
 
-**Sources:** Meszaros — xUnit Test Patterns, behavior verification and test data; Osherove — mock usage and completeness; Feathers — Working Effectively with Legacy Code, sensing and separation.
 
 ## t5 — risk-coverage
 
@@ -153,7 +142,6 @@ Upstream uppercase codes are aliases of these lowercase IDs. Each entry supplies
 
 **Counterexamples:** Existing tests can already protect new implementations and pure refactors. Side-effect checks may live at integration level. A low-risk private helper may not warrant an isolated test. High coverage can be useful alongside meaningful branch and change-path evidence.
 
-**Sources:** Feathers — Working Effectively with Legacy Code, protecting changes with tests; How Google Tests Software — risk and change protection; Osherove — completeness of behavior checks.
 
 ## t6 — test-architecture
 
@@ -164,5 +152,3 @@ Upstream uppercase codes are aliases of these lowercase IDs. Each entry supplies
 **Example and remedy:** Every pricing boundary case boots a complete service stack, while network behavior is irrelevant to those cases. Identify the unnecessary dependencies and observed feedback cost if available; exercise pricing through a focused seam and retain integration tests for persistence/transport risks. For unclear legacy behavior, capture the relevant behavior before changing the seam.
 
 **Counterexamples:** An integration-heavy suite can be healthy for a data-bound product with fast, reliable feedback. Ratios such as 70:20:10 and durations such as ten minutes are context prompts, not requirements. A small set of critical end-to-end tests is useful. Limited architecture evidence must be reported as limited coverage rather than a clean suite assessment.
-
-**Sources:** How Google Tests Software — suite portfolio and risk; Feathers — seams and characterization tests; Meszaros — xUnit Test Patterns, Slow Tests.

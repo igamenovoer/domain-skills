@@ -13,7 +13,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 Treat the reader's attention as scarce. Complete the reasoning and work the task requires, then make the human-facing result easy to understand and act on. Concision comes from clear organization and relevant content; a requested tutorial or detailed explanation may need substantial space.
 
-The comparisons below are illustrative teaching examples, not reports of work performed or evidence collected. Learn their intent and response shape rather than hardcoding their wording, identifiers, or sample results. Examples adapt the [bundled original](sources/mark-life-style/agent-to-human.md) and add agent-reporting cases.
+The comparisons below are illustrative teaching examples, not reports of work performed or evidence collected. Learn their intent and response shape rather than hardcoding their wording, identifiers, or sample results. These are original illustrative cases for the selected communication principles.
 
 ## Principle Index
 
@@ -34,11 +34,11 @@ The comparisons below are illustrative teaching examples, not reports of work pe
 
 Lead with the answer, finding, outcome, or decision the reader needs. Put supporting explanation after it, including any qualification needed to keep the opening accurate. Report behavior and results directly; skip flattery, filler introductions, and a chronology of the investigation.
 
-**Representative Do / Don't comparison.** Inspection has established that a token verifier skips its expiry field.
+**Representative Do / Don't comparison.** Inspection has established that a record importer omits the required checksum check.
 
-**Don't:** “I looked at the authentication flow, checked refresh handling, and traced the response through the middleware. I found a problem with expiry validation.”
+**Don't:** “I opened the import path, found the reader, inspected its callers, and checked the record format. The checksum check is missing.”
 
-**Do:** “Expired refresh tokens are accepted because `verifyToken` skips `exp`.”
+**Do:** “The importer accepts corrupted records because `read_record` does not verify their checksums.”
 
 **Judgment:** An unresolved investigation should open with the uncertainty or blocker. A limited finding should carry its scope in the opening; do not turn a suspicion into a verdict. Follow an explicitly requested narrative, teaching sequence, or document template when it serves the task. This principle governs the opening, not a repetitive conclusion-shaped opener on every paragraph.
 
@@ -96,9 +96,9 @@ Say which function, component, person, or process performs the action when that 
 
 **Representative Do / Don't comparison.** The responsible function and missing validation are known from inspection.
 
-**Don't:** “The expiry field is not validated.”
+**Don't:** “The checksum is not checked.”
 
-**Do:** “`verifyToken` does not validate `exp`.”
+**Do:** “`read_record` does not check the record checksum.”
 
 **Judgment:** Passive wording is appropriate when the actor is unknown, irrelevant, or deliberately outside the claim. Do not invent an owner or assert causation to make a sentence active. Say that the origin is unresolved when the evidence identifies only the symptom.
 
@@ -116,7 +116,7 @@ Use connected prose for explanations, lists for parallel items or ordered steps,
 
 **Do:** “The request reaches the worker, which then waits for a connection. That wait accounts for the observed delay.”
 
-**Judgment:** Two alternatives can deserve a list, and a long explanation can deserve headings. The upstream three-item bullet threshold and one-line bullet preference are heuristics, not quotas. Honor requested formats and use the layout that reduces reading effort. Do not force equal bullet counts, unnecessary tables, or compressed one-line items that hide material detail.
+**Judgment:** Two alternatives can deserve a list, and a long explanation can deserve headings. List size and item length are judgment calls, not quotas. Honor requested formats and use the layout that reduces reading effort. Do not force equal bullet counts, unnecessary tables, or compressed one-line items that hide material detail.
 
 ### h8 — precise-references
 
@@ -124,9 +124,9 @@ Format exact identifiers, commands, flags, and literal values so the reader can 
 
 **Representative Do / Don't comparison.** One message discusses a single discriminated-union case.
 
-**Don't:** “The DeliveryTbd arrangedBy partner case requires a contact. DeliveryTbd arrangedBy partner must reject a missing contact.”
+**Don't:** “The ExportTarget kind remote case requires an endpoint. ExportTarget kind remote must reject a missing endpoint.”
 
-**Do:** “`DeliveryTbd{arrangedBy:'partner'}` requires a contact. The partner case rejects a missing contact.”
+**Do:** “`ExportTarget{kind:'remote'}` requires an endpoint. The remote case rejects a missing endpoint.”
 
 **Judgment:** Keep full identifiers when a shorter reference would be ambiguous or a snippet must stand alone. Follow the host's file-link convention; do not wrap clickable links in backticks or invent paths and line numbers. Exact quotations, machine-readable output, and commands retain the syntax their consumers require.
 
@@ -137,21 +137,3 @@ Apply selected rules to human-facing replies, summaries, status reports, explana
 These rules do not constrain private reasoning or reduce authorized implementation, investigation, or verification work. They add no automatic test, review, or research phase. Required evidence and material limitations remain part of the output even when they take space. Concision must not imply certainty, completeness, execution, or successful validation that the evidence does not support.
 
 Machine-readable schemas, executable instructions for other agents, exact quotations, and code syntax keep their own contracts. Apply presentation guidance only where compatible with those contracts and higher-priority instructions. Names such as `h1` are local to this flavor; selection and provenance identify `human-speak/mark-life-style`.
-
-## Provenance
-
-Adapted from Mark-Life's `agent-to-human` skill, version 1.1.0, at revision `0696ebb51867d4a89ce747527e4899f5306ed464`. The [source index](sources/mark-life-style/index.md) includes the original text, source identity, adaptation mapping, and license. Online origin links appear only inside the source bundle; these definitions and examples are self-contained.
-
-The four original themes are separated into eight selectable rules, with mechanics grouped by purpose. Sentence-length and bullet-count thresholds become judgment aids. The adaptation preserves requested depth and uncertainty, treats accurate evidence as an underlying obligation, and adds no activation hooks or work-reduction policy.
-
-### License
-
-MIT License
-
-Copyright (c) 2026 Mark-Life Ltd and Andrey Markin
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

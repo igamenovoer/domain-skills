@@ -4,7 +4,7 @@
 
 1. For a management request, require an explicitly named flavor using the entrypoint's [Flavor Selection](../SKILL-MAIN.md#flavor-selection). If missing, show the inventory and retain the pending request without mutation.
 2. Resolve each named flavor through **Flavor Bindings**, then validate all selectors under **Rule Selection** before any action.
-3. Pass the flavor's identity, storage key, catalog contract, and source directory to the manager's [shared actions](../../../references/actions.md).
+3. Pass the flavor's identity, storage key, and catalog contract to the manager's [shared actions](../../../references/actions.md).
 4. For ordinary communication, resolve previously selected flavor-qualified rules through [runtime precedence](../../../references/runtime-injection.md#effective-selection), then apply only their relevant definitions.
 5. Report or retain the flavor, rule IDs, scope, and definitions through **Recall and Retention**. Preserve independent state for every flavor and agent.
 
@@ -27,7 +27,6 @@ For Mark-Life Style:
 - Discovery marker key: `imsight-skill:imsight-mentality-mgr/human-speak-mark-life-style-catalog`.
 - Project marker key: `imsight-skill:imsight-mentality-mgr/human-speak-mark-life-style-project`.
 - Agent-memory namespace: `human-speak/mark-life-style`, with separate enabled and disabled rule sets.
-- Source bundle: `references/sources/mark-life-style/`, published under the storage key above.
 
 For Han Style:
 
@@ -36,7 +35,6 @@ For Han Style:
 - Discovery marker key: `imsight-skill:imsight-mentality-mgr/human-speak-han-style-catalog`.
 - Project marker key: `imsight-skill:imsight-mentality-mgr/human-speak-han-style-project`.
 - Agent-memory namespace: `human-speak/han-style`, with separate enabled and disabled rule sets.
-- Source bundle: `references/sources/han-style/`, published under the storage key above.
 
 For STE Style:
 
@@ -45,7 +43,6 @@ For STE Style:
 - Discovery marker key: `imsight-skill:imsight-mentality-mgr/human-speak-ste-style-catalog`.
 - Project marker key: `imsight-skill:imsight-mentality-mgr/human-speak-ste-style-project`.
 - Agent-memory namespace: `human-speak/ste-style`, with separate enabled and disabled rule sets.
-- Source bundle: `references/sources/ste-style/`, published under the storage key above.
 
 Use the state identity for memory, composition, and user-facing provenance. Qualify cross-flavor or cross-mentality rules as `human-speak/mark-life-style:h1`, `human-speak/han-style:h1`, or `human-speak/ste-style:h1`; these are different rules despite sharing a local ID. Within a correctly identified flavor block, store canonical local IDs such as `h1` beside their names. Use the storage key in the manager's generic `<mentality>` path and marker templates. Visible headings identify both Human Speak and the selected flavor.
 
@@ -57,7 +54,7 @@ Unqualified enable/disable defaults to agent memory. Omitted memory selectors ex
 
 Keep `P`, `M+`, and `M-` independently for each flavor, using `E = (P union M+) minus M-`. Each flavor is a separate rule family under the shared [priority contract](../../../references/priorities.md); there is no Human Speak-wide priority. A fresh enable raises that flavor's scoped family priority and advances the shared counter without changing other flavors' stored selections or numbers. Adding a future flavor does not enable it or copy rules from an existing one. These actions do not silently replace another flavor; any intended combination or removal names the affected flavors explicitly. Resolve conflicts by agent-memory-over-project precedence, then higher family priority within the same scope, never inventory order.
 
-No registered flavor has independent child settings. Disabling a flavor's last project rule removes its entire application block and family priority after required deployment preparation, preserving discovery, sources, the shared next-project-priority counter, and agent memory. A partial disable preserves the family priority. Disabling its last memory-enabled rule removes only that memory priority, retaining explicit negative overrides and the shared next-memory-priority counter; it writes no files.
+No registered flavor has independent child settings. Disabling a flavor's last project rule removes its entire application block and family priority after required deployment preparation, preserving discovery, the shared next-project-priority counter, and agent memory. A partial disable preserves the family priority. Disabling its last memory-enabled rule removes only that memory priority, retaining explicit negative overrides and the shared next-memory-priority counter; it writes no files.
 
 ## Recall and Retention
 
@@ -71,6 +68,6 @@ Read definitions before retaining them. For each deployed, usable rule, retain t
 
 - DO NOT fill an omitted flavor from project state, remembered use, or the sole available option.
 - DO NOT apply `all` across flavors or accept unqualified rule IDs before the flavor is chosen.
-- DO NOT share a project block, memory namespace, or source-bundle identity between different flavors.
+- DO NOT share a project block, catalog path, or memory namespace between different flavors.
 - DO NOT write memory overrides or a pending chooser request into project files.
 - DO NOT silently replace another flavor when enabling the requested one.

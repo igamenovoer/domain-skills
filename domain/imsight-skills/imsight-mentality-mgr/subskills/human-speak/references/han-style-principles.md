@@ -15,7 +15,7 @@ Make an explanation understandable without requiring a capable reader to reconst
 
 These five principles express a mentality. Prose structure remains the agent's choice under the user's request and applicable instructions; there is no prescribed opening sentence, paragraph pattern, list policy, detail placement, or response length.
 
-The Do / Don't comparisons are illustrative teaching examples, not reports of work performed or evidence collected. Learn their intent and semantics rather than hardcoding their wording, results, or layout. They adapt the [bundled Han guidance](sources/han-style/readability-rule.md) and add communication examples.
+The Do / Don't comparisons are illustrative teaching examples, not reports of work performed or evidence collected. Learn their intent and semantics rather than hardcoding their wording, results, or layout. These are original illustrative cases for the selected communication principles.
 
 ## Principle Index
 
@@ -81,11 +81,11 @@ Explain the behavior, consequence, or role behind technical details in language 
 
 Make language easier to understand without blurring what is known. Retain quantities, conditions, distinctions, and uncertainty that affect the reader's interpretation or next action. Separate measured results from inference, and preserve the scope that makes a claim accurate.
 
-**Representative Do / Don't comparison.** Adapting Han's own example, the available measurement says latency exceeded 340 ms in three of ten observation windows.
+**Representative Do / Don't comparison.** The available measurement says 14 of 60 jobs missed a five-second startup budget.
 
-**Don't:** “Latency was sometimes slow.”
+**Don't:** “Some jobs started late.”
 
-**Do:** “Latency exceeded 340 ms in three of the ten observation windows.”
+**Do:** “Fourteen of the 60 jobs took more than five seconds to start.”
 
 **Judgment:** A requested summary can omit detail; it need not reproduce every source fact or announce every omission. Keep facts whose loss would change the reader's decision, such as a blocking condition, material risk, or limit on the finding. In a faithful rewrite, preserve the supplied facts unless the user requests abridgment. This rule uses the evidence already available; it creates no requirement for extra tests, research, or a fact-preservation ledger.
 
@@ -97,20 +97,4 @@ Leave prose structure and personal style to the agent. Headings, lists, tables, 
 
 Apply the mentality within ordinary writing; no separate self-check, rewrite agent, scoring rubric, or editing pass is required. These rules do not authorize additional investigation, implementation, or testing, and they do not reduce the work or evidence required by the task. Disclosure of an actual uncertainty is preferable to unsupported certainty.
 
-Machine-readable schemas, exact quotations, code syntax, and executable instructions for other agents keep their own contracts. The bundled originals are historical references, not extra active rules. Their structural prescriptions, vocabulary blocklist, writing persona, and runtime procedures are not inherited by this flavor.
-
-## Provenance
-
-Adapted from Test Double's Han readability rule and writing-voice guidance at revision `a86259a348dd0ec8a04b0357dd33753a36f38c2d`. The [source index](sources/han-style/index.md) records the original files, adaptation mapping, and [license](sources/han-style/license.md). Online origin links appear only inside the source bundle; the maintained definitions and examples are self-contained.
-
-This adaptation selects five principles rather than reproducing Han's entire standard. It retains the reader-context and factual-fidelity concerns, expresses answer priority and technical meaning without prescribing prose structure, and uses connected reasoning without sentence or paragraph quotas. Han's eight-item self-check, editor workflow, blocklist, and personal voice are outside the selection.
-
-### License
-
-Copyright 2026 Test Double, Inc.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+Machine-readable schemas, exact quotations, code syntax, and executable instructions for other agents keep their own contracts.

@@ -52,15 +52,15 @@ Apply guidance before, during, and after editing. Render constructive reminders 
 
 ## Catalog Publication
 
-The canonical source is [principles.md](references/principles.md). Publish `.imsight-arts/mentality/brooks-principles.md` using the shared deployment contract. Include the complete `Production Rules`, `Test Rules`, `Applicability`, and `Provenance` sections and every nested example and judgment note, with a title, canonical rule index, entrance skill name, and availability-only statement. Exclude the source workflow and skill-control guardrails; the artifact documents principles, not activation or agent state.
+The canonical source is [principles.md](references/principles.md). Publish `.imsight-arts/mentality/brooks-principles.md` using the shared deployment contract. Include the complete `Production Rules`, `Test Rules`, and `Applicability` sections and every nested example and judgment note, with a title, canonical rule index, entrance skill name, and availability-only statement. Exclude the source workflow and skill-control guardrails; the artifact documents principles, not activation or agent state.
 
-Declare all files in `references/sources/`, indexed by [offline sources](references/sources/index.md), as the source bundle. Copy it with its license and rewrite catalog source links through the shared [offline publication contract](../../references/runtime-injection.md#offline-source-bundles). The catalog and its source directory must work without the installed skill, original checkout, books, or network access. Source records retain optional web origins and earlier attributions; they do not require fetching those pages.
+The catalog contains only maintained definitions and original teaching examples. Exclude this entrypoint's external reference table and third-party material. It must work without the installed skill, an original checkout, books, or network access.
 
 Publishing or refreshing the catalog does not change either scope. Project actions include required deployment and update `AGENTS.md`; memory actions change only the current agent's explicit overrides. Apply the shared precedence rather than a mentality-wide enabled flag.
 
 ## Review Resources
 
-[Review](references/review.md) owns execution and reporting; [review-risks.md](references/review-risks.md) maps diagnostic symptoms to the existing IDs; [review-sources.md](references/review-sources.md) supplies source grounding and counterexamples. All runtime dependencies are bundled in this mentality manager. [Upstream provenance](org/README.md) records the source snapshot, adaptations, and license; it is not loaded to execute reviews.
+[Review](references/review.md) owns execution and reporting; [review-risks.md](references/review-risks.md) maps diagnostic symptoms to the existing IDs; [review-judgment.md](references/review-judgment.md) supplies practical tradeoff guidance. These maintained resources are sufficient to execute reviews.
 
 ## Rationalization Table
 
@@ -81,6 +81,28 @@ Publishing or refreshing the catalog does not change either scope. Project actio
 - Testing private state or mock choreography instead of observable behavior.
 - Moving domain rules into generic services or infrastructure-oriented models.
 - Treating a numeric symptom as proof without examining context.
+
+## References
+
+These links identify conceptual background and the rules it concerns. Consult them only for an explicit source or attribution request. Ordinary application, review, and deployment use the maintained definitions and original examples without opening these links. This section is not part of the deployed catalog.
+
+| Reference | Rules concerned |
+| --- | --- |
+| [Brooks Lint production risks](https://github.com/hyhmrright/brooks-lint/blob/1892f7857802f4175ba191b8dae42b5cfbc5f292/skills/_shared/decay-risks.md) | r1–r6: production design concerns. |
+| [Brooks Lint test risks](https://github.com/hyhmrright/brooks-lint/blob/1892f7857802f4175ba191b8dae42b5cfbc5f292/skills/_shared/test-decay-risks.md) | t1–t6: test design concerns. |
+| [Brooks Lint review](https://github.com/hyhmrright/brooks-lint/blob/1892f7857802f4175ba191b8dae42b5cfbc5f292/skills/brooks-review/SKILL.md) | r1–r6 and t1–t6: diagnostic review framing. |
+| [Software Engineering at Google — Style Guides](https://abseil.io/resources/swe-book/html/ch08.html) | r1. |
+| [Martin Fowler — the Shotgun Surgery problem](https://martinfowler.com/articles/modularizing-react-apps.html) | r2. |
+| [The Pragmatic Programmer — DRY](https://books.pragprog.com/tips/) | r3. |
+| [Martin Fowler — YAGNI](https://martinfowler.com/bliki/Yagni.html) | r4. |
+| [Microsoft — Clean architecture](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures) | r5. |
+| [Microsoft — Designing a DDD domain model](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/microservice-ddd-cqrs-patterns/microservice-domain-model) | r6. |
+| [Google Testing Blog — Writing Descriptive Test Names](https://testing.googleblog.com/2014/10/testing-on-toilet-writing-descriptive.html) | t1. |
+| [Software Engineering at Google — Unit Testing](https://abseil.io/resources/swe-book/html/ch12.html) | t2. |
+| [Google Testing Blog — Cleanly Create Test Data](https://testing.googleblog.com/2018/02/testing-on-toilet-cleanly-create-test.html) | t3. |
+| [Google Testing Blog — Don't Overuse Mocks](https://testing.googleblog.com/2013/05/testing-on-toilet-dont-overuse-mocks.html) | t4. |
+| [Google Testing Blog — Understanding Your Coverage Data](https://testing.googleblog.com/2008/03/tott-understanding-your-coverage-data.html) | t5. |
+| [Google Testing Blog — Just Say No to More End-to-End Tests](https://testing.googleblog.com/2015/04/just-say-no-to-more-end-to-end-tests.html) | t6. |
 
 ## Guardrails
 

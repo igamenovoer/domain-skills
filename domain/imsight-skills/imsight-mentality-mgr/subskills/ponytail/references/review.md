@@ -2,7 +2,7 @@
 
 ## Overview
 
-Find supported opportunities to simplify implementation through reuse, removal, or consolidation within the assigned task and resolved edit boundary. Keep the upstream review's compact actionable style while requiring evidence that the proposed replacement preserves behavior. This is a simplification review, not shipping approval or a substitute for a general correctness review.
+Find supported opportunities to simplify implementation through reuse, removal, or consolidation within the assigned task and resolved edit boundary. Keep findings concise and actionable, with evidence that each proposed replacement preserves behavior. This is a simplification review, not shipping approval or a substitute for a general correctness review.
 
 ## Workflow
 

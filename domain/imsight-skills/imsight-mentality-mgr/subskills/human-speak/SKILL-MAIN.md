@@ -29,9 +29,9 @@ This table is the chooser inventory. Show the flavor name, origin, and short rul
 
 | Flavor | Origin | Rule Summary | Detail |
 | --- | --- | --- | --- |
-| `mark-life-style` | Mark-Life's `agent-to-human` skill; [bundled source](references/sources/mark-life-style/index.md). | Lead with the answer; retain useful detail; state evidence accurately; use plain language, focused sentences, named actors, readable structure, and precise references. | [Mark-Life Style](commands/mark-life-style.md) |
-| `han-style` | Test Double's Han readability guidance; [bundled source](references/sources/han-style/index.md). | Account for the reader's context, make the answer clear, connect ideas, explain technical meaning, and preserve precision; leave prose structure to the agent. | [Han Style](commands/han-style.md) |
-| `ste-style` | Dustin Yuchen Teng's `asd-ste100` skill, inspired by Simplified Technical English; [bundled source](references/sources/ste-style/index.md). | Use stable terminology, explicit relationships, and direct language; preserve claim strength and prefer clarity over brevity, without enforcing the STE standard. | [STE Style](commands/ste-style.md) |
+| `mark-life-style` | Mark-Life's `agent-to-human` skill. | Lead with the answer; retain useful detail; state evidence accurately; use plain language, focused sentences, named actors, readable structure, and precise references. | [Mark-Life Style](commands/mark-life-style.md) |
+| `han-style` | Test Double's Han readability guidance. | Account for the reader's context, make the answer clear, connect ideas, explain technical meaning, and preserve precision; leave prose structure to the agent. | [Han Style](commands/han-style.md) |
+| `ste-style` | Dustin Yuchen Teng's `asd-ste100` skill, inspired by Simplified Technical English. | Use stable terminology, explicit relationships, and direct language; preserve claim strength and prefer clarity over brevity, without enforcing the STE standard. | [STE Style](commands/ste-style.md) |
 
 ## Flavor Selection
 
@@ -60,7 +60,7 @@ All commands below are peers. Flavor commands take an optional shared action and
 | `mark-life-style` | Choose Mark-Life's communication flavor and run an action, or recall it and show help when no action is supplied. | [Mark-Life Style](commands/mark-life-style.md) |
 | `han-style` | Choose Han's communication flavor and run an action, or recall it and show help when no action is supplied. | [Han Style](commands/han-style.md) |
 | `ste-style` | Choose the STE-inspired communication flavor and run an action, or recall it and show help when no action is supplied. | [STE Style](commands/ste-style.md) |
-| `deploy` | Publish the explicitly named flavor's complete catalog and sources without activation. | [Shared Deploy](../../references/actions.md#deploy) |
+| `deploy` | Publish the explicitly named flavor's self-contained catalog without activation. | [Shared Deploy](../../references/actions.md#deploy) |
 | `enable-project` | Ensure deployment and add selected rules of the named flavor to project requirements. | [Shared Enable Project](../../references/actions.md#enable-project) |
 | `disable-project` | Ensure deployment and remove selected rules of the named flavor from project requirements. | [Shared Disable Project](../../references/actions.md#disable-project) |
 | `enable-memory` | Remember enabled overrides for the named flavor in this agent only. | [Shared Enable Memory](../../references/actions.md#enable-memory) |
@@ -72,7 +72,7 @@ For example, `imsight-mentality-mgr->human-speak->mark-life-style()` with argume
 
 ## Catalog Publication
 
-Resolve the named flavor first. Its command page declares the sections, source bundle, and flavor-specific storage key used by shared deployment. Human Speak has no combined catalog, family-wide rule set, or default-flavor flag. Publishing one flavor never publishes or enables another.
+Resolve the named flavor first. Its command page declares the sections and flavor-specific storage key used by shared deployment. Optional reference tables remain in that command page and are excluded from catalogs. Human Speak has no combined catalog, family-wide rule set, or default-flavor flag. Publishing one flavor never publishes or enables another.
 
 ## Guardrails
 

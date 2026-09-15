@@ -69,11 +69,27 @@ If a correct root-cause fix needs infrastructure outside new-code-only scope, us
 
 ## Catalog Publication
 
-Publish `.imsight-arts/mentality/ponytail-principles.md` using the shared deployment contract. Copy the complete `Principle Index`, `Safe Rules`, `Normal Additions`, `Extreme Additions`, `Validity Requirements`, `Applicability`, and `Provenance` sections of [principles.md](references/principles.md), including every Do / Don't code comparison, its assumptions, judgment note, source attribution, and the example license notice. Declare all files in `references/sources/`, indexed by [offline sources](references/sources/index.md), as the source bundle; copy it and rewrite catalog links through the shared [offline publication contract](../../references/runtime-injection.md#offline-source-bundles). Include the title, canonical index, entrance skill, and availability-only statement. Exclude control workflows, current selection, and project or agent settings. The published catalog and its source directory work without installed paths, the original checkout, or network access.
+Publish `.imsight-arts/mentality/ponytail-principles.md` using the shared deployment contract. Copy the complete `Principle Index`, `Safe Rules`, `Normal Additions`, `Extreme Additions`, `Validity Requirements`, and `Applicability` sections of [principles.md](references/principles.md), including every original Do / Don't comparison, its assumptions, and judgment note. Include the title, canonical index, entrance skill, and availability-only statement. Exclude control workflows, current selection, project or agent settings, external reference tables, and third-party material. The published catalog must work without installed paths, an original checkout, or network access.
 
 ## Maintenance
 
-Keep canonical rules and preset membership in the principle index, state transitions and edit boundaries in state.md, and diagnostic evidence in review-patterns.md. Shared review mechanics belong to the parent. [Offline sources](references/sources/index.md) retain the relevant originals or explicitly identified excerpts with origin links and licenses. [Upstream provenance](org/README.md) records the immutable archive; source entrypoints and examples are historical material, not runtime instructions.
+Keep canonical rules and preset membership in the principle index, state transitions and edit boundaries in state.md, and the review procedure and diagnostic patterns in their maintained references. Write original examples that preserve the task contract and sensible edge-case defenses.
+
+## References
+
+These links identify conceptual background and the rules it concerns. Consult them only for an explicit source or attribution request. Ordinary application, review, and deployment use the maintained definitions and original examples without opening these links. This section is not part of the deployed catalog.
+
+| Reference | Rules concerned |
+| --- | --- |
+| [Ponytail rules](https://github.com/DietrichGebert/ponytail/blob/356918eba965ee1eac64bd3a7f0dd02108350de5/skills/ponytail/SKILL.md#rules) | p1–p12: simplification themes; p7: explaining real limits. |
+| [Reuse and caller-tracing cases](https://github.com/DietrichGebert/ponytail/blob/356918eba965ee1eac64bd3a7f0dd02108350de5/benchmarks/agentic/tasks.py) | p1, p4: reuse and owning-boundary reasoning. |
+| [Grouping example](https://github.com/DietrichGebert/ponytail/blob/356918eba965ee1eac64bd3a7f0dd02108350de5/examples/group-by.md) | p2: proven primitives. |
+| [Cloning example](https://github.com/DietrichGebert/ponytail/blob/356918eba965ee1eac64bd3a7f0dd02108350de5/examples/deep-clone.md) | p3, p6: dependency restraint and behavior preservation. |
+| [Debounce examples](https://github.com/DietrichGebert/ponytail/blob/356918eba965ee1eac64bd3a7f0dd02108350de5/examples/debounce.md) | p5, p8, p10: redundancy, structure, and flexibility. |
+| [CSV example](https://github.com/DietrichGebert/ponytail/blob/356918eba965ee1eac64bd3a7f0dd02108350de5/examples/csv-sum.md) | p9: compact implementation. |
+| [Formatting example](https://github.com/DietrichGebert/ponytail/blob/356918eba965ee1eac64bd3a7f0dd02108350de5/examples/number-formatting.md) | p11: dependency replacement. |
+| [Countdown example](https://github.com/DietrichGebert/ponytail/blob/356918eba965ee1eac64bd3a7f0dd02108350de5/examples/react-countdown.md) | p12: speculative machinery. |
+| [Ponytail review](https://github.com/DietrichGebert/ponytail/blob/356918eba965ee1eac64bd3a7f0dd02108350de5/skills/ponytail-review/SKILL.md) | p1–p12: simplification review framing. |
 
 ## Guardrails
 

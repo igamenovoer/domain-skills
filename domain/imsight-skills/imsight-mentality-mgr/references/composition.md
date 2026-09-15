@@ -22,7 +22,7 @@ Each child's rendering identifies:
 - actionable reminders grounded in the full definitions, examples, and judgment notes;
 - any unresolved definition or state evidence that prevents confident application.
 
-The parent uses this common contract without interpreting a child's selector vocabulary or rewriting its principle definitions. Children own their catalogs and applicability. The parent may add headings and remove exact duplicate guidance while retaining source attribution.
+The parent uses this common contract without interpreting a child's selector vocabulary or rewriting its principle definitions. Children own their catalogs and applicability. The parent may add headings and remove exact duplicate guidance while retaining the selected family, rule ID, and scope provenance.
 
 Do not load every example in every deployed catalog for ordinary work. Catalogs preserve complete explanations for shared discovery; application retrieves only the selected principles and the examples needed to interpret them.
 
