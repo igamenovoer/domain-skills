@@ -296,6 +296,11 @@ $auth_export
 $auth_unset
 export ANTHROPIC_BASE_URL=$base_url_q
 export CLAUDE_CODE_AUTO_COMPACT_WINDOW="\${CLAUDE_CODE_AUTO_COMPACT_WINDOW:-$compact_window}"
+# Claude Code's background auto-updater reinstalls the npm package mid-session;
+# an install interrupted between extraction and postinstall leaves the placeholder
+# bin shim and every launcher fails with "claude native binary not installed".
+# Update deliberately instead: npm update -g @anthropic-ai/claude-code
+export DISABLE_AUTOUPDATER="\${DISABLE_AUTOUPDATER:-1}"
 # CLAUDE_KIMI_MODEL is the single override knob: it resets the startup model and
 # every tier at once. Per-tier overrides use CLAUDE_KIMI_MODEL_<TIER>.
 KIMI_MODEL=\${CLAUDE_KIMI_MODEL:-$model_q}

@@ -166,6 +166,12 @@ $authBlock
 if ([string]::IsNullOrWhiteSpace(`$env:CLAUDE_CODE_AUTO_COMPACT_WINDOW)) {
     `$env:CLAUDE_CODE_AUTO_COMPACT_WINDOW = '$CompactWindow'
 }
+# Claude Code's background auto-updater reinstalls the npm package mid-session;
+# an interrupted install leaves the placeholder shim and breaks every launcher.
+# Update deliberately instead: npm update -g @anthropic-ai/claude-code
+if ([string]::IsNullOrWhiteSpace(`$env:DISABLE_AUTOUPDATER)) {
+    `$env:DISABLE_AUTOUPDATER = '1'
+}
 
 `$node = Get-Command node -ErrorAction SilentlyContinue
 if (`$node) {

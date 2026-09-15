@@ -60,6 +60,7 @@ If the probe fails on every endpoint (network blocked or invalid key), fall back
 - Windows shared key file: `%LOCALAPPDATA%\Programs\kimi-launchers\kimi-api-key`
 - Default lane: when a key is available, the lane matching the detected key type under **Determine The Key's Lane**; otherwise **Using Kimi Platform API**. Use **Using Kimi Coding Plan** when the key is a coding-plan key, or when the user has a Kimi membership and asks for the coding-plan endpoint, or when the user wants help choosing between the lanes. The user's explicit lane choice always wins.
 - Default startup model: `opus` — the launcher starts Claude Code with `--model opus`, and the `opus` alias resolves through `ANTHROPIC_DEFAULT_OPUS_MODEL` to the lane's most capable Kimi model (`kimi-k3` on the Platform API lane, `k3` on the Coding Plan lane).
+- `DISABLE_AUTOUPDATER=1`, overridable by the caller. Claude Code's background auto-updater reinstalls the npm package mid-session; an interrupted install leaves the placeholder `claude` shim behind and breaks every launcher on the box (see **Notes**). Updates become deliberate: `npm update -g @anthropic-ai/claude-code`.
 
 Imsight's local launcher runs Claude Code with `--dangerously-skip-permissions` by default. The generator derives the auth lane, the tier mapping, and the compact window from `--base-url` and the model options.
 
@@ -403,12 +404,12 @@ Test-Path "$env:LOCALAPPDATA\Programs\kimi-launchers\kimi-api-key"
 Inspect generated launchers and key files only with redaction:
 
 ```bash
-rg -n 'kimi-api-key|ANTHROPIC_BASE_URL|ANTHROPIC_DEFAULT_|CLAUDE_CODE_SUBAGENT_MODEL|ENABLE_TOOL_SEARCH|CLAUDE_CODE_AUTO_COMPACT_WINDOW|dangerously-skip-permissions' "$HOME/.local/bin/claude-kimi"
+rg -n 'kimi-api-key|ANTHROPIC_BASE_URL|ANTHROPIC_DEFAULT_|CLAUDE_CODE_SUBAGENT_MODEL|ENABLE_TOOL_SEARCH|CLAUDE_CODE_AUTO_COMPACT_WINDOW|DISABLE_AUTOUPDATER|dangerously-skip-permissions' "$HOME/.local/bin/claude-kimi"
 test -f "$HOME/.local/bin/kimi-api-key" && sed 's/.*/<redacted>/' "$HOME/.local/bin/kimi-api-key"
 ```
 
 ```powershell
-Select-String -Path "$env:LOCALAPPDATA\Programs\kimi-launchers\claude-kimi.ps1" -Pattern 'kimi-api-key|ANTHROPIC_BASE_URL|ANTHROPIC_DEFAULT_|CLAUDE_CODE_SUBAGENT_MODEL|ENABLE_TOOL_SEARCH|CLAUDE_CODE_AUTO_COMPACT_WINDOW|dangerously-skip-permissions'
+Select-String -Path "$env:LOCALAPPDATA\Programs\kimi-launchers\claude-kimi.ps1" -Pattern 'kimi-api-key|ANTHROPIC_BASE_URL|ANTHROPIC_DEFAULT_|CLAUDE_CODE_SUBAGENT_MODEL|ENABLE_TOOL_SEARCH|CLAUDE_CODE_AUTO_COMPACT_WINDOW|DISABLE_AUTOUPDATER|dangerously-skip-permissions'
 if (Test-Path "$env:LOCALAPPDATA\Programs\kimi-launchers\kimi-api-key") { '<redacted>' }
 ```
 
@@ -422,6 +423,7 @@ Inside Claude Code, `/status` should show Base URL `https://api.moonshot.ai/anth
 - Prefer `ANTHROPIC_AUTH_TOKEN` on the **Using Kimi Platform API** lane and clear `ANTHROPIC_API_KEY` and `CLAUDE_CODE_OAUTH_TOKEN` so Claude Code does not choose an older auth lane. On the **Using Kimi Coding Plan** lane (`api.kimi.com`), the generated launcher uses `ANTHROPIC_API_KEY` instead and clears `ANTHROPIC_AUTH_TOKEN`.
 - The default startup model is `opus`. Override it with `CLAUDE_KIMI_MODEL=<model> claude-kimi ...` or an explicit Claude Code `--model`; `CLAUDE_KIMI_MODEL` is the single knob that resets the startup model and every tier at once. Per-tier runtime overrides are `CLAUDE_KIMI_MODEL_OPUS`, `CLAUDE_KIMI_MODEL_SONNET`, `CLAUDE_KIMI_MODEL_HAIKU`, `CLAUDE_KIMI_MODEL_FABLE`, and `CLAUDE_KIMI_MODEL_SUBAGENT`.
 - If `claude` is not on `PATH`, install Claude Code first before testing the launcher.
+- If `claude` prints `Error: claude native binary not installed`, the Claude Code package's postinstall did not run; repair it with `node <npm-global-root>/node_modules/@anthropic-ai/claude-code/install.cjs` and re-verify `claude --version`. The usual cause is the background auto-updater: it reinstalls the npm package mid-session, and an install interrupted between package extraction and postinstall leaves the placeholder shim as the `claude` entrypoint. Generated launchers prevent recurrence by exporting `DISABLE_AUTOUPDATER=1`; update deliberately with `npm update -g @anthropic-ai/claude-code` instead.
 - If first launch gets stuck in Claude Code onboarding, run the official Kimi guide's Node onboarding-complete script before starting `claude-kimi`.
 
 ## Guardrails

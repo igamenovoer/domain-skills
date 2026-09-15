@@ -44,6 +44,7 @@ The generated launcher must not hard-code the API key. It reads the shared key f
 - Auth: `ANTHROPIC_AUTH_TOKEN` with a key from the OpenLux console; the launcher clears `ANTHROPIC_API_KEY` and `CLAUDE_CODE_OAUTH_TOKEN` so Claude Code does not choose an older auth lane.
 - `API_TIMEOUT_MS=300000` and `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1`, both overridable by the caller. These follow the OpenLux tutorial recommendation.
 - `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1`, overridable by the caller. Without it, the `/model` picker shows only Claude Code's built-in five-row lineup (verified on Claude Code v2.1.268); with it, the picker additionally lists the relay's advertised models such as Fable 5 and Fable 5.1 with gateway-supplied descriptions.
+- `DISABLE_AUTOUPDATER=1`, overridable by the caller. Claude Code's background auto-updater reinstalls the npm package mid-session; an interrupted install leaves the placeholder `claude` shim behind and breaks every launcher on the box (see **Notes**). Updates become deliberate: `npm update -g @anthropic-ai/claude-code`.
 - Official OpenLux Claude Code tutorial: `https://doc.openlux.ai/tutorials/plugins-7010249`.
 
 Imsight's local launcher runs Claude Code with `--dangerously-skip-permissions` by default.
@@ -77,6 +78,12 @@ export CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS="${CLAUDE_CODE_DISABLE_EXPERIMENTA
 # List the relay's advertised models (Fable 5, Fable 5.1, ...) in the /model
 # picker; without this the picker shows only the built-in lineup.
 export CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY="${CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY:-1}"
+
+# Claude Code's background auto-updater reinstalls the npm package mid-session;
+# an install interrupted between extraction and postinstall leaves the placeholder
+# bin shim and every launcher fails with "claude native binary not installed".
+# Update deliberately instead: npm update -g @anthropic-ai/claude-code
+export DISABLE_AUTOUPDATER="${DISABLE_AUTOUPDATER:-1}"
 
 # Do not pin model names: the relay serves whatever the key's plan provides.
 # Clear any ambient model overrides so they cannot leak into this session.
@@ -144,7 +151,7 @@ test -f "$HOME/.local/bin/openlux-api-key" || echo "key file still needed"
 Inspect the generated launcher and key file only with redaction:
 
 ```bash
-rg -n 'openlux-api-key|ANTHROPIC_AUTH_TOKEN|ANTHROPIC_BASE_URL|API_TIMEOUT_MS|DISABLE_EXPERIMENTAL_BETAS|GATEWAY_MODEL_DISCOVERY|dangerously-skip-permissions' "$HOME/.local/bin/claude-openlux"
+rg -n 'openlux-api-key|ANTHROPIC_AUTH_TOKEN|ANTHROPIC_BASE_URL|API_TIMEOUT_MS|DISABLE_EXPERIMENTAL_BETAS|GATEWAY_MODEL_DISCOVERY|DISABLE_AUTOUPDATER|dangerously-skip-permissions' "$HOME/.local/bin/claude-openlux"
 test -f "$HOME/.local/bin/openlux-api-key" && sed 's/.*/<redacted>/' "$HOME/.local/bin/openlux-api-key"
 ```
 
@@ -166,7 +173,7 @@ Inside Claude Code, `/status` should show Base URL `https://api.openlux.ai`, and
 - End-to-end verified on 2026-09-11 with Claude Code v2.1.268 in a scrubbed environment (`env -i`, no inherited variables): the launcher starts on the default `Opus 5 (1M context)`, `/model claude-fable-5` switches the session to Fable 5, and a prompt returns a normal completion through the relay. With gateway model discovery enabled, the picker lists relay rows (Fable 5.1, Fable 5, Opus 5, Opus 4.8, Opus 4.5, and more) with gateway-supplied descriptions.
 - `/model <name>` saves the pick as the default for new sessions by writing `model` to `~/.claude/settings.json`; that saved default then leaks into every Claude Code launcher on the box. Revert by choosing the picker's `Default (recommended)` row or by removing the `model` key from `settings.json`.
 - If `/model` or `/status` shows an upstream id such as `k3[1m]`, restart the session first. Usage history under `projects.<path>.lastModelUsage` in `~/.claude.json` keeps old upstream names and is cosmetic. A selectable picker row with a non-`claude-` id after a restart means the relay's `/v1/models` is leaking upstream names; confirm with the check in **Verification** and report it to the relay operator, not to the launcher.
-- If `claude` prints `Error: claude native binary not installed`, the Claude Code package's postinstall did not run; repair it with `node <npm-global-root>/node_modules/@anthropic-ai/claude-code/install.cjs` and re-verify `claude --version`.
+- If `claude` prints `Error: claude native binary not installed`, the Claude Code package's postinstall did not run; repair it with `node <npm-global-root>/node_modules/@anthropic-ai/claude-code/install.cjs` and re-verify `claude --version`. The usual cause is the background auto-updater: it reinstalls the npm package mid-session, and an install interrupted between package extraction and postinstall leaves the placeholder shim as the `claude` entrypoint. The template prevents recurrence by exporting `DISABLE_AUTOUPDATER=1`; update deliberately with `npm update -g @anthropic-ai/claude-code` instead.
 - If first launch gets stuck in Claude Code onboarding, the template's embedded Node script already sets `hasCompletedOnboarding` in `~/.claude.json`; confirm the file is writable.
 - Retire any leftover `claude-yunwu` launcher and `YUNWU_*` env vars; `yunwu.ai` no longer serves.
 

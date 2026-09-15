@@ -199,6 +199,7 @@ args=(
   --env-set CLAUDE_CODE_SKIP_VERTEX_AUTH=1
   --env-set DISABLE_TELEMETRY=1
   --env-set DISABLE_ERROR_REPORTING=1
+  --env-set DISABLE_AUTOUPDATER=1
 )
 for key in HTTP_PROXY HTTPS_PROXY ALL_PROXY NO_PROXY http_proxy https_proxy all_proxy no_proxy; do
   if [ -n "${!key+x}" ]; then
@@ -222,7 +223,7 @@ houmao-mgr project credentials claude list
 Check materialized non-secret launcher settings without revealing the key:
 
 ```bash
-rg -n 'kimi-k3|CLAUDE_CODE_AUTO_COMPACT_WINDOW|ENABLE_TOOL_SEARCH|ANTHROPIC_DEFAULT_|CLAUDE_CODE_SUBAGENT_MODEL|CLAUDE_CODE_SKIP|DISABLE_TELEMETRY|DISABLE_ERROR_REPORTING|ANTHROPIC_BASE_URL' .houmao
+rg -n 'kimi-k3|CLAUDE_CODE_AUTO_COMPACT_WINDOW|ENABLE_TOOL_SEARCH|ANTHROPIC_DEFAULT_|CLAUDE_CODE_SUBAGENT_MODEL|CLAUDE_CODE_SKIP|DISABLE_TELEMETRY|DISABLE_ERROR_REPORTING|DISABLE_AUTOUPDATER|ANTHROPIC_BASE_URL' .houmao
 rg -n 'ANTHROPIC_API_KEY' .houmao | sed -E 's/(ANTHROPIC_API_KEY[=:] ?).*/\1<redacted>/'
 ```
 
@@ -245,6 +246,7 @@ node --eval "
 
 - Store the Kimi key and `ANTHROPIC_BASE_URL` in the Houmao credential bundle, not as specialist `--env-set` records.
 - Store launcher behavior flags such as `CLAUDE_CODE_AUTO_COMPACT_WINDOW=1048576` and `ENABLE_TOOL_SEARCH=false` as specialist env records so launched agents inherit the same Kimi-oriented Claude Code posture.
+- `DISABLE_AUTOUPDATER=1` belongs in the same env records: Claude Code's background auto-updater reinstalls the npm package mid-session, and an install interrupted between extraction and postinstall leaves the placeholder `claude` shim behind (`Error: claude native binary not installed`). With auto-update disabled, update deliberately with `npm update -g @anthropic-ai/claude-code`.
 - Claude's global `hasCompletedOnboarding` setting is host-user state, not Houmao specialist metadata. Configure it before launch for the same account that starts Houmao agents.
 - Use the same lane and model as the `claude-kimi` launcher unless the user explicitly asks otherwise; see **Using Kimi Platform API** and **Using Kimi Coding Plan**.
 - Proxy envs are optional because `--env-set` makes them durable specialist launch defaults. Ask when the user's preference is unknown.
