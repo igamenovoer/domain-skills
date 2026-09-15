@@ -56,7 +56,7 @@ The canonical source is [principles.md](references/principles.md). Publish `.ims
 
 Declare all files in `references/sources/`, indexed by [offline sources](references/sources/index.md), as the source bundle. Copy it with its license and rewrite catalog source links through the shared [offline publication contract](../../references/runtime-injection.md#offline-source-bundles). The catalog and its source directory must work without the installed skill, original checkout, books, or network access. Source records retain optional web origins and earlier attributions; they do not require fetching those pages.
 
-Publishing or refreshing the catalog does not change either scope. Project actions change only `AGENTS.md`; memory actions change only the current agent's explicit overrides. Apply the shared precedence rather than a mentality-wide enabled flag.
+Publishing or refreshing the catalog does not change either scope. Project actions include required deployment and update `AGENTS.md`; memory actions change only the current agent's explicit overrides. Apply the shared precedence rather than a mentality-wide enabled flag.
 
 ## Review Resources
 

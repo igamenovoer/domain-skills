@@ -53,7 +53,7 @@ Apply guidance while drafting, restructuring, and polishing, including small edi
 
 The canonical source is [principles.md](references/principles.md). Publish `.imsight-arts/mentality/docs-writer-principles.md` using the shared deployment contract. Include the complete `Writing Rules` and `Applicability` sections and every nested example and judgment note, with a title, canonical rule index, entrance skill name, and availability-only statement. Exclude the source workflow and skill-control guardrails; the artifact documents principles, not activation or agent state.
 
-Publishing or refreshing the catalog does not change either scope. Project actions change only `AGENTS.md`; memory actions change only the current agent's explicit overrides. Apply the shared precedence rather than a mentality-wide enabled flag.
+Publishing or refreshing the catalog does not change either scope. Project actions include required deployment and update `AGENTS.md`; memory actions change only the current agent's explicit overrides. Apply the shared precedence rather than a mentality-wide enabled flag.
 
 ## Rationalization Table
 

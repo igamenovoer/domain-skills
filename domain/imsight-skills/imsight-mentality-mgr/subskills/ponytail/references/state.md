@@ -2,7 +2,7 @@
 
 ## Workflow
 
-1. Resolve the action, project, and explicit state scope through the [shared runtime](../../../references/runtime-injection.md) and the child entrypoint. Bare entrypoint/configuration calls without actionable arguments return help or recall.
+1. Resolve the action, project, and state scope through the [shared runtime](../../../references/runtime-injection.md) and the child entrypoint. Enable/disable defaults to agent memory; configuration retains its declared scope requirements. Bare entrypoint/configuration calls without actionable arguments return help or recall.
 2. Validate all parameters using **Selectors and Axes**; shared enable/disable accepts rule selectors, while configuration replaces a preset and/or changes edit scope.
 3. Resolve rules and edit scope independently under **State and Precedence**, then execute **Configure Project**, **Configure Memory**, a shared action, or review's invocation-only resolution.
 4. Before application or review, establish the assigned task and permitted surface under **Edit Boundary**. Settings do not authorize unrelated work.
@@ -14,7 +14,7 @@ If the request does not map cleanly to these steps, use the native planning tool
 
 The [principle index](principles.md#principle-index) owns the canonical IDs, names, and preset membership. Normalize rule codes and names case-insensitively; accept p1–p12, canonical hyphenated names, and explicit all. Validate and deduplicate the complete request before effects. IDs are local to Ponytail.
 
-Project rule enable/disable requires explicit selectors. Named memory rule enable/disable with omitted selectors expands to all current Ponytail IDs and preserves edit scope. This shorthand does not change configuration's missing-parameter behavior or review's default criteria.
+Use the shared [enable/disable decision tree](../../../references/actions.md#enabledisable-decision-tree): omitted scope means agent memory, and omitted memory selectors expand to all current Ponytail IDs while preserving edit scope. Project rule enable/disable requires explicit selectors and includes required deployment and `AGENTS.md` updates. This shorthand does not change configuration's missing-parameter behavior or review's default criteria.
 
 | Input | Meaning |
 | --- | --- |
@@ -47,7 +47,7 @@ Retain rule and setting meanings through shared [Definition Retention](../../../
 
 For example, `configure-memory normal new-code-only` remembers enabled IDs p1 through p9, disabled IDs p10 through p12, and the explicit edit-scope value. If deployed details define the rules and preset but omit edit scope, retain their project-bound paths and identifiers. Retain the operative **New-code-only** boundary below as inline content, including allowed wiring, explicit task-authority exceptions, and the distinction between new code and rewritten infrastructure. This example requires no memory file or new storage schema.
 
-The project block uses the shared managed-file protocol. Its additional field is `Edit scope: new-code-only.` or `Edit scope: destructive.`; an absent field uses the default. Preserve this field in rule-only changes. Write canonical project IDs and names as usual, without a redundant authoritative intensity field. Include the catalog link when deployed; a scope-only block with no deployment lists no enabled rules and omits the unavailable definition link.
+The project block uses the shared managed-file protocol. Its additional field is `Edit scope: new-code-only.` or `Edit scope: destructive.`; an absent field uses the default. Preserve this field in rule-only changes. Write canonical project IDs and names as usual, without a redundant authoritative intensity field. Include the catalog link when rules are enabled and the catalog is deployed. When no rules remain, follow [Empty project selection](../../../references/runtime-injection.md#empty-project-selection): retain only the heading, `Project-enabled principles: none.`, and any explicit edit-scope field inside the markers; remove the whole block if no explicit setting remains. Settings-only blocks contain no rule-application or required-use instructions.
 
 The following abbreviated shape illustrates a configured project block; populate all actual selected IDs and names rather than using a range as stored state:
 
@@ -63,10 +63,10 @@ The following abbreviated shape illustrates a configured project block; populate
 
 ## Configure Project
 
-1. Require project scope and at least one validated axis. Setting intensity requires a valid deployed catalog and discovery reference, like shared project enable; deploy only when also requested. A scope-only setting does not require deployment and enables no rules.
+1. Require project scope and at least one validated axis. Run shared [Project application preparation](../../../references/runtime-injection.md#project-application-preparation), including any required deployment and discovery updates without a separate request. A scope-only setting still enables no rules.
 2. Read current P and the project edit-scope field. If intensity is supplied, replace P with that preset's exact ID set. If edit scope is supplied, replace that field. Preserve every omitted axis, agent override, and unrelated block.
-3. Write only the Ponytail project block using the shared marker validation and concurrent-write protocol. This is a project configuration action, not a catalog refresh.
-4. Verify canonical IDs, settings, unrelated contents, and idempotence. Report the resulting project selection and edit scope; agent overrides may produce different effective results.
+3. After preparation, update the Ponytail project block using the shared marker validation and concurrent-write protocol; use a compact settings-only block when no rules are enabled.
+4. Verify canonical IDs, settings, deployment/discovery, unrelated contents, and idempotence. Report the resulting project selection, edit scope, and changed paths; agent overrides may produce different effective results.
 
 ## Configure Memory
 

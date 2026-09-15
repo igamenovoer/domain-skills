@@ -8,7 +8,7 @@
 4. Execute the selected action using Brooks IDs only; for recall or application, preserve the project or agent-memory source of each effective principle. Review selectors name criteria without mutating either scope.
 5. Report canonical IDs, affected scope, and any unresolved state without mutating sibling mentalities.
 
-If the task does not map cleanly to these steps, use the native planning tool to preserve atomic selector validation, explicit scope, and independent agent memory.
+If the task does not map cleanly to these steps, use the native planning tool to preserve atomic selector validation, resolved scope, and independent agent memory.
 
 ## Selector Resolution
 
@@ -23,7 +23,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 Selectors are case-insensitive and normalize to lowercase canonical IDs. Accept canonical hyphenated names and unambiguous natural variants. Resolve groups completely, remove duplicates, and retain catalog order for output. IDs are local to Brooks; a Docs Writer ID is invalid here.
 
-Project enable/disable requires explicit selectors. Named memory enable/disable with omitted selectors expands to all current Brooks IDs under the shared action contract. A bare child invocation or `none` does not change selection. Unknown or ambiguous selectors reject the entire request; list valid codes, names, and groups without partial application.
+Use the shared [enable/disable decision tree](../../../references/actions.md#enabledisable-decision-tree): omitted scope means agent memory, and omitted memory selectors expand to all current Brooks IDs. Project enable/disable requires explicit selectors and includes required deployment and `AGENTS.md` updates. A bare child invocation or `none` does not change selection. Unknown or ambiguous selectors reject the entire request; list valid codes, names, and groups without partial application.
 
 Review accepts the same codes, names, and groups. Omitted review selectors use effective selection; explicit selectors replace review criteria for this invocation only. Uppercase upstream risk labels normalize to the same lowercase IDs and never create separate diagnostic state. Selection, applicability, and reporting details live in the review contract.
 

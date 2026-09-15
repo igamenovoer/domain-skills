@@ -1,6 +1,6 @@
 interface:
   display_name: "imsight-mentality-mgr"
-  short_description: "Manage scoped principles and Brooks or Ponytail reviews"
-  default_prompt: "Use $imsight-mentality-mgr to manage project or agent-memory principles for Brooks, Ponytail, Docs Writer, or Agile Experimenter, configure Ponytail, recall effective settings, or run a Brooks or Ponytail review."
+  short_description: "Manage scoped mentalities, communication styles, and reviews"
+  default_prompt: "Use $imsight-mentality-mgr to manage scoped principles for Brooks, Ponytail, Docs Writer, Agile Experimenter, or Human Speak, configure Ponytail, recall settings, or run a Brooks or Ponytail review. Human Speak requires an explicitly named flavor; list flavors with origins and rule summaries when it is omitted."
 policy:
   allow_implicit_invocation: false
