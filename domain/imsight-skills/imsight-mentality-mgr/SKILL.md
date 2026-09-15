@@ -14,7 +14,7 @@ metadata:
 
 ## Overview
 
-Manage named mentalities, their principle catalogs, project-wide selections, and agent-local overrides. Shared catalogs document what each principle means; project instructions select shared defaults; each agent remembers its own overrides. Multiple agents can use the same catalogs and `AGENTS.md` while applying different principles. Brooks and Ponytail provide explicit reviews; Ponytail also separates simplification intensity from permission to revise existing task-related infrastructure.
+Manage named mentalities, their principle catalogs, project-wide selections, and agent-local overrides. Shared catalogs document what each principle means; project instructions select shared defaults; each agent remembers its own overrides. Multiple agents can use the same catalogs and coding-agent instruction files (`AGENTS.md`, `CLAUDE.md`, etc.) while applying different principles. Brooks and Ponytail provide explicit reviews; Ponytail also separates simplification intensity from permission to revise existing task-related infrastructure.
 
 ## Workflow
 
@@ -36,7 +36,7 @@ Human Speak additionally requires a named flavor for every management invocation
 
 For `enable <mentality>` and `disable <mentality>`, inspect project deployment and current selections first. Omitted scope means this agent's chat memory; omitted memory selectors mean all currently defined rules. Explicit selectors choose a subset. Deployed definitions are retained as project paths plus rule IDs; otherwise retain operative content. These defaults write no files and also apply when the project already enables some rules.
 
-Explicit project enable/disable requires a rule selection, including `all` when intended, and includes deployment of missing or incomplete catalogs, catalog discovery, and the corresponding `AGENTS.md` application-block update. Follow the shared [decision tree](references/actions.md#enabledisable-decision-tree) for ordering and empty-block removal. Validate the complete request before effects. Clarify unresolved targets, invalid or ambiguous selectors, missing project selectors, or conflicting scope instructions; omitted enable/disable scope alone needs no clarification.
+Explicit project enable/disable requires a rule selection, including `all` when intended, and includes deployment of missing or incomplete catalogs, catalog discovery, and application-block updates in every target instruction file. When the user names files, update only those files; otherwise discover and update all existing project-wide coding-agent instruction files, including `AGENTS.md` and `CLAUDE.md`. If none exist, create `AGENTS.md`. Follow [Instruction File Selection](references/runtime-injection.md#instruction-file-selection) and the shared [decision tree](references/actions.md#enabledisable-decision-tree) for discovery, ordering, and empty-block removal. Validate the complete request before effects. Clarify unresolved targets, invalid or ambiguous selectors, missing project selectors, or conflicting scope instructions; omitted enable/disable scope alone needs no clarification.
 
 Review and Ponytail configuration are child-specific actions. Route “review this with Brooks/Ponytail” to that child's review, not activation; use each child's action reference for arguments and defaults.
 
@@ -47,8 +47,8 @@ These are peer actions, not required phases. Definitions are shared here; childr
 | Subcommand | Use For | Detail |
 | --- | --- | --- |
 | `deploy` | Publish self-contained catalogs and project discovery references without enabling rules. | [Deploy](references/actions.md#deploy) |
-| `enable-project` | Ensure deployment and add selected project requirements in `AGENTS.md`. | [Enable Project](references/actions.md#enable-project) |
-| `disable-project` | Ensure deployment and remove selected project requirements in `AGENTS.md`. | [Disable Project](references/actions.md#disable-project) |
+| `enable-project` | Ensure deployment and add selected project requirements in all target instruction files. | [Enable Project](references/actions.md#enable-project) |
+| `disable-project` | Ensure deployment and remove selected project requirements in all target instruction files. | [Disable Project](references/actions.md#disable-project) |
 | `enable-memory` | Remember explicit enabled overrides for this agent's chat session. | [Enable Memory](references/actions.md#enable-memory) |
 | `disable-memory` | Remember explicit disabled overrides, including for project-enabled principles. | [Disable Memory](references/actions.md#disable-memory) |
 | `recall` | Report project selections, remembered overrides, and effective principles. | [Recall](references/actions.md#recall) |
@@ -69,7 +69,7 @@ An unknown mentality is an error; list registered names instead of guessing. New
 ## Scope Contract
 
 - **Deployed catalogs** live at `.imsight-arts/mentality/<mentality>-principles.md`, using the selected target's declared storage key, and contain the complete definitions, examples, and judgment notes. Catalogs contain maintained rule explanations and original examples only; upstream reference tables stay in the skill. Human Speak isolates catalogs and state by flavor. A catalog or discovery reference never enables a principle.
-- **Project selection** lives in a separate managed `AGENTS.md` block and changes only through an explicitly requested project action. Project actions include any necessary deployment and discovery updates; complete existing deployment is reused.
+- **Project selection** lives in separate managed blocks in the target coding-agent instruction files and changes only through an explicitly requested project action. Deployment and child project configuration use the same file-selection contract. Project actions include any necessary deployment and discovery updates; complete existing deployment is reused. Multiple files mirror one requested selection and priority allocation, not separate rule families.
 - **Agent memory** contains this agent's explicit enabled and disabled overrides and child settings. Memory actions write nothing and do not automatically assign overrides to another agent.
 - **Definition retention** applies to every rule and switch: retain its identity, selected value, and source scope. If its details are deployed in the project, remember the project-bound path and ID/name/flag; otherwise remember the operative content. Resolve each item independently through [Definition Retention](references/runtime-injection.md#definition-retention).
 - **Effective selection** follows agent overrides first, then project selection, then disabled by default. Applicability and conflict resolution determine which selected guidance applies to the task.

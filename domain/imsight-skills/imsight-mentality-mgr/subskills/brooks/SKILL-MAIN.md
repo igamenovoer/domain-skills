@@ -56,7 +56,7 @@ The canonical source is [principles.md](references/principles.md). Publish `.ims
 
 The catalog contains only maintained definitions and original teaching examples. Exclude this entrypoint's external reference table and third-party material. It must work without the installed skill, an original checkout, books, or network access.
 
-Publishing or refreshing the catalog does not change either scope. Project actions include required deployment and update `AGENTS.md`; memory actions change only the current agent's explicit overrides. Apply the shared precedence rather than a mentality-wide enabled flag.
+Publishing or refreshing the catalog does not change either scope. Project actions include required deployment and update the selected coding-agent instruction files (`AGENTS.md`, `CLAUDE.md`, etc.); memory actions change only the current agent's explicit overrides. Apply the shared precedence rather than a mentality-wide enabled flag.
 
 ## Review Resources
 

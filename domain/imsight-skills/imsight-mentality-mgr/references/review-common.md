@@ -50,7 +50,7 @@ A target names the code to consider, not permission to exceed a child's edit bou
 
 Use read-only source, configuration, and Git inspection. Existing test output may support findings, but report its provenance and relevance. This review does not execute tests, generators, installers, or application code. If the user also requested test execution or fixes, handle that as a distinct authorized task phase and report its actual effects separately.
 
-Neither installed upstream plugins, their configuration, nor past reports supply activation, suppression, or scoring state. Review uses the registered child's canonical vocabulary and current task instructions. It does not change AGENTS.md, catalogs, agent-memory overrides, or configured child settings; reading definitions does not constitute an activation change.
+Neither installed upstream plugins, their configuration, nor past reports supply activation, suppression, or scoring state. Review uses the registered child's canonical vocabulary and current task instructions. It does not change coding-agent instruction files (`AGENTS.md`, `CLAUDE.md`, etc.), catalogs, agent-memory overrides, or configured child settings; reading definitions does not constitute an activation change.
 
 ## Coverage and Reporting
 
@@ -66,7 +66,7 @@ Use the user's language and the child's finding format. Scale the report to the 
 
 Only an explicit save/export request authorizes an artifact. Use a user-specified destination when supplied; otherwise create `.imsight-arts/mentality/reviews/<UTC-timestamp>-<unique-run-id>/report.md` under the resolved project. Generate a fresh random suffix and reserve the directory exclusively; retry on collision. Do not overwrite an existing report or maintain a shared latest/history file. For an explicitly named existing file, use a distinct sibling unless replacement was explicitly authorized.
 
-Label the artifact as historical review evidence with no activation effect. Record reviewed criteria, source mode, code scope, findings, and coverage limits; omit the agent's raw enabled/disabled record and any serialization intended for memory restoration. Explain comparisons with remembered overrides in chat. A later agent must not infer its own rules from this report. Writing the artifact never updates `AGENTS.md`, catalogs, memory, or an index of agents' selections. If saving fails, return the report in chat and describe any partial output accurately.
+Label the artifact as historical review evidence with no activation effect. Record reviewed criteria, source mode, code scope, findings, and coverage limits; omit the agent's raw enabled/disabled record and any serialization intended for memory restoration. Explain comparisons with remembered overrides in chat. A later agent must not infer its own rules from this report. Writing the artifact never updates the selected coding-agent instruction files (`AGENTS.md`, `CLAUDE.md`, etc.), catalogs, memory, or an index of agents' selections. If saving fails, return the report in chat and describe any partial output accurately.
 
 Reports may record the review's resolved intensity and edit boundary as historical criteria, never as settings to load into another task. Each artifact identifies its mentality. Concurrent reviews reserve independent directories and never update a shared latest/history index.
 

@@ -63,7 +63,7 @@ With no supported findings, report no supported simplification within the assess
 
 ## Saved Reports
 
-Follow [shared saved reports](../../../references/review-common.md#saved-reports) only on an explicit save request. Identify Ponytail and record the review criteria, intensity, edit scope, task baseline, findings, and limits as historical evidence. The artifact does not change AGENTS.md, catalogs, agent memory, or future modes and cannot supply another agent's settings.
+Follow [shared saved reports](../../../references/review-common.md#saved-reports) only on an explicit save request. Identify Ponytail and record the review criteria, intensity, edit scope, task baseline, findings, and limits as historical evidence. The artifact does not change coding-agent instruction files (`AGENTS.md`, `CLAUDE.md`, etc.), catalogs, agent memory, or future modes and cannot supply another agent's settings.
 
 ## Guardrails
 

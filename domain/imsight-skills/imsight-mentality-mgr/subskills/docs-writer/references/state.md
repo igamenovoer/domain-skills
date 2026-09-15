@@ -20,7 +20,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 Selectors are case-insensitive and normalize to lowercase canonical IDs. Accept canonical hyphenated names and unambiguous natural variants. Expand selectors fully, remove duplicates, and retain catalog order for output. IDs are local to Docs Writer; a Brooks ID is invalid here.
 
-Use the shared [enable/disable decision tree](../../../references/actions.md#enabledisable-decision-tree): omitted scope means agent memory, and omitted memory selectors expand to all current Docs Writer IDs. Project enable/disable requires explicit selectors and includes required deployment and `AGENTS.md` updates. A bare child invocation or `none` does not change selection. Unknown or ambiguous selectors reject the entire request; list valid IDs and names without partial application.
+Use the shared [enable/disable decision tree](../../../references/actions.md#enabledisable-decision-tree): omitted scope means agent memory, and omitted memory selectors expand to all current Docs Writer IDs. Project enable/disable requires explicit selectors and includes required deployment and updates to all selected coding-agent instruction files (`AGENTS.md`, `CLAUDE.md`, etc.). A bare child invocation or `none` does not change selection. Unknown or ambiguous selectors reject the entire request; list valid IDs and names without partial application.
 
 ## Scope Binding
 

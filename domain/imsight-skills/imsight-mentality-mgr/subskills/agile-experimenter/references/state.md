@@ -20,7 +20,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 Selectors are case-insensitive and normalize to lowercase canonical IDs. Accept canonical hyphenated names and unambiguous natural variants. Expand completely, remove duplicates, and preserve catalog order. IDs belong to this mentality; another child's IDs are invalid here.
 
-Use the shared [enable/disable decision tree](../../../references/actions.md#enabledisable-decision-tree): omitted scope means agent memory, and omitted memory selectors expand to all current Agile Experimenter IDs. Project enable/disable requires explicit selectors and includes required deployment and `AGENTS.md` updates. A bare child invocation or `none` does not change selection. Unknown or ambiguous selectors reject the entire request without partial changes. List the valid IDs and names when correction is needed.
+Use the shared [enable/disable decision tree](../../../references/actions.md#enabledisable-decision-tree): omitted scope means agent memory, and omitted memory selectors expand to all current Agile Experimenter IDs. Project enable/disable requires explicit selectors and includes required deployment and updates to all selected coding-agent instruction files (`AGENTS.md`, `CLAUDE.md`, etc.). A bare child invocation or `none` does not change selection. Unknown or ambiguous selectors reject the entire request without partial changes. List the valid IDs and names when correction is needed.
 
 ## Scope Binding
 

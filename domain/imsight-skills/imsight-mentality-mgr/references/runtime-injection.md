@@ -2,7 +2,7 @@
 
 ## Workflow
 
-1. Resolve the target project and action through the [enable/disable decision tree](actions.md#enabledisable-decision-tree) when applicable. Inspect project deployment and selections first; omitted enable/disable scope means agent memory, while project scope must be explicit.
+1. Resolve the target project and action through the [enable/disable decision tree](actions.md#enabledisable-decision-tree) when applicable. Inspect project deployment and instruction files through **Instruction File Selection**; omitted enable/disable scope means agent memory, while project scope must be explicit.
 2. Obtain canonical selectors and applicability from the named child, then validate the complete request.
 3. Resolve activation, family priorities, and configured values only from **State Sources** and derive the result using **Effective Selection** and [priorities.md](priorities.md). Read and retain their meanings through **Definition Retention**.
 4. Apply the requested shared action's mutation boundary from [actions.md](actions.md), using **Managed Project Files** for project writes. Child configuration follows **Child Settings**; explicit review follows **Review Criteria and Reports** without an activation transition.
@@ -13,19 +13,33 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 ## State Sources
 
+Project state lives in coding-agent instruction files such as `AGENTS.md` and `CLAUDE.md`. Resolve the applicable read set and requested write targets through **Instruction File Selection**; equivalent blocks in multiple files represent one logical selection.
+
 | Source | Meaning | Who changes it |
 | --- | --- | --- |
 | `.imsight-arts/mentality/<mentality>-principles.md` | Complete shared definitions and examples; no activation state. | Explicit `deploy`, or required deployment within an explicit project action. |
-| `AGENTS.md` catalog discovery block | Location and purpose of available principles; no activation state. | Explicit `deploy`, or discovery reconciliation within an explicit project action. |
-| `AGENTS.md` project-selection block | Canonical principles enabled project-wide, their family priority, and explicitly configured child settings. | Explicit project actions or a child's declared project configuration action. |
-| `AGENTS.md` project-priority sequence block | Next project priority; retains allocation history after families are removed and enables no rules. | Explicit project enable or a child configuration that enables a preset. |
+| Instruction-file catalog discovery block | Location and purpose of available principles; no activation state. | Explicit `deploy`, or discovery reconciliation within an explicit project action. |
+| Instruction-file project-selection block | Canonical principles enabled project-wide, their family priority, and explicitly configured child settings. | Explicit project actions or a child's declared project configuration action. |
+| Instruction-file project-priority sequence block | Next project priority; retains allocation history after families are removed and enables no rules. | Explicit enabling actions advance it; project actions may mirror known sequence state. |
 | Current agent's chat context | Explicit enabled and disabled rule overrides, family priorities, next memory priority, and child-setting overrides for this agent only. | Explicit memory actions or a child's declared memory configuration action. |
 
-Resolve the project root from the user-provided directory, otherwise the current version-control root, otherwise the current working directory. These project-facing files intentionally live under that root; a generic report-output override does not relocate them.
+Resolve the project root from the user-provided directory, otherwise the current version-control root, otherwise the current working directory. Catalogs live under that root; instruction files use their established project locations. A generic report-output override does not relocate them.
 
 Re-read project selection for recall and before applicable work. A catalog is evidence of a principle's definition, never evidence that any agent selected it. There is no mentality-wide enabled flag, automatic activation, or shared record of agents' effective selections. A named enable/disable without scope is a memory action; omitted memory selectors expand to all current canonical IDs once and never select future additions automatically.
 
-An absent project-selection block means no project-enabled rules. A known fresh agent with no remembered instruction inherits project settings. After lost context, absence of a memory record does not prove that no override was previously given: label memory as unavailable and any project-only reconstruction as provisional. Recover an explicit handoff when available rather than guessing.
+An absent project-selection block contributes no project-enabled rules; it does not disable a selection found in another applicable instruction file. A known fresh agent with no remembered instruction inherits project settings. After lost context, absence of a memory record does not prove that no override was previously given: label memory as unavailable and any project-only reconstruction as provisional. Recover an explicit handoff when available rather than guessing.
+
+### Instruction File Selection
+
+This contract applies to deployment, project enable/disable, and every child's project configuration. Selecting files changes the write destination, not the action's rule-selector requirements or agent-memory scope.
+
+1. **Discover existing project instructions.** Inspect the project root for known coding-agent files, including `AGENTS.md`, `CLAUDE.md`, and `GEMINI.md`, and inspect established tool-specific locations such as `.claude/CLAUDE.md` or `.github/copilot-instructions.md`. Include other files identified by project layout, configuration, or repository instructions as project-wide coding-agent guidance. Recognize existing case variants such as `agents.md` and `claude.md`; preserve their actual paths and spelling.
+2. **Honor explicit targets.** If the user selects one or more instruction files, update only those files; create a named file if the requested action needs it. Otherwise, update all discovered project-wide instruction files. If none exist, create root `AGENTS.md`. Do not create additional conventional files when an existing target is available. Choosing a file never removes the catalog deployment required by the action.
+3. **Respect file scope and format.** Discovery is not a recursive rewrite of every matching filename. Exclude vendored copies, examples, archived files, user-global settings, and unrelated nested instructions. A file applying only to a subtree is a target only when that subtree is explicitly requested; preserve its scope rather than declaring its rules project-wide. Keep frontmatter, native applicability metadata, and unrelated instructions intact. Deduplicate symlinks or other aliases to the same underlying file; an explicit alias selection still names that shared content.
+4. **Resolve the current state.** For project mutations, read the selected targets and deduplicate matching family blocks. For ordinary work, memory actions, recall, and review, use the instruction files applicable to this agent and task under the host's loading and scope rules; discovering a file alone does not make it active. Record file provenance. Different families combine; conflicting records for the same family or setting are unresolved unless established instruction precedence or the user's request determines the result. Do not invent filename precedence or merge contradictory selections. Missing copies are not conflicts: mirror the resolved affected family into the selected targets when the project action requires it.
+5. **Write and verify every target.** Apply one resolved result for each requested family across the selected files, with priority allocation through [Storage](priorities.md#storage). Use the same markers in each file and resolve catalog links relative to that file's directory. Validate all targets before writing, preserve unselected files, and report the paths actually changed or any partial completion. Memory actions, recall, and review do not create or reconcile instruction files.
+
+An explicit filename in “enable Brooks r1 in `CLAUDE.md`” selects project scope and only that file. “Enable Brooks r1 in project scope” selects every discovered project-wide instruction file without a file-choice question. This default also covers “deploy these principles” and project configuration requests.
 
 ### Flavor-qualified bindings
 
@@ -85,7 +99,7 @@ Use this contract for every mentality's rules, presets, switches, flags, and edi
 
 Prefer valid deployed definitions without requiring their files to match installed source hashes. If inspected deployed and maintained definitions disagree materially, report the discrepancy instead of silently combining meanings or changing policy.
 
-All retention happens in the current conversation or a host-supported context summary. Memory actions do not write catalogs, `AGENTS.md`, session files, or persistent-memory stores, and do not install hooks or skills. Unavailable project deployment is a normal inline-content case, not a prerequisite to activation.
+All retention happens in the current conversation or a host-supported context summary. Memory actions do not write catalogs, coding-agent instruction files (`AGENTS.md`, `CLAUDE.md`, etc.), session files, or persistent-memory stores, and do not install hooks or skills. Unavailable project deployment is a normal inline-content case, not a prerequisite to activation.
 
 ### Memory Confirmation
 
@@ -109,7 +123,7 @@ Review returns findings in chat by default. An explicitly requested saved report
 
 ## Managed Project Files
 
-Catalog discovery and project selection use independent blocks. Write only the blocks owned by the requested action and its required deployment preparation; preserve unrelated contents and ordering. Explicit project enable/disable and child project configuration include **Project application preparation** before updating application or settings blocks. Enabling actions also update the shared [project-priority sequence](priorities.md#storage) in the same `AGENTS.md` write as their family blocks.
+Catalog discovery and project selection use independent blocks. Resolve every target through **Instruction File Selection**. Write only the blocks owned by the requested action and its required deployment preparation; preserve unrelated contents and ordering. Explicit project enable/disable and child project configuration include **Project application preparation** before updating application or settings blocks. Enabling actions also update the shared [project-priority sequence](priorities.md#storage) alongside their family blocks in every target instruction file.
 
 ### Catalog artifact
 
@@ -134,9 +148,9 @@ Keep citations, source filenames, source-origin commentary, and pointers to furt
 
 Existing project copies are not managed runtime inputs. A deployment may refresh its owned catalog to the current self-contained form, but deleting previously copied files elsewhere requires an explicitly targeted cleanup. Do not follow stale source links as part of definition retention; obtain the operative definition from the maintained catalog when the deployed text is incomplete.
 
-### Catalog discovery in `AGENTS.md`
+### Catalog discovery in instruction files
 
-Use this separate discovery block, substituting the actual mentality, title, and path:
+Use this separate discovery block in every target instruction file (`AGENTS.md`, `CLAUDE.md`, etc.), substituting the actual mentality, title, and path. The example assumes a root-level instruction file; adjust relative links for other directories:
 
 ```markdown
 <!-- imsight-skill:imsight-mentality-mgr/brooks-catalog:start -->
@@ -152,9 +166,9 @@ Use this separate discovery block, substituting the actual mentality, title, and
 
 This block lists reference material. It must not list an agent's selection or tell every reader to apply the whole catalog.
 
-### Project selection in `AGENTS.md`
+### Project selection in instruction files
 
-Create or update this block only for an explicit project action, including a child's declared project configuration action. Preserve child-specific fields when changing only rule IDs:
+Create or update this block in every target instruction file only for an explicit project action, including a child's declared project configuration action. Preserve child-specific fields when changing only rule IDs:
 
 ```markdown
 <!-- imsight-skill:imsight-mentality-mgr/brooks-project:start -->
@@ -168,11 +182,11 @@ Create or update this block only for an explicit project action, including a chi
 <!-- imsight-skill:imsight-mentality-mgr/brooks-project:end -->
 ```
 
-Use canonical IDs beside their names for enabled rules and the actual allocated family priority; `0` above is illustrative. Handle empty selections below. Include the shared counter through [Priority Storage](priorities.md#storage), without copying it into every family block. Do not copy examples or complete rule text into `AGENTS.md`; its project index references the complete catalog. Keep source markers exact and on their own lines outside code fences; adapt visible headings to the surrounding document.
+Use canonical IDs beside their names for enabled rules and the actual allocated family priority; `0` above is illustrative. Handle empty selections below. Include the shared counter through [Priority Storage](priorities.md#storage), without copying it into every family block. Do not copy examples or complete rule text into instruction files; their project indexes reference the complete catalog. Keep source markers exact and on their own lines outside code fences; adapt visible headings to the surrounding document.
 
 ### Empty project selection
 
-After an explicit project disable, remove the affected project-selection block when no enabled rules or independently configured child settings remain. Delete both markers and everything between them, including the heading, catalog link, application or required-use instructions, and independence reminders. An absent block already means no project-enabled rules; retaining `none`, disabled-status prose, or memory-only loading instructions wastes context. Also remove a pre-existing empty block when the requested disable changes no IDs.
+After an explicit project disable, remove the affected project-selection block from every selected instruction file when no enabled rules or independently configured child settings remain. Delete both markers and everything between them, including the heading, catalog link, application or required-use instructions, and independence reminders. An absent block contributes no project-enabled rules; retaining `none`, disabled-status prose, or memory-only loading instructions wastes context. Also remove a pre-existing empty block when the requested disable changes no IDs.
 
 If explicit child settings remain, preserve their values in the same marked block with only a heading, `Project-enabled principles: none.`, and the setting fields. Remove the family's priority when no project rules remain, but preserve the shared next-priority counter; it never keeps an empty family block alive. Do not retain rule-application instructions or discard explicit settings merely because they equal a default. Unresolved IDs or state are not an empty selection.
 
@@ -180,22 +194,22 @@ For example, after required deployment and discovery preparation, disabling all 
 
 ### Project application preparation
 
-Explicit project enable, project disable, and child project configuration authorize the required deployment and `AGENTS.md` updates as one operation. Do not ask for a separate deployment request or confirmation solely because the catalog is missing. This preparation also applies to project disable with an empty or absent application block; discovery may still need to be created.
+Explicit project enable, project disable, and child project configuration authorize the required deployment and updates to all target instruction files as one operation. Do not ask for a separate deployment request or confirmation solely because the catalog is missing. This preparation also applies to project disable with an empty or absent application block; discovery may still need to be created.
 
-1. Validate the complete requested mentality selections, required flavors, scope, and settings before any writes. Inspect the selected target's existing catalog, discovery, and project state using the marker ownership and concurrency rules in **Write protocol**. A missing Human Speak flavor returns its chooser and leaves preparation unstarted.
+1. Validate the complete requested mentality selections, required flavors, scope, and settings before any writes. Resolve instruction-file targets through **Instruction File Selection** and inspect every target's discovery and project state plus the shared catalog using **Write protocol**. Resolve any material state differences before publishing. A missing Human Speak flavor returns its chooser and leaves preparation unstarted.
 2. Reuse a complete, usable, self-contained deployed catalog. Do not require source-hash equality with the installed skill or refresh complete material just because installed wording differs. Handle material definition disagreements through **Definition Retention**.
 3. If the catalog is missing, incomplete, or requires third-party material to explain its rules, perform [Deploy](actions.md#deploy) for the complete selected catalog, including its original examples and judgment notes. A selector subset still requires complete catalog publication. For Human Speak, this is the named flavor's catalog only. Preserve owned-content boundaries; malformed markers and unowned content remain conflicts, not permission to overwrite.
-4. Ensure the catalog discovery block in `AGENTS.md` points to the available project-local definitions. If only discovery is missing or incomplete, reconcile that block without republishing the complete catalog. Publish the catalog before its discovery reference.
-5. Once preparation succeeds, return to the requested action to re-read project state and update selection or configuration. Verify that `AGENTS.md` reflects the request, including block removal when appropriate; identical content is a no-op. Preserve unrelated guidance, other mentalities, independent settings outside the request, and every agent's memory overrides. Report deployment, instruction-file changes, and any partial effects if an operation fails.
+4. Ensure the catalog discovery block in every target instruction file points to the available project-local definitions, with a link relative to that file. If only discovery is missing or incomplete, reconcile that block without republishing the complete catalog. Publish the catalog once before its discovery references.
+5. Once preparation succeeds, return to the requested action to re-read project state and update selection or configuration. Verify that every target instruction file reflects the request, including block removal when appropriate; identical content is a no-op. Preserve unrelated guidance, other mentalities, independent settings outside the request, and every agent's memory overrides. Report deployment, instruction-file changes, and any partial effects if an operation fails.
 
 ### Write protocol
 
-1. Read the latest target contents and validate the complete requested outputs before writing.
+1. Read the latest contents of all selected targets and validate the complete requested outputs before writing any of them. Resolve paths, aliases, scope, and state differences through **Instruction File Selection**.
 2. Locate the exact start/end markers for the action's block. Replace one well-formed matching block in place, or remove it when **Empty project selection** requires deletion. When neither marker exists, insert a block or create the required file only if the requested action needs stored content; an already absent block targeted for removal is a no-op.
 3. Reject partial, reversed, nested, or duplicate matching markers. An existing catalog artifact without its matching markers is not owned output and must not be overwritten. If existing mentality directives use an incompatible scope or representation, report the conflict for explicit reconciliation instead of guessing which rules are project-wide.
-4. Preserve other mentalities' blocks, unrelated guidance, and unrelated artifact content. For an enable or preset configuration, update its family blocks and the shared next-priority counter together. Immediately before writing shared `AGENTS.md`, check for intervening changes; if it changed, re-read all project priorities and the counter and recompute the targeted edit and allocation rather than writing a stale whole-file snapshot. Use a lock or conditional write when the host supports one; otherwise report any detected concurrent conflict instead of claiming atomic multi-agent writes.
-5. For deployment, publish the validated catalog, then its discovery reference so new references never point to unwritten files. If a write fails, report actual partial effects and complete or safely recover only the action's owned changes.
-6. Verify exactly one matching block for each retained or published artifact, and no matching markers or residual application text for each removed block. Check catalog self-containment and local links when applicable, canonical IDs, family priorities and counter consistency, retained settings, and preserved out-of-scope state. Retrying the same completed write must not allocate again; a fresh user enable intentionally receives a new priority even if its IDs are unchanged.
+4. Preserve other mentalities' blocks, unrelated guidance, and unrelated artifact content. For an enable or preset configuration, allocate once per family for the whole request and update its family blocks and the shared next-priority counter together in each target file. Immediately before writing, check the inspected files for intervening changes; if any changed, re-read project state and recompute the targeted edits and allocation rather than writing stale snapshots. Use a lock or conditional write when the host supports one; do not claim atomic multi-file writes without such support.
+5. For deployment, publish the validated catalog once, then its discovery references so new references never point to unwritten files. If a write fails after some targets succeed, report completed and pending paths. Complete or safely recover only the action's owned changes, reusing any priority already committed by this request; never allocate again merely to finish the remaining files.
+6. Verify exactly one matching block per target file for each retained or published artifact, and no matching markers or residual application text for each removed block. For project actions, compare the affected selection, priority, and known counter across all targets, allowing relative-link differences; deployment-only actions verify discovery without reconciling activation or counters. Check catalog self-containment, local links, retained settings, and preserved out-of-scope state. Retrying the same completed write must not allocate again; a fresh user enable intentionally receives a new priority even if its IDs are unchanged.
 
 ### Missing and inconsistent material
 

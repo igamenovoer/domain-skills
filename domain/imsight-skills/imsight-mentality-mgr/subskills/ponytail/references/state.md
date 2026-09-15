@@ -14,7 +14,7 @@ If the request does not map cleanly to these steps, use the native planning tool
 
 The [principle index](principles.md#principle-index) owns the canonical IDs, names, and preset membership. Normalize rule codes and names case-insensitively; accept p1–p12, canonical hyphenated names, and explicit all. Validate and deduplicate the complete request before effects. IDs are local to Ponytail.
 
-Use the shared [enable/disable decision tree](../../../references/actions.md#enabledisable-decision-tree): omitted scope means agent memory, and omitted memory selectors expand to all current Ponytail IDs while preserving edit scope. Project rule enable/disable requires explicit selectors and includes required deployment and `AGENTS.md` updates. This shorthand does not change configuration's missing-parameter behavior or review's default criteria.
+Use the shared [enable/disable decision tree](../../../references/actions.md#enabledisable-decision-tree): omitted scope means agent memory, and omitted memory selectors expand to all current Ponytail IDs while preserving edit scope. Project rule enable/disable requires explicit selectors and includes required deployment and updates to all selected coding-agent instruction files (`AGENTS.md`, `CLAUDE.md`, etc.). This shorthand does not change configuration's missing-parameter behavior or review's default criteria.
 
 | Input | Meaning |
 | --- | --- |

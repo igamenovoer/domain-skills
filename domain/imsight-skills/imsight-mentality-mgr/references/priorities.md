@@ -3,7 +3,7 @@
 ## Workflow
 
 1. Resolve the selected families, rule IDs, and scope through the shared actions. Preserve the caller's family order and validate the complete request before mutation.
-2. Read that scope's family priorities and next-priority value under **Storage**. For an enabling action, allocate through **Priority Assignment**.
+2. Read that scope's family priorities and next-priority value under **Storage**, deduplicating mirrored instruction-file records. For an enabling action, allocate through **Priority Assignment**.
 3. Update selection and priority together within the action's authorized scope. Disabling follows **Removal**; reading definitions, deployment, and recall allocate nothing.
 4. Resolve applicable conflicts by scope, then family priority, using **Conflict Resolution**.
 5. Report family priorities with the selections and retain the sequence across supported same-agent handoffs.
@@ -23,13 +23,14 @@ Maintain a separate monotonically increasing `next_priority` for project scope a
 - A new enable request also reprioritizes an already enabled family, even when its rule IDs do not change. Enabling a subset raises the priority of all rules enabled in that family and scope; it does not enable unselected rules or change the other scope.
 - An explicit Ponytail intensity configuration counts as an enable because it replaces the selected rule set with a preset. An edit-scope-only configuration does not allocate or change priority.
 - For multiple families in one request, allocate once per distinct family in the caller's stated order, first to last. Normalize and deduplicate before allocation. Clarify a materially ambiguous order instead of using catalog or registration order.
+- Multiple target instruction files do not multiply allocations. Assign one priority per requested family, then write the same resulting priority and counter to all selected files.
 - Invalid requests, pending flavor choices, deployment, disable, help, recall, ordinary application, and review-only selectors do not allocate priorities. A retry of the same in-flight write must not be mistaken for a fresh user enable; re-read committed state before retrying an uncertain write.
 
 Priorities order enabled families; they do not select additional rules, change definitions, or authorize new work.
 
 ## Storage
 
-Store `- Family priority: <integer>.` in each nonempty project-selection block in `AGENTS.md`. Keep one compact shared counter block in the same file:
+Store `- Family priority: <integer>.` in each nonempty project-selection block in the selected coding-agent instruction files (`AGENTS.md`, `CLAUDE.md`, etc.). Follow [Instruction File Selection](runtime-injection.md#instruction-file-selection). Keep one compact shared counter block per target file, mirroring the same project sequence rather than allocating independently per file:
 
 ```markdown
 <!-- imsight-skill:imsight-mentality-mgr/project-priority-sequence:start -->
@@ -37,11 +38,13 @@ Store `- Family priority: <integer>.` in each nonempty project-selection block i
 <!-- imsight-skill:imsight-mentality-mgr/project-priority-sequence:end -->
 ```
 
-The example counter means the next project enable receives priority `3`; it enables nothing. Create the counter with the first project enable. Keep it after deleting family blocks, including when all project rules are disabled, so later enables do not reuse old numbers. A project enable updates this counter and its affected family blocks together through the shared [write protocol](runtime-injection.md#write-protocol). Re-read all project priorities and the counter if another writer intervenes, and recompute allocation before a conditional or locked write.
+The example counter means the next project enable receives priority `3`; it enables nothing. Create the counter with the first project enable. Keep it after deleting family blocks, including when all project rules are disabled, so later enables do not reuse old numbers. A project enable updates this counter and its affected family blocks together in every selected file through the shared [write protocol](runtime-injection.md#write-protocol). Re-read project priorities and counters if another writer intervenes, and recompute allocation before a conditional or locked write.
+
+Before a project selection or configuration action, inspect sequence state across the discovered project-wide instruction files and explicit targets, including any discovered files excluded from writing by an explicit target choice. Use the greatest valid stored next-priority value; it must exceed every assigned project priority in the inspected files. Lower counters can remain after a file-specific action and must never move the sequence backward. Matching copies of one family are one allocation, not duplicate priorities. Missing mirrors may inherit known sequence state; a missing or invalid sequence cannot be reconstructed from current family numbers alone because removed families may have left gaps. Mirror the resulting known counter only to the selected targets and report any differences left by an explicit file choice. Disable and edit-scope-only configuration may copy the known counter but never increment it; deployment alone does neither.
 
 Agent priorities and their next-priority value live only in that agent's chat context, bound to the project root. Memory actions write no files and never increment the project counter. Preserve the counter, family priorities, enabled and disabled IDs, and definition retention during same-agent handoffs. A subagent starts its own memory sequence for explicitly assigned rules; it does not copy a parent's numbers or counter implicitly.
 
-Validate nonnegative integer priorities, distinct numbers for different enabled families within one scope, and a next-priority value greater than every assigned number in that scope. Missing, duplicate, or malformed priorities and lost sequence state are unresolved, not permission to infer order from `AGENTS.md`, registration order, or rule IDs. Recover known state or obtain an explicit ordering for reconciliation; recall and ordinary work do not repair files or invent history. A confirmed fresh scope with no prior allocation needs no stored counter until its first enable.
+Validate nonnegative integer priorities, distinct numbers for different enabled families within one scope, and a next-priority value greater than every assigned number in that scope. Missing, duplicate, or malformed priorities and lost sequence state are unresolved, not permission to infer order from instruction filenames, registration order, or rule IDs. Resolve differing records for the same family through [Instruction File Selection](runtime-injection.md#instruction-file-selection); never choose a record solely because its file was read last. Recover known state or obtain an explicit ordering for reconciliation; recall and ordinary work do not repair files or invent history. A confirmed fresh scope with no prior allocation needs no stored counter until its first enable.
 
 ## Removal
 
