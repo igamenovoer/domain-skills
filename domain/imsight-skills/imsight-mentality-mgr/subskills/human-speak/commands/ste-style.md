@@ -2,41 +2,34 @@
 
 ## Workflow
 
-1. **Bind the named flavor** to `human-speak/ste-style`. This command is an explicit flavor choice for the current invocation only.
-2. **Resolve the shared action** from the arguments or pending request. With no action, recall this flavor and show concise help; do not enable it.
-3. **Resolve selectors and scope** using [state.md](../references/state.md) and the manager's [decision tree](../../../references/actions.md#enabledisable-decision-tree). Validate the complete request before mutation.
-4. **Execute the shared action**, using **Catalog Publication** for deployment. For ordinary output with effective rules, use **Applying the Flavor**.
-5. **Report actual scope and effects** through shared [Memory Confirmation](../../../references/runtime-injection.md#memory-confirmation) or the requested action's output contract.
+1. Bind this explicit choice to `human-speak/ste-style` for this invocation.
+2. Resolve the shared action from arguments or a pending request; absent action means recall/help, not enable.
+3. Validate selectors and scope through [state.md](../references/state.md), then execute the relevant shared action or apply effective rules below.
+4. Report action effects using [Memory Confirmation](../../../references/runtime-injection.md#memory-confirmation) when applicable.
 
-If the task does not map cleanly to these steps, use the native planning tool to preserve the chosen flavor, validated rules, and scope, then execute the plan. This command supplies communication guidance without authorizing additional project work.
+For other requests, use the native planning tool without widening communication scope or task authority.
 
 ## Purpose
 
-STE Style helps readers interpret a statement without guessing its terms, relationships, or strength. Its five readability principles do not enforce or certify ASD-STE100 compliance.
+Use consistent terms, explicit relationships, direct language, faithful claim strength, and enough wording for clarity.
 
 ## Arguments
 
-Supply an optional shared action followed by its normal arguments. Accepted actions are `deploy`, `enable-project`, `disable-project`, `enable-memory`, `disable-memory`, `recall`, and `help`. Natural `enable` and `disable` use the manager's agent-memory default unless project scope is explicit. Project rule actions require explicit selectors or `all`; memory rule actions with no selectors select all five current rules of this flavor.
-
-For example, `imsight-mentality-mgr->human-speak->ste-style()` with arguments `enable-memory h1 h4` remembers stable-terminology and preserve-claim-strength for this agent. With `disable-project all`, it ensures deployment and reduces this flavor's entry to a reference-only catalog link, removing application text and family priority. The peer action `imsight-mentality-mgr->human-speak->enable-memory()` with arguments `ste-style h1 h4` resolves identically. Actions are arguments to the flavor command, not nested subcommands.
+Accept the parent's shared actions with normal scope/selector defaults. Example: `imsight-mentality-mgr->human-speak->ste-style()` with `enable-memory h1 h4`. `disable-project all` leaves a reference-only entry with no family priority. Actions are arguments, not nested commands.
 
 ## Applying the Flavor
 
-Resolve effective `h1`–`h5` selections and read and retain their [definitions, comparisons, and judgment notes](../references/ste-style-principles.md) through shared [Definition Retention](../../../references/runtime-injection.md#definition-retention). Use selected rules to keep terminology consistent, make relevant relationships explicit, express actions directly, preserve what claims commit to, and retain enough wording for clarity.
+Resolve effective h1–h5 and retain only needed [definitions, comparisons, and judgment](../references/ste-style-principles.md) through [Definition Retention](../../../references/runtime-injection.md#definition-retention). Apply them during ordinary human-facing writing. This is STE-inspired readability, not ASD-STE100 enforcement or certification. Impose no fixed vocabulary, grammar bans, quotas, modes, or required linting.
 
-Apply the guidance during ordinary human-facing writing. The agent chooses prose structure, voice, punctuation, sentence lengths, and reference placement subject to the user's request and existing instructions. No strict/flavored modes, fixed vocabulary, word quotas, blanket grammar bans, mandatory linting, or separate rewrite workflow belong to this flavor. Examples teach meaning and judgment rather than output templates.
-
-This flavor adds no review, configuration, intensity, or code-edit action. It can guide a separately authorized review's presentation without performing the review. Human Speak's human-facing scope remains in force.
+Examples teach judgment, not templates. These rules create no extra research, testing, review, mandatory editing pass, or code-edit authority; they may shape an independently authorized review's presentation.
 
 ## Catalog Publication
 
-Use the binding in [state.md](../references/state.md#flavor-bindings). Publish `.imsight-arts/mentality/human-speak-ste-style-principles.md` with the complete `Purpose`, `Principle Index`, `Communication Principles`, and `Applicability and Judgment` sections of [ste-style-principles.md](../references/ste-style-principles.md). Include every original Do / Don't comparison and judgment note. Add a title, the entrance skill name, flavor identity, and an availability-only statement. Exclude workflow, activation state, external reference tables, and third-party material.
-
-The deployed catalog must work without this installed skill, `extern/orphan`, or network access. Publish no source directory or upstream files. Shared actions own project and agent-memory selection.
+Publish `.imsight-arts/mentality/human-speak-ste-style-principles.md` using [flavor bindings](../references/state.md#flavor-bindings) and the shared [catalog contract](../../../references/runtime-injection.md#catalog-artifact). Copy complete `Purpose`, `Principle Index`, `Communication Principles`, and `Applicability and Judgment` from [the catalog](../references/ste-style-principles.md), including every original comparison and judgment note. Exclude workflow, activation state, and References.
 
 ## References
 
-These optional links identify conceptual background and the rules it concerns. Open them only for an explicit source or attribution request. Applying, enabling, recalling, and deploying this flavor use its maintained definitions alone. This section stays in the skill and is excluded from project catalogs.
+Optional attribution/background only; open on explicit request. Excluded from deployed catalogs.
 
 | Reference | Rules concerned |
 | --- | --- |
@@ -46,7 +39,6 @@ These optional links identify conceptual background and the rules it concerns. O
 
 ## Guardrails
 
-- DO NOT claim that applying this flavor or passing an upstream linter establishes ASD-STE100 compliance.
-- DO NOT impose strict STE word lists, grammar bans, length limits, or prose structure through this flavor.
-- DO NOT add facts, strengthen requirements, or create extra task work to improve readability.
-- DO NOT enable this flavor through bare invocation or alter another flavor's state.
+- DO NOT remove material conditions, uncertainty, or required detail for brevity.
+- DO NOT turn writing guidance into extra work or treat examples as mandatory layouts.
+- DO NOT alter another flavor or enable this one through bare invocation.

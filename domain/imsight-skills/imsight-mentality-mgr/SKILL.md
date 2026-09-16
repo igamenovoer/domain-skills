@@ -12,86 +12,68 @@ metadata:
 
 # Imsight Mentality Manager
 
-## Overview
-
-Manage named mentalities, their principle catalogs, project-wide selections, and agent-local overrides. Shared catalogs document what each principle means; project instructions select shared defaults; each agent remembers its own overrides. Multiple agents can use the same catalogs and coding-agent instruction files (`AGENTS.md`, `CLAUDE.md`, etc.) while applying different principles. Brooks and Ponytail provide explicit reviews; Ponytail also separates simplification intensity from permission to revise existing task-related infrastructure.
+Manage principle catalogs, project defaults, and each agent's chat-memory overrides. Deployment makes rules available; selection determines what applies.
 
 ## Workflow
 
-1. **Resolve intent** using **Invocation** and **Subcommands**. For enable/disable requests, follow the shared [decision tree](references/actions.md#enabledisable-decision-tree).
-2. **Select mentalities** from **Subskills**. Load only the named child's `SKILL-MAIN.md` and required resources. Human Speak requires an explicit flavor through its [chooser](subskills/human-speak/SKILL-MAIN.md#flavor-selection), including during unqualified recall.
-3. **Resolve scope, selectors, and priorities** through the child's selector reference, [runtime-injection.md](references/runtime-injection.md), and [family priorities](references/priorities.md). Load child-specific configuration or review contracts when selected; validate both Ponytail axes independently before mutation.
-4. **Execute the action** using its linked detail section. For ordinary applicable work, resolve effective rules and apply [composition.md](references/composition.md); an explicit review follows its own diagnostic workflow.
-5. **Report the result** with canonical rule IDs, affected scope, and actual file effects. For memory actions and configuration, summarize the remembered behavior and its definition references or retained content through [Memory Confirmation](references/runtime-injection.md#memory-confirmation).
+1. Resolve the action and named child below. Human Speak management requires an explicit flavor; otherwise show its chooser before any mutation.
+2. Load only that child's entrypoint and relevant selector, action, or review sections. Use [actions.md](references/actions.md) for management, [composition.md](references/composition.md) for ordinary application, and the child's procedure for an explicit review.
+3. Resolve scope and definitions through the needed sections of [runtime-injection.md](references/runtime-injection.md). Read [priorities.md](references/priorities.md) when allocating or comparing family priorities. Validate the whole request before effects.
+4. Execute and report canonical IDs, scope, priorities, and actual file effects. Memory actions also summarize meanings and definition retention.
 
-If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the registered mentalities, declared actions, and scope boundaries without inventing a state change.
+For requests outside this flow, use the native planning tool with these contracts; do not invent activation or authority.
 
 ## Invocation
 
-Bare invocation shows help and registered mentalities; a named child alone recalls that mentality and shows concise help, except Human Speak, which lists its flavors for selection. `recall` without a mentality reports ordinary children and presents the Human Speak chooser without inferring a flavor.
+Bare invocation shows help; a named child recalls its state and shows help. Human Speak instead asks for a flavor. Manager-wide recall reports ordinary children and shows the Human Speak chooser.
 
-Shared actions take the mentality and selectors as arguments, such as `imsight-mentality-mgr->enable-project()` with `brooks r1 r5`. A child preselects its mentality, such as `imsight-mentality-mgr->brooks->enable-memory()` with `r1 r5`. Natural wording uses the same actions: “deploy these principles,” “enable/disable in project scope,” “remember and apply” or “enable/disable in your memory,” and “recall the effective Imsight mentality.”
+Example: `imsight-mentality-mgr->brooks->enable-memory()` with `r1 r5`. Human Speak flavors are flat commands: `imsight-mentality-mgr->human-speak->han-style()` with `enable-memory h1 h5`.
 
-Human Speak additionally requires a named flavor for every management invocation. Without one, list flavors with their origins and rule summaries, ask the user to choose, and retain the pending request without file or activation changes. Do not select the sole available flavor or reuse a prior choice implicitly. Flavor commands are flat: `imsight-mentality-mgr->human-speak->mark-life-style()` takes an action such as `enable-memory h1 h4` as arguments. Resolve the flavor before applying selector defaults; `all` never means every flavor.
-
-For `enable <mentality>` and `disable <mentality>`, inspect project deployment and current selections first. Omitted scope means this agent's chat memory; omitted memory selectors mean all currently defined rules. Explicit selectors choose a subset. Deployed definitions are retained as project paths plus rule IDs; otherwise retain operative content. These defaults write no files and also apply when the project already enables some rules.
-
-Explicit project enable/disable requires a rule selection, including `all` when intended, and includes deployment of missing or incomplete catalogs, catalog references, and a coherent update to the unified mentality section in every target instruction file. When the user names files, update only those files; otherwise discover and update all existing project-wide coding-agent instruction files, including `AGENTS.md` and `CLAUDE.md`. If none exist, create `AGENTS.md`. Follow [Instruction File Selection](references/runtime-injection.md#instruction-file-selection) and the shared [decision tree](references/actions.md#enabledisable-decision-tree) for discovery, ordering, and removal of obsolete application text. Validate the complete request before effects. Clarify unresolved targets, invalid or ambiguous selectors, missing project selectors, or conflicting scope instructions; omitted enable/disable scope alone needs no clarification.
-
-Review and Ponytail configuration are child-specific actions. Route “review this with Brooks/Ponytail” to that child's review, not activation; use each child's action reference for arguments and defaults.
+- `enable/disable <mentality>` defaults to agent memory. Omitted memory selectors mean all current rules; explicit selectors choose a subset.
+- Project enable/disable requires explicit scope and selectors, including `all` when intended. Naming an instruction file selects project scope.
+- Project actions publish missing catalogs and update all existing project-wide coding-agent files (`AGENTS.md`, `CLAUDE.md`, etc.) unless the user selects specific files. Create root `AGENTS.md` only when none exist. Follow [file selection](references/runtime-injection.md#instruction-file-selection).
+- Missing flavors, invalid selectors, or conflicting scope instructions require resolution before mutation. Omitted enable/disable scope alone does not.
 
 ## Subcommands
 
-These are peer actions, not required phases. Definitions are shared here; children supply their own selectors, catalogs, and applicability. Child-specific review and configuration procedures are listed in each child's subcommand table.
-
-| Subcommand | Use For | Detail |
+| Action | Effect | Detail |
 | --- | --- | --- |
-| `deploy` | Publish self-contained catalogs and project discovery references without enabling rules. | [Deploy](references/actions.md#deploy) |
-| `enable-project` | Ensure deployment and add selected project requirements in all target instruction files. | [Enable Project](references/actions.md#enable-project) |
-| `disable-project` | Ensure deployment and remove selected project requirements in all target instruction files. | [Disable Project](references/actions.md#disable-project) |
-| `enable-memory` | Remember explicit enabled overrides for this agent's chat session. | [Enable Memory](references/actions.md#enable-memory) |
-| `disable-memory` | Remember explicit disabled overrides, including for project-enabled principles. | [Disable Memory](references/actions.md#disable-memory) |
-| `recall` | Report project selections, remembered overrides, and effective principles. | [Recall](references/actions.md#recall) |
-| `help` | Explain mentalities, actions, selectors, and scope precedence without changing state. | This entrypoint |
+| `deploy` | Publish complete catalogs and availability references; enable nothing. | [Deploy](references/actions.md#deploy) |
+| `enable-project` | Add project rules and allocate fresh family priority. | [Enable Project](references/actions.md#enable-project) |
+| `disable-project` | Remove project rules; preserve independent settings. | [Disable Project](references/actions.md#disable-project) |
+| `enable-memory` | Remember enabled overrides for this agent. | [Enable Memory](references/actions.md#enable-memory) |
+| `disable-memory` | Remember explicit disabled overrides for this agent. | [Disable Memory](references/actions.md#disable-memory) |
+| `recall` | Report project, memory, and effective state. | [Recall](references/actions.md#recall) |
+| `help` | Explain available actions without mutation. | This entrypoint |
 
 ## Subskills
 
-| Mentality | When to Route Here | Load |
+| Mentality | Purpose | Entry |
 | --- | --- | --- |
-| `brooks` | Choose Brooks for maintainable production-code decisions and test design, or to explicitly review existing code through those principles. | [Brooks](subskills/brooks/SKILL-MAIN.md) |
-| `ponytail` | Choose Ponytail to simplify implementations through reuse and removal, with explicit intensity and boundaries for changing existing infrastructure, or to review those opportunities. | [Ponytail](subskills/ponytail/SKILL-MAIN.md) |
-| `docs-writer` | Choose Docs Writer principles for durable prose whose main text should describe its current state without incidental revision history. | [Docs Writer](subskills/docs-writer/SKILL-MAIN.md) |
-| `agile-experimenter` | Choose Agile Experimenter for experiment scope, evidence sufficiency, and stopping decisions. | [Agile Experimenter](subskills/agile-experimenter/SKILL-MAIN.md) |
-| `human-speak` | Choose Human Speak for readable human-facing output using a named communication flavor; show its chooser when the flavor is missing. | [Human Speak](subskills/human-speak/SKILL-MAIN.md) |
+| `brooks` | Maintainable code and tests; explicit diagnostic review. | [Brooks](subskills/brooks/SKILL-MAIN.md) |
+| `ponytail` | Simplification with independent intensity and edit scope; explicit review. | [Ponytail](subskills/ponytail/SKILL-MAIN.md) |
+| `docs-writer` | Durable prose describing its current state. | [Docs Writer](subskills/docs-writer/SKILL-MAIN.md) |
+| `agile-experimenter` | Decision-useful experiments and sufficient evidence. | [Agile Experimenter](subskills/agile-experimenter/SKILL-MAIN.md) |
+| `human-speak` | Human-readable output in an explicitly chosen flavor. | [Human Speak](subskills/human-speak/SKILL-MAIN.md) |
 
-An unknown mentality is an error; list registered names instead of guessing. New mentalities belong beside these children and own their principle catalogs and selector vocabularies.
+Unknown names return this inventory. Children own canonical IDs, definitions, examples, and applicability; Human Speak flavors have independent state.
 
 ## Scope Contract
 
-- **Deployed catalogs** live at `.imsight-arts/mentality/<mentality>-principles.md`, using the selected target's declared storage key, and contain the complete definitions, examples, and judgment notes. Catalogs contain maintained rule explanations and original examples only; upstream reference tables stay in the skill. Human Speak isolates catalogs and state by flavor. A catalog or discovery reference never enables a principle.
-- **Project selection** appears beside catalog availability in one unified mentality section per target coding-agent instruction file and changes only through an explicitly requested project action. Recompose that section to describe current state; do not mechanically append discovery and application templates. Keep one entry per family and shared scope guidance once, following [Unified mentality section](references/runtime-injection.md#unified-mentality-section) and its [operation examples](references/instruction-examples.md). Deployment and child project configuration use the same file-selection contract. Project actions include any necessary deployment and discovery updates; complete existing deployment is reused. Multiple files mirror one requested selection and priority allocation, not separate rule families.
-- **Agent memory** contains this agent's explicit enabled and disabled overrides and child settings. Memory actions write nothing and do not automatically assign overrides to another agent.
-- **Definition retention** applies to every rule and switch: retain its identity, selected value, and source scope. If its details are deployed in the project, remember the project-bound path and ID/name/flag; otherwise remember the operative content. Resolve each item independently through [Definition Retention](references/runtime-injection.md#definition-retention).
-- **Effective selection** follows agent overrides first, then project selection, then disabled by default. Applicability and conflict resolution determine which selected guidance applies to the task.
-- **Family priority** is a nonnegative integer per selected mentality or Human Speak flavor in each scope. Each fresh enable receives the previous assigned priority plus one, including re-enables; higher values win same-scope conflicts. Agent scope still outranks project scope. Disabling preserves gaps without renumbering; see [priorities.md](references/priorities.md) for allocation, storage, and recall.
-- **Child settings** follow the child's schema. Ponytail intensity expands into canonical rule IDs; edit scope resolves independently from agent memory, then project settings, then `new-code-only`. Neither deployment nor an edit-scope setting enables rules.
-- **Review criteria** default to effective selection. Explicit review selectors replace criteria for that invocation only; they never enable rules, alter memory, or change subsequent recall. Saved review evidence is not an activation source. Child edit boundaries also constrain recommendations.
-
-Full storage, precedence, concurrency, and context-handoff rules live in [runtime-injection.md](references/runtime-injection.md). Action workflows and chat-output examples live in [actions.md](references/actions.md). Instruction-file adjustment examples live in [instruction-examples.md](references/instruction-examples.md); wording and layout are illustrative, while state semantics remain exact.
+- Catalogs live under `.imsight-arts/mentality/`; they contain definitions, not activation.
+- Project guidance uses one [unified section](references/runtime-injection.md#unified-mentality-section) per target instruction file. Rewrite current meaning instead of appending operation templates; see [examples](references/instruction-examples.md) when needed.
+- Explicit agent-memory overrides win over project selection; otherwise inherit, with unselected rules disabled. Memory stays in this agent's context and writes no files.
+- Within one scope, higher family priority wins conflicts. Fresh enables, including re-enables, receive the next nonnegative priority; disabling preserves gaps. Memory scope outranks project scope regardless of numbers.
+- Retain deployed meanings by project path and ID; retain undeployed meanings as operative content. Settings resolve independently. Explicit review criteria last only for that review.
 
 ## Maintenance
 
-Keep shared action and scope semantics in the parent references. [review-common.md](references/review-common.md) owns shared review selection, target discovery, coverage, and report storage. Children own canonical IDs, examples, domain judgment, and any configuration schema or additional edit boundary. Keep required runtime guidance and original teaching examples self-contained. Do not bundle third-party source files, snapshots, or copied code examples. Put optional upstream links and their rule mappings in separate `References` sections of child entrypoints or flavor command pages. Rule descriptions contain no source citations or pointers to those sections; routine application and deployment do not load upstream material.
+Keep shared semantics in parent references and child-specific guidance with its child. Load only needed sections. Keep definitions and original examples self-contained; put optional upstream links and rule mappings in separate `References` sections. Do not bundle third-party material or put source pointers inside rule descriptions or deployed catalogs.
 
 ## Guardrails
 
-- DO NOT treat catalog deployment or skill discovery as activation.
-- DO NOT write files for memory actions, recall, or help.
-- DO NOT persist one agent's effective selection as project-wide rules.
-- DO NOT erase a remembered disabled override by treating it as absent.
-- DO NOT let one agent's memory action change another agent's overrides.
-- DO NOT load every child's full catalog to handle one selected mentality.
-- DO NOT infer a missing Human Speak flavor or treat `all` as a flavor choice.
-- DO NOT imply that a skill invocation installs runtime hooks or guarantees memory across context loss.
-- DO NOT let mentality guidance override unrelated repository instructions or higher-priority instructions.
-- DO NOT require online source retrieval to apply, recall, review, or deploy bundled principles.
+- DO NOT infer activation from deployment, discovery, or bare invocation.
+- DO NOT write files for memory actions, recall, or help, or publish an agent's effective selection as project rules.
+- DO NOT lose explicit disabled overrides or copy another agent's memory implicitly.
+- DO NOT load all catalogs or upstream references for routine application.
+- DO NOT let mentality rules override task authority, unrelated repository instructions, or higher-priority requirements.

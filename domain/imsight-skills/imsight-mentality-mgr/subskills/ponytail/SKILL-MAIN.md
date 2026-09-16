@@ -5,29 +5,20 @@ description: Use when an Imsight mentality request names Ponytail, applicable co
 
 # Ponytail Mentality
 
-## Overview
-
-Reduce unnecessary implementation and maintenance work while preserving required behavior, meaningful edge-case defenses, and the assigned task boundary. Intensity controls which simplifications to pursue. Edit scope independently controls whether existing infrastructure may change. The skill is self-contained within the mentality manager and installs no hooks or global mode state.
+Simplify implementation while preserving required behavior, edge-case defenses, and task boundaries. Intensity selects rules; edit scope independently limits existing-code changes.
 
 ## Workflow
 
-1. **Resolve intent** from **Subcommands** and the selected action reference; ordinary coding work requires effective selected rules.
-2. **Resolve rules and both axes** through [state.md](references/state.md). Validate the complete request and preserve agent identity before configuration or application.
-3. **Execute an explicit action** through its detail page. Review follows [review.md](references/review.md); shared rule actions retain their original meanings.
-4. **For implementation**, establish the assigned task and starting code boundary, read relevant flow and callers, and apply **Applying the Mentality** only to permitted code.
-5. **Report effects** and any material tradeoff or boundary conflict. Recall includes effective IDs, derived intensity, edit scope, and provenance without changing state.
+1. Resolve action, selectors, and axes through [state.md](references/state.md). Persistent configuration requires explicit project or memory scope; omitted axes stay unchanged, and no arguments means help.
+2. Execute the shared or child action below. Load [review.md](references/review.md) only for an explicit review.
+3. For implementation, establish the task's starting code boundary and apply only effective rules within it.
+4. Report effects and material tradeoffs. Recall includes selected IDs, derived intensity, edit scope, and provenance.
 
-If the task does not map cleanly to these steps, use the native planning tool to plan from the requested outcome, selected principles, and permitted edit surface without activating unselected rules or expanding the assignment.
-
-## When to Use
-
-Use for Ponytail catalog and scope management, implementation with selected principles, and explicit simplification reviews. Discussing a principle or loading this child does not activate it. Configuration controls future applicable work, not permission to begin unrelated cleanup. Ordinary prose follows the user's communication requirements.
+For other requests, use the native planning tool without enlarging the task or activating rules.
 
 ## Subcommands
 
-Shared rule actions retain the parent's meanings with `ponytail` selected. Configure actions accept intensity and/or edit scope through [state.md](references/state.md); review accepts invocation-only criteria and scope through [review.md](references/review.md).
-
-For example, `$imsight-mentality-mgr ponytail configure-memory normal new-code-only` sets both axes in this agent's memory. “Set Ponytail to normal in your memory” selects the same action with intensity only; omitted axes are preserved, and configuration without arguments shows help. Persistent configuration requires explicit project or memory scope, never a guess based on earlier actions.
+Shared actions inherit the parent contract.
 
 | Subcommand | Use For | Detail |
 | --- | --- | --- |
@@ -46,38 +37,32 @@ For example, `$imsight-mentality-mgr ponytail configure-memory normal new-code-o
 
 | Intensity | Rules |
 | --- | --- |
-| `safe` | p1–p7: reuse, proven primitives, dependency restraint, root-cause placement, proven redundancy, focused verification, and explicit limits. |
+| `safe` | p1–p7: reuse, primitives, dependency restraint, root-cause placement, proven redundancy, focused verification, real limits. |
 | `normal` | Safe plus p8 collapse-structure and p9 compact-implementation. |
-| `extreme` | Normal plus p10 remove-unused-flexibility, p11 replace-existing-dependencies, and p12 challenge-speculative-work. |
+| `extreme` | Normal plus p10 remove-unused-flexibility, p11 replace-existing-dependencies, p12 challenge-speculative-work. |
 
-| Edit scope | Permitted simplification surface |
+| Edit scope | Boundary |
 | --- | --- |
-| `new-code-only` | Newly written task code that uses existing infrastructure. Preserve established infrastructure, contracts, dependencies, and behavior; allow minimal compatible wiring. |
-| `destructive` | Also the existing infrastructure directly related to the task, with the smallest coherent impact. Repository-wide refactoring requires that explicit assignment. |
+| `new-code-only` | New task code using established infrastructure; minimal compatible wiring is allowed. |
+| `destructive` | Also existing task-related infrastructure, with minimal impact. Broad refactoring needs that assignment. |
 
-Safe plus new-code-only is the recommended explicit starting configuration. No rules are enabled by default. A missing edit-scope setting resolves to new-code-only independently of intensity. Even extreme plus destructive preserves meaningful defenses and the task boundary. Detailed resolution, downgrade, and baseline rules live in [state.md](references/state.md).
+No rules are enabled by default; missing edit scope means `new-code-only`. Recommend safe plus new-code-only when asked for a starting configuration. Even extreme/destructive preserves required defenses. Detailed configuration and baselines live in [state.md](references/state.md).
 
 ## Applying the Mentality
 
-1. Identify the required behavior, affected flow and callers, existing task infrastructure, and relevant edge/failure conditions. Use the [edit boundary](references/state.md#edit-boundary) before choosing a simplification.
-2. Read and retain selected rule definitions, **Representative Do / Don't comparisons**, and configured setting meanings through shared [Definition Retention](../../references/runtime-injection.md#definition-retention). Use each comparison's stated contract and judgment note; apply only the selected rules within the resolved edit scope.
-3. For selected reuse rules, look for a suitable local solution, then proven standard-library/native facilities, then suitable installed dependencies, before writing custom machinery. Suitability includes edge cases and the project's supported runtime; a superficially shorter alternative is not automatically equivalent.
-4. Apply selected structural rules only where their present benefit is supported. Preserve defenses required by the actual contract. Under destructive scope, keep changes confined to the task's affected infrastructure and necessary callers; stop expansion at unrelated cleanup opportunities.
-5. Use existing evidence and repository-required checks; apply selected p6 to decide whether further verification is warranted. New tests are not an automatic consequence of an edit. Report what was actually checked and explain any material unresolved risk, scope conflict, or deliberate limitation. Honor requested explanations without a fixed line limit.
+Read affected behavior, callers, and edge/failure conditions. Retain selected [definitions and comparisons](references/principles.md) plus settings through [Definition Retention](../../references/runtime-injection.md#definition-retention).
 
-If a correct root-cause fix needs infrastructure outside new-code-only scope, use an existing explicit task instruction that authorizes that precise change or surface the boundary conflict. Do not hide the issue behind a new caller-specific workaround. A general request for a feature does not authorize a surrounding infrastructure rewrite.
+For selected reuse rules, prefer a suitable project solution, then proven native/standard facilities, then installed dependencies, before custom machinery. Suitability includes behavior and supported runtimes. Apply structural simplifications only for demonstrated benefit inside the [edit boundary](references/state.md#edit-boundary).
+
+Use existing evidence and required checks. Selected p6 calls for proportionate verification, not a new test for every edit. Report actual checks and material uncertainty. If a correct fix crosses new-code-only scope, honor a precise existing task authorization or surface the conflict; do not hide it in a caller-specific workaround.
 
 ## Catalog Publication
 
-Publish `.imsight-arts/mentality/ponytail-principles.md` using the shared deployment contract. Copy the complete `Principle Index`, `Safe Rules`, `Normal Additions`, `Extreme Additions`, `Validity Requirements`, and `Applicability` sections of [principles.md](references/principles.md), including every original Do / Don't comparison, its assumptions, and judgment note. Include the title, canonical index, entrance skill, and availability-only statement. Exclude control workflows, current selection, project or agent settings, external reference tables, and third-party material. The published catalog must work without installed paths, an original checkout, or network access.
-
-## Maintenance
-
-Keep canonical rules and preset membership in the principle index, state transitions and edit boundaries in state.md, and the review procedure and diagnostic patterns in their maintained references. Write original examples that preserve the task contract and sensible edge-case defenses.
+Publish `.imsight-arts/mentality/ponytail-principles.md` through the shared [catalog contract](../../references/runtime-injection.md#catalog-artifact). Copy complete `Principle Index`, `Safe Rules`, `Normal Additions`, `Extreme Additions`, `Validity Requirements`, and `Applicability` from [principles.md](references/principles.md), including original comparisons, assumptions, and judgment. Exclude control workflows, activation/settings state, and References.
 
 ## References
 
-These links identify conceptual background and the rules it concerns. Consult them only for an explicit source or attribution request. Ordinary application, review, and deployment use the maintained definitions and original examples without opening these links. This section is not part of the deployed catalog.
+Optional attribution/background only; open on explicit request. Excluded from deployed catalogs.
 
 | Reference | Rules concerned |
 | --- | --- |
@@ -93,11 +78,7 @@ These links identify conceptual background and the rules it concerns. Consult th
 
 ## Guardrails
 
-- DO NOT remove required edge-case defenses or change the supported contract merely to reduce code.
-- DO NOT treat line counts, one caller, or one implementation as proof that infrastructure is unnecessary.
-- DO NOT let intensity widen edit scope or let destructive scope expand the assigned task.
-- DO NOT revise existing infrastructure under new-code-only scope without an explicit task instruction authorizing that change.
-- DO NOT pursue opportunistic or codebase-wide refactoring unless it is the assigned task.
-- DO NOT apply review recommendations as edits or change activation and configured settings during review.
-- DO NOT infer activation from deployment, configuration of edit scope alone, or upstream state files.
-- DO NOT copy another agent's remembered rules or edit-scope override into this agent or shared project policy.
+- DO NOT remove required defenses or infer redundancy from line counts, one caller, or one implementation.
+- DO NOT let intensity widen edit scope, or destructive scope enlarge the assigned task.
+- DO NOT rewrite existing infrastructure under new-code-only without precise task authorization.
+- DO NOT pursue unrelated cleanup or apply review recommendations during review.

@@ -2,46 +2,37 @@
 
 ## Workflow
 
-1. Resolve the caller's action and scope through the shared [actions](../../../references/actions.md) and [runtime contract](../../../references/runtime-injection.md), or the invocation-only criteria in [review](review.md).
-2. Normalize every supplied Brooks selector using **Selector Resolution** and the canonical [principles](principles.md).
-3. Validate the complete selection before changing either project scope or this agent's memory.
-4. Execute the selected action using Brooks IDs only; for recall or application, preserve the project or agent-memory source of each effective principle. Review selectors name criteria without mutating either scope.
-5. Report canonical IDs, affected scope, and any unresolved state without mutating sibling mentalities.
+1. Resolve action and scope through [shared actions](../../../references/actions.md).
+2. Normalize selectors below against [principles.md](principles.md); validate the whole request.
+3. Execute with this family's IDs, preserving scope provenance and other families' state.
 
-If the task does not map cleanly to these steps, use the native planning tool to preserve atomic selector validation, resolved scope, and independent agent memory.
+For other requests, use the native planning tool without inventing activation.
 
 ## Selector Resolution
 
-| Selector | Expansion |
+| Selector | Meaning |
 | --- | --- |
-| `r1` through `r6` | One production principle. |
-| `t1` through `t6` | One test principle. |
-| Canonical name | The corresponding principle, such as `dependency-direction`. |
-| `production` | All six production principles. |
-| `tests` | All six test principles. |
-| `all` | All twelve Brooks principles. |
+| `r1`–`r6` | Individual production rules. |
+| `t1`–`t6` | Individual test rules. |
+| Canonical name | Its corresponding rule. |
+| `production` / `tests` | All six rules in that group. |
+| `all` | All twelve rules. |
 
-Selectors are case-insensitive and normalize to lowercase canonical IDs. Accept canonical hyphenated names and unambiguous natural variants. Resolve groups completely, remove duplicates, and retain catalog order for output. IDs are local to Brooks; a Docs Writer ID is invalid here.
+Accept case-insensitive IDs, canonical hyphenated names, and unambiguous natural variants. Expand groups, deduplicate, and report in catalog order. Foreign IDs or ambiguous/unknown selectors reject the whole request; list valid choices. Store canonical IDs, not aliases.
 
-Use the shared [enable/disable decision tree](../../../references/actions.md#enabledisable-decision-tree): omitted scope means agent memory, and omitted memory selectors expand to all current Brooks IDs. Project enable/disable requires explicit selectors and includes required deployment and updates to all selected coding-agent instruction files (`AGENTS.md`, `CLAUDE.md`, etc.). A bare child invocation or `none` does not change selection. Unknown or ambiguous selectors reject the entire request; list valid codes, names, and groups without partial application.
+Use [shared defaults](../../../references/actions.md#enabledisable-decision-tree): omitted enable/disable scope means memory; omitted memory selectors mean all current IDs; project actions require selectors. Bare invocation and `none` change no selection.
 
-Review accepts the same codes, names, and groups. Omitted review selectors use effective selection; explicit selectors replace review criteria for this invocation only. Uppercase upstream risk labels normalize to the same lowercase IDs and never create separate diagnostic state. Selection, applicability, and reporting details live in the review contract.
+Review uses the same selectors; omitted criteria mean effective rules, explicit criteria replace them for one review. Uppercase risk codes normalize to the same IDs. See [review.md](review.md).
 
 ## Scope Binding
 
-The shared runtime contract owns state transitions, precedence, and [definition retention](../../../references/runtime-injection.md#definition-retention). Brooks supplies these bindings:
+- Catalog: `.imsight-arts/mentality/brooks-principles.md`.
+- Family entry in the [unified section](../../../references/runtime-injection.md#unified-mentality-section) and memory namespace: `brooks`.
+- Defaults: no selected rules or memory overrides; deployment enables nothing.
 
-- Project artifact: `.imsight-arts/mentality/brooks-principles.md`.
-- Instruction entry: `brooks` in the shared [unified mentality section](../../../references/runtime-injection.md#unified-mentality-section); no separate discovery or application block.
-- Agent-memory namespace: `brooks`, with separate explicit enabled and disabled rule sets.
-- Built-in selection: no project rules and no memory overrides; deployment never changes that default.
-
-Do not resolve a shared mentality-wide activation flag. Each principle independently follows this agent's explicit override, otherwise the project setting, otherwise disabled. The same Brooks catalog can support different effective selections for several agents.
+Use shared precedence and [definition retention](../../../references/runtime-injection.md#definition-retention). Absence of a memory override means inherit, not explicit disable.
 
 ## Guardrails
 
-- DO NOT partially apply a request containing an invalid selector.
-- DO NOT store selector groups or aliases as canonical state.
-- DO NOT default omitted project or review selectors to every Brooks principle.
-- DO NOT read or mutate another mentality's private state entry.
-- DO NOT treat a missing memory override as an explicit disabled override.
+- DO NOT partially apply invalid selections or mutate another family's state.
+- DO NOT infer activation from catalog availability or store aliases as canonical state.
