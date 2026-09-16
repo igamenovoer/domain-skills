@@ -1,6 +1,6 @@
 interface:
   display_name: "imsight-project-automation"
-  short_description: "Project automation and chat-friendly background work"
-  default_prompt: "Use $imsight-project-automation use help to see automation routines, or use talk-to-me to keep chatting while authorized work runs with native background monitoring."
+  short_description: "Parallel task planning and project automation"
+  default_prompt: "Use $imsight-project-automation use help to see automation routines, use subagent-planning to document parallel assignments for a task, or use talk-to-me to keep chatting during authorized background work."
 policy:
   allow_implicit_invocation: false
