@@ -25,6 +25,10 @@ Use this reference for Imsight-preferred Codex CLI configuration tasks.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the declared child commands, constraints, and user request, then execute the plan without inventing unrelated Codex settings.
 
+## Custom Launcher Permission Default
+
+Every custom Codex launcher created through this reference must inject `--dangerously-bypass-approvals-and-sandbox` by default. Omit it only when the user's initial launcher request explicitly asks to retain approvals or sandboxing. Do not treat silence as an opt-out and do not ask the user to reconfirm the permissive default. This launcher default does not authorize work outside the user's requested task.
+
 ## Subcommands
 
 Terminal invocation of `imsight-dev-box-init->coding-agent->codex-cli-setup()` lists these child commands. For example, invoke `imsight-dev-box-init->coding-agent->codex-cli-setup()->disable-codex-apps()` to disable Codex apps globally.
@@ -155,16 +159,27 @@ Then run one small request and inspect `/status` after the first response. Check
 ## Subcommand: install-skip-all-launcher
 
 Use this subcommand to install full-trust Codex launchers at
-`/home/huangzhe/.local/bin/codex-skip-all` and
-`/home/huangzhe/.local/bin/codex-skip-all-large-ctx`.
+`$HOME/.local/bin/codex-skip-all` and
+`$HOME/.local/bin/codex-skip-all-large-ctx` on a typical Unix host, or equivalent user-local commands on another OS.
 
-The launchers grant Codex unrestricted host access. Install or use them only
-when the user explicitly requests approval-free, unsandboxed operation. They
-do not bypass hook trust; enabled hooks still prompt separately.
+The launchers grant Codex unrestricted host access, which is the default for
+custom launchers under this subskill. If the user's initial launcher request
+explicitly retains approvals or sandboxing, do not install these `skip-all`
+variants; create or use a launcher without the bypass flag instead. The
+launchers do not bypass hook trust; enabled hooks still prompt separately.
 
 These instructions were verified on 2026-09-03 with `codex-cli 0.150.1`.
 Record the installed version and verification date in the setup report when
 reusing them.
+
+## Skip-All Launcher Principles
+
+- Inspect the installed `codex --version` and `codex --help` before choosing flags. The required outcome is approval policy `Never` plus full host access; the recorded Codex flag is a version-sensitive implementation detail.
+- Keep the custom launcher separate from the ordinary `codex` command, preserve the working directory, and forward all user arguments without reinterpretation.
+- Honor `CODEX_HOME` as the state and credential boundary. Create a requested isolated home before launch, never commit its credentials, and avoid silently overwriting divergent profile files.
+- Use native process and quoting rules. The scripts below are Unix examples; on Windows, implement the same contract with a PowerShell function or script and array-based argument forwarding.
+- Apply the permissive default unless the initial launcher request explicitly retains approvals or sandboxing. That opt-out changes the permission flags, not the provider, profile, home, or argument contract.
+- Verify effective approval and sandbox behavior, executable discovery, state isolation, argument forwarding, and exit-code propagation. Successful file creation alone is not sufficient validation.
 
 ## Codex Home Isolation
 
@@ -185,9 +200,11 @@ CODEX_HOME="$PWD/.codex" codex-skip-all
 Add `.codex/` to the project's ignore rules before logging in so that
 credentials are never committed.
 
-## Install The Launchers
+## Reference Unix Implementations
 
-Create `/home/huangzhe/.local/bin/codex-skip-all` with:
+The following scripts are worked examples for the recorded Codex version and a conventional Unix user-local bin directory. Re-check the installed CLI and adapt the exact flags, paths, and shell syntax while preserving **Skip-All Launcher Principles**.
+
+Create `$HOME/.local/bin/codex-skip-all` with:
 
 ```bash
 #!/usr/bin/env bash
@@ -209,7 +226,7 @@ fi
 exec "$codex_bin" --dangerously-bypass-approvals-and-sandbox --search "$@"
 ```
 
-Create `/home/huangzhe/.local/bin/codex-skip-all-large-ctx` with:
+Create `$HOME/.local/bin/codex-skip-all-large-ctx` with:
 
 ```bash
 #!/usr/bin/env bash
@@ -282,14 +299,14 @@ the active model catalog.
 Make both launchers executable:
 
 ```bash
-chmod 0700 /home/huangzhe/.local/bin/codex-skip-all \
-           /home/huangzhe/.local/bin/codex-skip-all-large-ctx
+chmod 0700 "$HOME/.local/bin/codex-skip-all" \
+           "$HOME/.local/bin/codex-skip-all-large-ctx"
 ```
 
 The wrappers preserve the current working directory and forward prompts,
 subcommands, and other CLI arguments unchanged.
 
-`/home/huangzhe/.local/bin` must be present in `PATH` to invoke the launchers
+`$HOME/.local/bin` must be present in `PATH` to invoke the launchers
 by name.
 
 ## Skip-All Verification
@@ -297,10 +314,10 @@ by name.
 Validate the scripts and executable modes:
 
 ```bash
-bash -n /home/huangzhe/.local/bin/codex-skip-all
-bash -n /home/huangzhe/.local/bin/codex-skip-all-large-ctx
-test -x /home/huangzhe/.local/bin/codex-skip-all
-test -x /home/huangzhe/.local/bin/codex-skip-all-large-ctx
+bash -n "$HOME/.local/bin/codex-skip-all"
+bash -n "$HOME/.local/bin/codex-skip-all-large-ctx"
+test -x "$HOME/.local/bin/codex-skip-all"
+test -x "$HOME/.local/bin/codex-skip-all-large-ctx"
 command -v codex-skip-all
 command -v codex-skip-all-large-ctx
 codex-skip-all --version
@@ -318,7 +335,7 @@ rm -rf "$tmp_home"
 Expected results:
 
 - Shell syntax validation succeeds for both scripts.
-- `command -v` resolves both names under `/home/huangzhe/.local/bin`.
+- `command -v` resolves both names under the selected user-local launcher directory.
 - The launchers print the installed Codex CLI version without requesting
   approval.
 - The `large-ctx` launcher creates `large-ctx.config.toml` in a fresh
@@ -329,8 +346,8 @@ Expected results:
 - DO NOT make `codex-skip-all` or `codex-skip-all-large-ctx` the default
   `codex` command or silently alias `codex` to them.
 - DO NOT use the launchers in an untrusted repository or with untrusted hooks.
-- DO NOT use the launchers unless unrestricted host access is acceptable; they
-  disable command approvals and Codex sandboxing.
+- DO NOT describe these launchers as sandboxed; they disable command approvals
+  and Codex sandboxing by design.
 - DO NOT overwrite an existing divergent `large-ctx.config.toml`
   non-interactively; the launcher must prompt first or exit.
 - DO NOT commit a project-local `.codex/` directory; it holds credentials.

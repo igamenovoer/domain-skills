@@ -18,11 +18,11 @@ Use this reference when the user wants a local `claude-openlux` launcher that ru
 
 ## Workflow
 
-1. Resolve API-key handling under **Required Input** without printing the key.
-2. Resolve the launcher's name, paths, and endpoint under **Defaults**.
-3. Create the launcher from the template in **Create The Launcher**, preserving **Runtime Argument Contract**.
-4. Put the launcher directory on PATH for new shells, following the PATH section in `claude-kimi-launcher.md`.
-5. Run every applicable check in **Verification**.
+1. Identify the installed Claude Code version, host OS and shell, current OpenLux API guidance, and whether the initial request opts out of permissive mode.
+2. Resolve API-key handling under **Required Input** without printing the key, then establish the endpoint, authentication lane, model-discovery behavior, and credential placement.
+3. Implement the launcher from **Launcher Design Principles** and **Runtime Argument Contract**. Treat the inline script as a Unix reference implementation rather than mandatory machinery.
+4. Put the launcher directory on PATH for new shells using the host's native startup mechanism.
+5. Run **Verification**, including redaction-safe inspection, argument and permission checks, and a relay model check.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's inputs, defaults, launcher contract, verification rules, and user constraints, then execute the plan without exposing credentials.
 
@@ -36,6 +36,14 @@ Please provide your OpenLux API key for the shared OpenLux launcher key file, or
 
 The generated launcher must not hard-code the API key. It reads the shared key file directly at runtime and assigns `ANTHROPIC_AUTH_TOKEN` for the launched Claude process only. Embed the key in the launcher script itself only when the user explicitly requests that layout; in that case the launcher file must be `chmod 700` and must never be committed or shared.
 
+## Launcher Design Principles
+
+- Treat Claude Code, OpenLux, and the host shell as separate compatibility surfaces. Re-check current Claude flags and environment variables, OpenLux's endpoint and authentication requirements, and the host's executable-resolution rules before implementation.
+- Scope OpenLux variables to the launched Claude process and clear conflicting auth and model variables so ambient configuration cannot select another provider.
+- Keep the relay's advertised model catalog authoritative; do not hard-code model mappings merely because an older example did.
+- Use native process semantics: a Unix wrapper can export then `exec`; a Windows implementation should use PowerShell-native argument arrays and restore any caller environment it mutates.
+- Apply the shared permissive default, forward caller arguments exactly, preserve the exit code, and verify the effective endpoint and model catalog.
+
 ## Defaults
 
 - Unix launcher path: `$HOME/.local/bin/claude-openlux`. Omit provider pricing or discount suffixes (such as token-group names like `0.5x`) from launcher and key-file names by default; they encode the provider's billing tiers, go stale when the plan changes, and leak account details into shell history. Add a suffix only when the user explicitly runs several OpenLux keys side by side, and then choose a neutral descriptor such as `claude-openlux-b` rather than the provider's group name.
@@ -47,11 +55,11 @@ The generated launcher must not hard-code the API key. It reads the shared key f
 - `DISABLE_AUTOUPDATER=1`, overridable by the caller. Claude Code's background auto-updater reinstalls the npm package mid-session; an interrupted install leaves the placeholder `claude` shim behind and breaks every launcher on the box (see **Notes**). Updates become deliberate: `npm update -g @anthropic-ai/claude-code`.
 - Official OpenLux Claude Code tutorial: `https://doc.openlux.ai/tutorials/plugins-7010249`.
 
-Imsight's local launcher runs Claude Code with `--dangerously-skip-permissions` by default.
+Imsight's local launcher runs Claude Code with `--dangerously-skip-permissions` by default. If the user's initial launcher request explicitly opts into permission prompts, omit that flag from the final `exec` line; do not infer an opt-out from silence or ask the user to reconfirm the default.
 
-## Create The Launcher
+## Reference Unix Implementation
 
-Resolve `<coding-agent-subskill-dir>` to the `subskills/coding-agent/` directory whose `references/` folder contains this page. Write the following template to the resolved launcher path and `chmod 700` the result:
+The following Bash template illustrates the current contract. Compare it with the installed Claude Code version and current OpenLux documentation before using it. Adapt executable discovery, paths, or OS-specific process handling as needed; do not discard the principles above merely because this exact script stops matching a future version. Write an adapted Unix launcher to the selected launcher path and `chmod 700` the result:
 
 ```bash
 #!/usr/bin/env bash
@@ -131,11 +139,11 @@ fi
 exec "$claude_bin" --dangerously-skip-permissions "$@"
 ```
 
-The candidate loop covers nvm, bun, and `~/.local/bin` installs before falling back to `command -v claude`, so prefer the most specific install over an ambient one.
+The example candidate loop covers nvm, bun, and `~/.local/bin` installs before falling back to `command -v claude`. Change that discovery order when the actual installation or OS differs.
 
 ## Runtime Argument Contract
 
-`claude-openlux` runtime arguments are Claude Code arguments. The launcher passes every argument through unchanged and injects no `--model` default; model selection is left to the relay unless the caller passes `--model` explicitly. It must not consume, rename, reorder, or reinterpret underlying Claude CLI arguments.
+`claude-openlux` runtime arguments are Claude Code arguments. The launcher prepends `--dangerously-skip-permissions` by default, passes every user-supplied argument through unchanged, and injects no `--model` default; model selection is left to the relay unless the caller passes `--model` explicitly. An explicit permission-prompting opt-out changes only the final `exec` line to `exec "$claude_bin" "$@"`.
 
 ## Verification
 
@@ -164,7 +172,7 @@ curl -s --max-time 20 https://api.openlux.ai/v1/models \
   | python3 -c "import json,sys; ids=[m['id'] for m in json.load(sys.stdin)['data']]; print('\n'.join(ids)); assert ids and all(i.startswith('claude-') for i in ids), 'relay exposes non-official model ids'"
 ```
 
-Inside Claude Code, `/status` should show Base URL `https://api.openlux.ai`, and the `/model` picker should list official names such as Opus and Fable 5 rather than upstream ids. The generated launcher must still invoke `claude` with `--dangerously-skip-permissions`.
+Inside Claude Code, `/status` should show Base URL `https://api.openlux.ai`, and the `/model` picker should list official names such as Opus and Fable 5 rather than upstream ids. The default launcher must invoke `claude` with `--dangerously-skip-permissions`; an explicit permission-prompting opt-out must omit it.
 
 ## Notes
 
@@ -182,4 +190,4 @@ Inside Claude Code, `/status` should show Base URL `https://api.openlux.ai`, and
 - DO NOT print, hard-code, or echo the OpenLux API key in commands, responses, or the generated launcher, except inside the launcher file itself when the user explicitly requests an embedded key with `chmod 700`.
 - DO NOT name generated launchers or key files after OpenLux pricing, discount, or token-group names (such as `0.5x`) unless the user explicitly asks for that name.
 - DO NOT pin model names or export `ANTHROPIC_DEFAULT_*_MODEL` variables in the generated launcher.
-- DO NOT remove the `--dangerously-skip-permissions` flag from the generated launcher unless the user explicitly asks for a permission-prompting launcher.
+- DO NOT remove the `--dangerously-skip-permissions` flag from the generated launcher unless the user's initial launcher request explicitly asks for permission prompts.

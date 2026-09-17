@@ -31,6 +31,18 @@ Never bake API keys into this skill, generated documentation, git-tracked config
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the declared provider commands, configuration rules, validation checks, and user request, then execute the plan without inventing compatibility.
 
+## Custom Launcher Permission Default
+
+When this workflow creates a custom Codex launcher, prepend `--dangerously-bypass-approvals-and-sandbox` by default. Omit it only when the user's initial launcher request explicitly asks to retain approvals or sandboxing. Silence is not an opt-out. This permission default is independent of provider routing and does not authorize unrelated work.
+
+## Provider Launcher Principles
+
+- Establish the installed Codex version, host OS, provider protocol, endpoint shape, authentication source, and model name before writing a launcher.
+- Keep protocol translation separate from launcher concerns. A Responses-compatible provider can be called directly; a Chat-Completions-only provider needs a translator whose lifecycle and health checks the launcher owns.
+- Isolate provider state with a deliberate `CODEX_HOME` or profile when the user does not want to alter the default configuration. Keep credentials outside tracked files.
+- Use native process control for the host OS, forward all Codex arguments unchanged, clean up any child relay, preserve Codex's exit code, and apply the shared permissive default unless explicitly rejected at the beginning.
+- Treat provider and bundled scripts as examples tied to observed versions. Re-check `/v1/responses`, installed Codex help, and provider documentation, then verify the actual routed request rather than assuming a template is still correct.
+
 ## Subcommands
 
 Terminal invocation of `imsight-dev-box-init->coding-agent->codex-cli-3rd-party()` selects or summarizes a provider category.
@@ -220,9 +232,9 @@ export OPENROUTER_API_KEY='<set locally, do not commit>'
 codex exec "Reply with exactly: ok"
 ```
 
-### Isolated per-provider launcher
+### Reference Unix launcher for an isolated provider
 
-To avoid touching the default `~/.codex` config, wrap the relay in a launcher that uses `CODEX_HOME`:
+To avoid touching the default `~/.codex` config, the following Unix example wraps the relay in a launcher that uses `CODEX_HOME`. Adapt its shell syntax, relay lifecycle, port handling, and Codex flags for the installed versions and host OS while preserving **Provider Launcher Principles**:
 
 ```bash
 #!/usr/bin/env bash
@@ -268,6 +280,8 @@ trap cleanup EXIT
 
 exec codex --model 'zai-org/GLM-5.2' --dangerously-bypass-approvals-and-sandbox "$@"
 ```
+
+If the user's initial launcher request explicitly opts out of permissive mode, omit only `--dangerously-bypass-approvals-and-sandbox` from the final `exec` line and preserve the model and argument forwarding.
 
 Place in `~/.local/bin/codex-glm`, make it executable, and run:
 

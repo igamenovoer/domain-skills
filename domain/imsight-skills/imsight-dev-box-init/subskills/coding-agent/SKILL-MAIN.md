@@ -42,7 +42,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | `codex-cli-setup` | Configure Imsight-preferred Codex CLI behavior. | `references/codex-cli-setup.md` |
 | `codex-cli-3rd-party` | Configure Codex CLI for third-party OpenAI-compatible APIs. | `references/codex-cli-3rd-party.md` |
 | `claude-kimi-launcher` | Create or repair a Claude Code launcher backed by Kimi, including Coding Plan thinking effort. | `references/claude-kimi-launcher.md` |
-| `claude-gac-launcher` | Create or repair a Linux shell or Windows PowerShell launcher backed by GAC without changing Claude Code JSON settings. | `references/claude-gac-launcher.md` |
+| `claude-gac-launcher` | Create or repair a Linux or Windows GAC launcher with the endpoint and provided key embedded, without Claude JSON changes or sibling-provider conventions. | `references/claude-gac-launcher.md` |
 | `claude-openlux-launcher` | Create or repair a Claude Code launcher backed by the OpenLux relay, replacing the retired Yunwu relay. | `references/claude-openlux-launcher.md` |
 | `kimi-multi-credential` | Create Kimi Code CLI launchers named `kimi-<suffix>`, each with an isolated OAuth credential home and `--auto` startup default unless no-auto mode is explicitly requested. | `references/kimi-multi-credential.md` |
 | `help` | Explain this subskill and list its commands. | This entrypoint |
@@ -51,8 +51,31 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 This subskill owns its Codex, Claude-Kimi, Claude-GAC, Claude-OpenLux, and Kimi multi-credential references, the cross-platform Claude-Kimi and Claude-GAC launcher generators, and the Unix Kimi Code credential launcher generator under `scripts/`.
 
+## Custom Launcher Permission Policy
+
+Apply this policy to every custom launcher created or repaired by this subskill, including future agent CLIs:
+
+- Default to the target CLI's most permissive documented execution mode. For the launchers currently covered here, that means `--dangerously-skip-permissions` for Claude Code, `--dangerously-bypass-approvals-and-sandbox` for Codex CLI, and `--auto` for Kimi Code CLI.
+- Treat permission prompts, approvals, or sandboxing as an opt-out. Use the less-permissive path only when the user's initial launcher request explicitly rejects the permissive mode. Silence is not an opt-out, and the agent must not ask the user to reconfirm the default.
+- When the user opts out at the beginning, use the target launcher generator's permission-prompting option or omit the permissive flag from a hand-written launcher. Preserve that choice when repairing or regenerating the launcher.
+- For a future agent CLI, inspect its current help or authoritative documentation and use its strongest supported approval-free or sandbox-bypass launcher option. Do not copy another CLI's flag by name when the target CLI does not support it.
+- Report which permission mode the launcher uses. A permissive launcher changes the launched agent's runtime behavior; it does not expand the scope of the setup task or authorize unrelated changes.
+
+## Launcher Guide Authoring Contract
+
+Write and apply custom-launcher guidance principle-first:
+
+1. State the stable runtime contract before showing commands: target agent CLI, provider endpoint and authentication lane, credential placement, environment isolation, permission mode, executable discovery, argument forwarding, and exit-code behavior.
+2. Separate durable principles from version-sensitive details such as CLI flags, model names, endpoint quirks, config keys, and install paths. Re-check the installed CLI's version and help plus the provider's current authoritative documentation before implementing those details.
+3. Choose an OS-native implementation: Bash or another native shell on Linux/macOS, and PowerShell functions or scripts on Windows. Preserve the caller's environment when an in-process function temporarily changes variables.
+4. Present bundled generators, vendor snippets, and inline templates as reference implementations. Use them unchanged only when their recorded assumptions match the current CLI version, provider behavior, OS, and user request; otherwise adapt the implementation while preserving the stated contract.
+5. Verify observable behavior rather than merely confirming that a helper script ran: inspect the generated launcher safely, exercise argument forwarding and exit codes, and confirm the active endpoint, auth lane, model discovery, and permission mode.
+
+Do not reduce a launcher guide to “run this script.” The guide must remain usable when the example script, CLI, operating system, or provider API changes.
+
 ## Guardrails
 
 - DO NOT expose API keys while configuring a provider or launcher.
 - DO NOT overwrite unrelated Codex or Claude Code settings.
 - DO NOT bypass a selected reference's compatibility checks.
+- DO NOT silently generate a permission-prompting or sandboxed custom launcher when the initial request did not explicitly opt out of permissive mode.

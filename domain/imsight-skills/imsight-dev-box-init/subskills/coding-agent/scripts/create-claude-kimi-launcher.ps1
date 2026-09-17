@@ -11,7 +11,8 @@ param(
     [string]$ModelFable = "",
     [string]$ModelSubagent = "",
     [string]$CompactWindow = "",
-    [string]$ClaudeBin = ""
+    [string]$ClaudeBin = "",
+    [switch]$RequirePermissionPrompts
 )
 
 Set-StrictMode -Version Latest
@@ -95,6 +96,7 @@ $modelHaikuLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ModelHaiku
 $modelFableLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ModelFable
 $modelSubagentLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ModelSubagent
 $claudeBinLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ClaudeBin
+$permissionArgumentsLiteral = if ($RequirePermissionPrompts) { '@()' } else { "@('--dangerously-skip-permissions')" }
 
 if ($useApiKeyAuth) {
     $authBlock = @"
@@ -217,6 +219,7 @@ if ([string]::IsNullOrWhiteSpace(`$claudeBin)) {
 }
 
 `$addModel = `$true
+`$defaultPermissionArguments = $permissionArgumentsLiteral
 foreach (`$arg in `$args) {
     # Runtime args belong to Claude Code. The launcher only observes them to avoid
     # injecting duplicate defaults; it must not consume or reinterpret Claude flags.
@@ -226,9 +229,9 @@ foreach (`$arg in `$args) {
 }
 
 if (`$addModel) {
-    & `$claudeBin --dangerously-skip-permissions --model `$kimiModel @args
+    & `$claudeBin @defaultPermissionArguments --model `$kimiModel @args
 } else {
-    & `$claudeBin --dangerously-skip-permissions @args
+    & `$claudeBin @defaultPermissionArguments @args
 }
 exit `$LASTEXITCODE
 "@
@@ -236,6 +239,13 @@ exit `$LASTEXITCODE
 $outputDir = Split-Path -Parent $OutputPath
 New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
 Set-Content -LiteralPath $OutputPath -Value $launcher -Encoding UTF8
+
+if ($RequirePermissionPrompts) {
+    Write-Host 'permission mode: prompts enabled (explicit opt-out)'
+}
+else {
+    Write-Host 'permission mode: --dangerously-skip-permissions (default)'
+}
 
 if (-not [string]::IsNullOrWhiteSpace($ApiKey)) {
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $KeyFilePath) | Out-Null

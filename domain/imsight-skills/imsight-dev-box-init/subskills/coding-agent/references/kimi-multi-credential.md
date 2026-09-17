@@ -6,18 +6,27 @@ Use this reference when the user wants one or more Kimi Code CLI launchers named
 
 1. Resolve the launcher name and data home under **Required Input**.
 2. Check the installed `kimi` binary under **Prerequisite: Kimi Code CLI**.
-3. Generate the launcher with the bundled script under **Create The Launcher**, applying **Defaults** for any value the user did not specify and disabling auto mode only when the user explicitly requests it.
+3. Implement the launcher from **Launcher Contract**, applying **Defaults** for unspecified values and disabling auto mode only when the initial request explicitly opts out. Use the bundled script as a Unix reference implementation when its assumptions match.
 4. Put the launcher directory on PATH for new shells under **Ensure Launcher Directory On PATH**; skipping this leaves `kimi-<suffix>` unresolvable in fresh terminals.
 5. Trigger the OAuth device-code login under **OAuth Login** when the user wants the new credential authorized now.
 6. Run every applicable check in **Verification**.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's inputs, defaults, launcher contract, verification rules, and user constraints, then execute the plan without exposing credentials.
 
+## Launcher Contract
+
+- Give each launcher one stable name and one isolated `KIMI_CODE_HOME`; sharing a home means intentionally sharing credentials, configuration, sessions, and logs.
+- Resolve the installed Kimi executable without recursively selecting the wrapper itself. Adapt the search order to the host's installation method and OS.
+- Prepend Kimi's current most-permissive supported mode by default (`--auto` for the documented version), unless the initial request explicitly opts out, then forward all caller arguments unchanged.
+- Keep login interactive and scoped to the isolated home. Creating a launcher must not silently copy or authorize credentials.
+- Use an OS-native launcher and path-registration mechanism. The bundled script is a Bash example; a Windows implementation should express the same home isolation, argument-array forwarding, and exit-code behavior in PowerShell.
+- Verify isolation, executable resolution in a fresh shell, permission mode, argument forwarding, and post-login credential location.
+
 ## Required Input
 
 - Launcher name: `kimi-<suffix>`, where `<suffix>` is lowercase letters, digits, or hyphens and identifies the credential slot (for example a port-like tag such as `3180`). Ask the user when no suffix is given.
 - Data home: the directory the launcher's `KIMI_CODE_HOME` points to. The user may specify it explicitly; otherwise apply **Defaults**.
-- Startup mode: auto mode unless the user explicitly asks for no-auto mode.
+- Startup mode: permissive `--auto` mode unless the user's initial launcher request explicitly asks for no-auto mode.
 
 ```text
 Please provide the launcher suffix (kimi-<suffix>) and, optionally, a custom data home directory.
@@ -38,14 +47,14 @@ At runtime the generated launcher resolves the binary in this order: the `--kimi
 - Launcher path: `$HOME/.local/bin/kimi-<suffix>`
 - Data home: `$HOME/kimi-homes/kimi-<suffix>` — the home directory name matches the launcher name, so each launcher owns exactly one isolated home
 - Runtime home override: `KIMI_HOME_OVERRIDE` environment variable, honored by the generated launcher ahead of its baked-in default
-- Startup arguments: `--auto` is prepended by default so Kimi starts in Never Ask mode
+- Startup arguments: `--auto` is prepended by default so Kimi starts in Never Ask mode; `--no-auto` is a generation-time opt-out used only when the initial request explicitly rejects permissive mode
 - Auth: Kimi Code OAuth via the device-code flow (`kimi login`); the credential lands in the isolated home, not in `~/.kimi-code`
 
 `KIMI_CODE_HOME` relocates the config file, sessions, logs, and OAuth credentials. Multiple `kimi` instances sharing one home share config and credentials, so give each launcher its own home unless the user explicitly wants shared state. See the official environment-variable docs: `https://www.kimi.com/code/docs/en/kimi-code-cli/configuration/env-vars.html`.
 
-## Create The Launcher
+## Reference Unix Implementation
 
-Use the bundled script from this subskill. Resolve `<coding-agent-subskill-dir>` to the `subskills/coding-agent/` directory whose `references/` folder contains this page.
+The bundled script demonstrates the contract for the currently documented Kimi Code CLI on Unix. Resolve `<coding-agent-subskill-dir>` to the `subskills/coding-agent/` directory whose `references/` folder contains this page. Inspect the script and current `kimi --help`; run it unchanged only when its flags, paths, and executable-discovery assumptions match the host. Otherwise adapt the implementation and preserve the contract above.
 
 ```bash
 <coding-agent-subskill-dir>/scripts/create-kimi-credential-launcher.sh --name kimi-<suffix>
@@ -58,9 +67,9 @@ With a user-specified home or output directory:
   --name kimi-<suffix> --home /path/to/custom/home --output "$HOME/.local/bin"
 ```
 
-The script also accepts `--kimi-bin` to pin a specific `kimi` binary. If the installed skill copy lost the script's execute bit, invoke it through the interpreter: `bash <coding-agent-subskill-dir>/scripts/create-kimi-credential-launcher.sh ...`.
+The example script also accepts `--kimi-bin` to pin a specific `kimi` binary. If the installed skill copy lost the script's execute bit, invoke the example through the interpreter: `bash <coding-agent-subskill-dir>/scripts/create-kimi-credential-launcher.sh ...`.
 
-When the user explicitly requests no-auto mode, generate the launcher with `--no-auto`:
+When the user's initial launcher request explicitly requests no-auto mode, generate the launcher with `--no-auto`:
 
 ```bash
 <coding-agent-subskill-dir>/scripts/create-kimi-credential-launcher.sh \
@@ -120,7 +129,7 @@ The launcher's home must differ from `~/.kimi-code` and from every other generat
 ## Notes
 
 - This launcher is for Kimi Code CLI's own OAuth identity. For Claude Code backed by Kimi keys, use `claude-kimi-launcher` instead.
-- Keep launcher generator scripts in `<coding-agent-subskill-dir>/scripts/`; do not place generated helper scripts in `references/`.
+- Keep reference launcher implementations in `<coding-agent-subskill-dir>/scripts/`; keep the durable launcher contract in this reference.
 - Launcher runtime arguments are Kimi Code CLI arguments. The generated launcher prepends its generation-time default (`--auto` or no default arguments), then passes every runtime argument through unchanged; it must not consume, rename, reorder, or reinterpret `kimi` flags.
 - Existing sessions, skills, and config under `~/.kimi-code` are not copied into a new home; migrate intentionally when the user wants a slot seeded from the default home.
 
@@ -129,4 +138,5 @@ The launcher's home must differ from `~/.kimi-code` and from every other generat
 - DO NOT print, hard-code, or commit OAuth tokens or credential file contents handled by this workflow.
 - DO NOT point two launchers at the same data home unless the user explicitly asks for shared state.
 - DO NOT overwrite or reuse the default `~/.kimi-code` home for a generated launcher.
-- DO NOT add launcher-specific runtime flags that collide with `kimi`'s own CLI flags; select no-auto behavior with the generator's `--no-auto` option.
+- DO NOT omit the default `--auto` mode unless the user's initial launcher request explicitly opts out; select no-auto behavior with the generator's `--no-auto` option.
+- DO NOT add launcher-specific runtime flags that collide with `kimi`'s own CLI flags.

@@ -33,6 +33,8 @@ Options:
                      startup model (262144 for K2-series, kimi-for-coding, and
                      coding-plan k3; 1048576 otherwise).
   --claude-bin PATH  Optional fixed Claude Code executable path.
+  --require-permission-prompts
+                     Do not inject --dangerously-skip-permissions.
   -h, --help         Show this help.
 EOF
 }
@@ -49,6 +51,7 @@ model_fable=""
 model_subagent=""
 compact_window=""
 claude_bin=""
+permissive=1
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -146,6 +149,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --claude-bin=*)
       claude_bin="${1#*=}"
+      shift
+      ;;
+    --require-permission-prompts)
+      permissive=0
       shift
       ;;
     -h|--help)
@@ -254,6 +261,10 @@ model_fable_q="$(shell_quote "$model_fable")"
 model_subagent_q="$(shell_quote "$model_subagent")"
 claude_bin_q="$(shell_quote "$claude_bin")"
 key_file_q="$(shell_quote "$key_file")"
+permission_args_line='permission_args=(--dangerously-skip-permissions)'
+if [[ "$permissive" -eq 0 ]]; then
+  permission_args_line='permission_args=()'
+fi
 
 mkdir -p "$output_dir"
 umask 077
@@ -350,6 +361,7 @@ if [[ -z "\$claude_bin" ]]; then
 fi
 
 add_model=1
+$permission_args_line
 for arg in "\$@"; do
   # Runtime args belong to Claude Code. The launcher only observes them to avoid
   # injecting duplicate defaults; it must not consume or reinterpret Claude flags.
@@ -361,11 +373,16 @@ for arg in "\$@"; do
 done
 
 if [[ "\$add_model" -eq 1 ]]; then
-  exec "\$claude_bin" --dangerously-skip-permissions --model "\$KIMI_MODEL" "\$@"
+  exec "\$claude_bin" "\${permission_args[@]}" --model "\$KIMI_MODEL" "\$@"
 fi
-exec "\$claude_bin" --dangerously-skip-permissions "\$@"
+exec "\$claude_bin" "\${permission_args[@]}" "\$@"
 SH
 
 chmod 700 "$output"
 echo "created $output"
 echo "key file: $key_file"
+if [[ "$permissive" -eq 1 ]]; then
+  echo 'permission mode: --dangerously-skip-permissions (default)'
+else
+  echo 'permission mode: prompts enabled (explicit opt-out)'
+fi
