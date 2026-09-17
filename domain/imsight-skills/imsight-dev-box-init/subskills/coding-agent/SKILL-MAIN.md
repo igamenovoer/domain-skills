@@ -41,8 +41,8 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | --- | --- | --- |
 | `codex-cli-setup` | Configure Imsight-preferred Codex CLI behavior. | `references/codex-cli-setup.md` |
 | `codex-cli-3rd-party` | Configure Codex CLI for third-party OpenAI-compatible APIs. | `references/codex-cli-3rd-party.md` |
-| `codex-gac-launcher` | Create or repair `codex-gac` or `codex-gac-<suffix>` with a dedicated GAC profile and embedded key while leaving plain `codex` official. | `references/codex-gac-launcher.md` |
-| `codex-openlux-launcher` | Create or repair `codex-openlux` or `codex-openlux-<suffix>` with a dedicated OpenLux profile and embedded key while leaving plain `codex` official. | `references/codex-openlux-launcher.md` |
+| `codex-gac-launcher` | Create or repair `codex-gac` or `codex-gac-<suffix>` with a separate GAC profile in the normal Codex home and an embedded key while leaving plain `codex` official. | `references/codex-gac-launcher.md` |
+| `codex-openlux-launcher` | Create or repair `codex-openlux` or `codex-openlux-<suffix>` with a separate OpenLux profile in the normal Codex home and an embedded key while leaving plain `codex` official. | `references/codex-openlux-launcher.md` |
 | `claude-kimi-launcher` | Create or repair `claude-kimi` or `claude-kimi-<suffix>`, including Kimi Coding Plan thinking effort. | `references/claude-kimi-launcher.md` |
 | `claude-gac-launcher` | Create or repair `claude-gac` or `claude-gac-<suffix>` with the endpoint and key embedded, without Claude JSON changes. | `references/claude-gac-launcher.md` |
 | `claude-openlux-launcher` | Create or repair `claude-openlux` or `claude-openlux-<suffix>`, replacing the retired Yunwu relay. | `references/claude-openlux-launcher.md` |
@@ -68,15 +68,17 @@ Apply this policy before creating, repairing, or regenerating every custom launc
 
 Reading existing files is allowed during inspection. Keep credentials out of command arguments and logs, and do not retain disposable test state after the compatibility decision.
 
-## Codex Third-Party Launcher Isolation
+## Codex Third-Party Profile Coexistence
 
 Apply these additional invariants whenever a custom Codex launcher must preserve plain `codex` as the official route:
 
-- Give the launcher a fixed, launcher-owned `CODEX_HOME`; do not put its provider profile in the ordinary Codex home and do not honor an ambient caller `CODEX_HOME` at runtime. The dedicated home must not contain a copied `auth.json` or official ChatGPT/OpenAI login state.
-- Make the isolated client test use the same auth-free home shape that the persistent launcher will use. Confirm both the agent turn and any background model-catalog request authenticate correctly; a successful turn does not excuse repeated `401` or `403` catalog refreshes.
+- Default to the user's normal `CODEX_HOME` (normally `~/.codex`). Put the provider in a separate `$CODEX_HOME/<profile-name>.config.toml` file and select it with `--profile <profile-name>`. Do not set or replace `CODEX_HOME` in the launcher merely to separate endpoint credentials.
+- Leave `config.toml`, `auth.json`, and the configured credential store unchanged. A custom provider that uses `env_key` with `requires_openai_auth = false` can coexist with cached ChatGPT/OpenAI authentication; plain `codex` keeps its normal provider while the custom launcher selects the provider profile.
+- Test the target Codex client through the same shared-home profile topology intended for persistence. A uniquely named temporary profile may be created and removed for the test when the installed CLI requires a file. Confirm the custom turn, background requests, plain-Codex configuration, and cached OAuth state remain correct.
+- Use a separate `CODEX_HOME` only as an explicit compatibility fallback after the installed target client reproducibly fails with the shared profile because of a state or authentication collision and succeeds with a clean home. Report that `CODEX_HOME` also isolates config, sessions, logs, skills, and package metadata, and obtain the user's choice before adopting that broader isolation.
 - When the installed Codex version needs an explicit header for background provider discovery, use the documented `env_http_headers` mapping with a separate process-scoped environment variable containing the complete header value. Keep `env_key` for ordinary provider authentication and never put the credential in TOML.
 - Preserve Codex's documented retry defaults unless current provider evidence justifies an override. Do not lower retries merely to make an example shorter, and do not respond to throttling with repeated launcher invocations that create another request burst.
-- Treat every provider-key replacement as a new compatibility run: repeat the isolated target-Codex test before updating the persistent launcher or its pinned model.
+- Treat every provider-key replacement as a new compatibility run: repeat the shared-home target-Codex test before updating the persistent launcher or its pinned model.
 
 ## Custom Launcher Permission Policy
 

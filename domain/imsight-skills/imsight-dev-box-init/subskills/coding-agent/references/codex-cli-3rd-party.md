@@ -20,14 +20,14 @@ Current Codex configuration supports the OpenAI **Responses** wire protocol (`/v
 
 There are two generic provider categories. Find your provider in the routing table below and follow the matching procedure.
 
-GAC and OpenLux have dedicated profile-and-launcher contracts. Invoke `imsight-dev-box-init->coding-agent->codex-gac-launcher()` for GAC or `imsight-dev-box-init->coding-agent->codex-openlux-launcher()` for OpenLux instead of adapting the generic examples on this page.
+GAC and OpenLux have provider-specific profile-and-launcher contracts. Invoke `imsight-dev-box-init->coding-agent->codex-gac-launcher()` for GAC or `imsight-dev-box-init->coding-agent->codex-openlux-launcher()` for OpenLux instead of adapting the generic examples on this page.
 
-For the generic procedures on this page, never bake API keys into this skill, generated documentation, git-tracked config, or launcher scripts. Store keys in environment variables, a local untracked secret file, or a shell-specific secret manager chosen by the user. The dedicated GAC and OpenLux pages intentionally define a different local-launcher credential contract.
+For the generic procedures on this page, never bake API keys into this skill, generated documentation, git-tracked config, or launcher scripts. Store keys in environment variables, a local untracked secret file, or a shell-specific secret manager chosen by the user. The provider-specific GAC and OpenLux pages intentionally define a different local-launcher credential contract.
 
 ## Workflow
 
-1. Route GAC or OpenLux to its dedicated launcher command; otherwise select `responses-api` or `chat-completions-only` from **Subcommands** using current provider and target-CLI documentation.
-2. Complete **Target-CLI Compatibility Gate** using disposable isolated state. Do not require handcrafted provider API calls before or instead of the actual Codex path.
+1. Route GAC or OpenLux to its provider-specific launcher command; otherwise select `responses-api` or `chat-completions-only` from **Subcommands** using current provider and target-CLI documentation.
+2. Complete **Target-CLI Compatibility Gate** using a temporary profile in the normal Codex home and disposable translator state when needed. Do not require handcrafted provider API calls before or instead of the actual Codex path.
 3. Follow the selected provider procedure using only the endpoint, protocol, and model proven by that Codex end-to-end test, without embedding API keys.
 4. Preserve unrelated Codex configuration and launcher settings.
 5. Run **Validation** and report the configured route.
@@ -42,7 +42,7 @@ When this workflow creates a custom Codex launcher, prepend `--dangerously-bypas
 
 - Establish the installed Codex version, host OS, documented provider protocol, endpoint shape, authentication source, and a candidate model before writing a persistent launcher.
 - Keep protocol translation separate from launcher concerns. A Responses-compatible provider can be called directly; a Chat-Completions-only provider needs a translator whose lifecycle and health checks the launcher owns.
-- When creating a custom launcher that must preserve plain `codex`, give it a fixed launcher-owned `CODEX_HOME` with no copied `auth.json` or official login state. Put the provider profile there, ignore an ambient runtime `CODEX_HOME`, and keep credentials outside tracked files.
+- When creating a custom launcher that must preserve plain `codex`, put the custom provider in a separate profile inside the user's normal `CODEX_HOME` and select it only with `--profile`. Leave the base config and cached OAuth state unchanged, do not set `CODEX_HOME` in the launcher, and keep credentials outside tracked files.
 - Use native process control for the host OS, forward all Codex arguments unchanged, clean up any child relay, preserve Codex's exit code, and apply the shared permissive default unless explicitly rejected at the beginning.
 - Treat provider and bundled scripts as examples tied to observed versions. Re-check installed Codex help plus current Codex and provider documentation, then verify the actual routed request through Codex rather than assuming a template or a raw API probe is still correct.
 
@@ -51,15 +51,15 @@ When this workflow creates a custom Codex launcher, prepend `--dangerously-bypas
 Use the target Codex client itself as the compatibility authority:
 
 1. Inspect the installed Codex version and help plus current Codex and provider documentation. Determine the documented endpoint, protocol category, authentication lane, and candidate model without changing persistent state. Do not select a model from this guide's examples or a previous launcher.
-2. Create a disposable auth-free `CODEX_HOME` outside the ordinary home. Write only the minimum temporary provider profile needed by the installed Codex version and keep credentials process-scoped.
+2. Resolve the user's normal `CODEX_HOME` without changing it. Create a uniquely named temporary provider profile beside the normal config when the installed Codex version requires a file, never overwrite an existing profile, and keep credentials process-scoped. Do not modify `config.toml`, `auth.json`, or the configured credential store.
 3. For a documented Responses-compatible provider, run one minimal real `codex --profile <profile-name> exec` turn against it. Use Codex's own model/status surface when model inspection is needed.
-4. For a documented Chat-Completions-only provider, start the selected translator in disposable state, point the disposable Codex profile at it, and run the same real Codex turn through the complete translation path. Temporary package or process state needed for this isolated test is allowed; do not install or persist the final launcher yet.
+4. For a documented Chat-Completions-only provider, start the selected translator in disposable state, point the temporary shared-home Codex profile at it, and run the same real Codex turn through the complete translation path. Temporary package or process state needed for this test is allowed; do not install or persist the final launcher yet.
 5. If the user requested a model, pass that exact id through Codex and require the real turn to succeed. Otherwise use a current documented/default candidate and record the model the client reports.
-6. Inspect the target client's complete result, including authentication failures from any background request. Remove disposable files and stop the translator afterward.
+6. Inspect the target client's complete result, including authentication failures from any background request. Remove the temporary profile and translator state afterward, then confirm the base config and OAuth credential store are unchanged.
 
 If the Codex turn fails, stop without writing a persistent profile or launcher. Report the client-visible failure; do not compensate with standalone `/models`, `/responses`, or `/chat/completions` calls. A successful raw API request does not prove compatibility with the installed target client, and a raw API failure caused by an obsolete handcrafted request does not disprove it.
 
-Persist a profile or launcher only after the real client path succeeds. A custom launcher must preserve the tested auth-free home topology in its fixed persistent `CODEX_HOME`.
+Persist a profile or launcher only after the real client path succeeds through the normal shared home. Use a separate `CODEX_HOME` only when a controlled target-CLI comparison proves a version-specific state or authentication collision and the user accepts isolation of config, sessions, logs, skills, and package metadata.
 
 ## Subcommands
 
@@ -90,9 +90,9 @@ If a provider is not listed, consult its current protocol documentation and the 
 
 These endpoints already implement `/v1/responses`. Configure Codex to call them directly.
 
-### Generic dedicated-profile shape
+### Generic provider-profile shape
 
-Current Codex profile files live beside the base config as `$CODEX_HOME/<profile-name>.config.toml` and are selected with `--profile <profile-name>`. For a custom launcher that preserves plain `codex`, make `$CODEX_HOME` a fixed launcher-owned, auth-free directory rather than the ordinary Codex home. Do not add a legacy `[profiles.<name>]` table to the ordinary base `config.toml` when the installed Codex version uses profile files.
+Current Codex profile files live beside the base config as `$CODEX_HOME/<profile-name>.config.toml` and are selected with `--profile <profile-name>`. Use the user's normal `CODEX_HOME`; the separate profile can coexist with `auth.json` because `env_key` plus `requires_openai_auth = false` selects provider-specific authentication for that profile. Do not add provider selection or a legacy `[profiles.<name>]` table to the base `config.toml` when the installed Codex version uses profile files.
 
 ```toml
 model = "<model-name>"
@@ -121,7 +121,7 @@ OpenRouter supports `/v1/responses` and can proxy many Chat-only providers.
 
 Put this provider layer in `$CODEX_HOME/openrouter.config.toml` when plain `codex` must remain unchanged:
 
-Replace `<verified-openrouter-model>` only with the exact id that completed the current isolated Codex check through OpenRouter.
+Replace `<verified-openrouter-model>` only with the exact id that completed the current shared-home Codex check through OpenRouter.
 
 ```toml
 model = "<verified-openrouter-model>"
@@ -132,6 +132,7 @@ name = "OpenRouter"
 base_url = "https://openrouter.ai/api/v1"
 env_key = "OPENROUTER_API_KEY"
 wire_api = "responses"
+requires_openai_auth = false
 ```
 
 ```bash
@@ -173,9 +174,9 @@ CODEX_RELAY_PORT=4446 \
 codex-relay
 ```
 
-Configure Codex in a dedicated profile file such as `$CODEX_HOME/siliconflow-relay.config.toml`:
+Configure Codex in a separate provider profile file such as `$CODEX_HOME/siliconflow-relay.config.toml`:
 
-Replace `<verified-siliconflow-model>` only with the exact id that completed the current isolated Codex check through the translator and SiliconFlow.
+Replace `<verified-siliconflow-model>` only with the exact id that completed the current shared-home Codex check through the translator and SiliconFlow.
 
 ```toml
 model = "<verified-siliconflow-model>"
@@ -186,6 +187,7 @@ name = "SiliconFlow"
 base_url = "http://127.0.0.1:4446/v1"
 env_key = "OPENAI_API_KEY"
 wire_api = "responses"
+requires_openai_auth = false
 ```
 
 Codex needs a non-empty `OPENAI_API_KEY` for its client-side check, but the relay handles upstream auth:
@@ -201,7 +203,7 @@ If your model is listed on OpenRouter, you can skip the local proxy:
 
 Put this layer in `$CODEX_HOME/openrouter.config.toml`:
 
-Replace `<verified-openrouter-model>` only with the exact id that completed the current isolated Codex check through OpenRouter.
+Replace `<verified-openrouter-model>` only with the exact id that completed the current shared-home Codex check through OpenRouter.
 
 ```toml
 model = "<verified-openrouter-model>"
@@ -212,6 +214,7 @@ name = "OpenRouter"
 base_url = "https://openrouter.ai/api/v1"
 env_key = "OPENROUTER_API_KEY"
 wire_api = "responses"
+requires_openai_auth = false
 ```
 
 ```bash
@@ -219,19 +222,16 @@ export OPENROUTER_API_KEY='<set locally, do not commit>'
 codex --profile openrouter exec "Reply with exactly: ok"
 ```
 
-### Reference Unix launcher for an isolated provider
+### Reference Unix launcher for a profile-scoped provider
 
-To avoid touching the default `~/.codex` config, the following Unix example wraps the relay in a launcher that uses `CODEX_HOME`. Adapt its shell syntax, relay lifecycle, port handling, and Codex flags for the installed versions and host OS while preserving **Provider Launcher Principles**:
+Create `$CODEX_HOME/siliconflow-relay.config.toml` once, using the provider profile shown above and the same relay port as the launcher. The launcher should not rewrite Codex config at runtime or replace `CODEX_HOME`; it scopes credentials, manages the relay, and selects the provider profile. Adapt its shell syntax, relay lifecycle, port handling, and Codex flags for the installed versions and host OS while preserving **Provider Launcher Principles**:
 
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
 export SILICONFLOW_API_KEY='<set locally, do not commit>'
-export CODEX_HOME="$HOME/.codex-glm"
-
-PROXY_PORT='15401'
-mkdir -p "$CODEX_HOME"
+PROXY_PORT='4446'
 
 # Start codex-relay
 CODEX_RELAY_UPSTREAM=https://api.siliconflow.cn/v1 \
@@ -248,27 +248,15 @@ if ! kill -0 "$RELAY_PID" 2>/dev/null; then
   exit 1
 fi
 
-# Isolated Codex config
-cat > "$CODEX_HOME/config.toml" <<EOF
-model = "<verified-siliconflow-model>"
-model_provider = "siliconflow-relay"
-
-[model_providers.siliconflow-relay]
-name = "SiliconFlow"
-base_url = "http://127.0.0.1:$PROXY_PORT/v1"
-env_key = "OPENAI_API_KEY"
-wire_api = "responses"
-EOF
-
 export OPENAI_API_KEY='not-needed'
 
 cleanup() { kill "$RELAY_PID" 2>/dev/null || true; }
 trap cleanup EXIT
 
-exec codex --model '<verified-siliconflow-model>' --dangerously-bypass-approvals-and-sandbox "$@"
+exec codex --profile siliconflow-relay --model '<verified-siliconflow-model>' --dangerously-bypass-approvals-and-sandbox "$@"
 ```
 
-Do not execute this example with unresolved placeholders. Substitute the same client-verified model in both locations only after the isolated relay/Codex test succeeds. If the user's initial launcher request explicitly opts out of permissive mode, omit only `--dangerously-bypass-approvals-and-sandbox` from the final `exec` line and preserve the model and argument forwarding.
+Do not execute this example with unresolved placeholders. Substitute the client-verified model only after the shared-home relay/Codex test succeeds. If the user's initial launcher request explicitly opts out of permissive mode, omit only `--dangerously-bypass-approvals-and-sandbox` from the final `exec` line and preserve the profile, model, and argument forwarding.
 
 Place in `~/.local/bin/codex-glm`, make it executable, and run:
 
@@ -294,7 +282,11 @@ codex --profile <profile-name> exec "Reply with exactly: ok"
 
 Expected success: Codex returns `ok`.
 
-Also verify that the launcher uses the same fixed auth-free `CODEX_HOME` topology tested in disposable state, background client requests do not produce authentication failures, arguments and exit status are preserved, and plain `codex` remains on its ordinary route. A local relay readiness check may help manage its process, but it is not provider-compatibility evidence and never replaces this Codex turn.
+Also verify that the launcher uses the same provider profile in the user's normal `CODEX_HOME` that was tested in disposable state, does not assign `CODEX_HOME`, leaves `auth.json` and the base config unchanged, produces no background authentication failures, preserves arguments and exit status, and leaves plain `codex` on its ordinary route. A local relay readiness check may help manage its process, but it is not provider-compatibility evidence and never replaces this Codex turn.
+
+### Optional separate-home fallback
+
+Do not create another `CODEX_HOME` merely because the normal home contains `auth.json`. Offer a separate home only when a controlled comparison shows that the installed Codex client repeatedly fails through an otherwise correct shared-home provider profile because of a state or authentication collision, while the same target-CLI request succeeds from a clean disposable home. Before making that topology persistent, tell the user that it also isolates base config, sessions, logs, skills, and package metadata, and obtain their choice.
 
 ---
 
@@ -303,7 +295,7 @@ Also verify that the launcher uses the same fixed auth-free `CODEX_HOME` topolog
 - Keep provider IDs stable so profiles and historical Codex sessions remain understandable.
 - Some relays partition keys into per-product token groups. An OpenLux Claude-group key does not work for Codex, and a Codex-group key does not work for the Anthropic Messages API; create the key in the group matching the client.
 - Prefer `env_key` over `experimental_bearer_token`; do not store bearer tokens in tracked config.
-- Avoid `--ignore-user-config` except for tests. When a custom launcher must leave plain `codex` unchanged, use a fixed launcher-owned, auth-free `CODEX_HOME` and put `<profile-name>.config.toml` there instead of selecting the provider in the ordinary base config.
+- Avoid `--ignore-user-config` except for tests. To leave plain `codex` unchanged, put the custom provider in a separate `<profile-name>.config.toml` beside the ordinary base config, select it only with `--profile <profile-name>`, and keep provider selection out of the base `config.toml`.
 - For providers that only expose a thinking on/off switch (such as SiliconFlow), Codex's `model_reasoning_effort` level may have no effect; the translator forwards the on/off switch only.
 - Current Codex model listing may log errors if a third-party `/models` response shape differs from Codex's expected catalog schema. A small `codex exec` request is the decisive validation.
 
@@ -311,7 +303,8 @@ Also verify that the launcher uses the same fixed auth-free `CODEX_HOME` topolog
 
 - DO NOT require, recommend, or use standalone provider `/models`, `/responses`, or `/chat/completions` probes as launcher compatibility evidence.
 - DO NOT choose a model from a historical example, previous launcher, or translator default without current target-Codex verification.
-- DO NOT persist a Codex profile or launcher until the isolated client or translator path succeeds with the client-verified model.
-- DO NOT put a custom launcher's third-party profile in the ordinary Codex home, copy `auth.json` into its provider home, or let an ambient `CODEX_HOME` redirect it.
+- DO NOT persist a Codex profile or launcher until the shared-home client or translator path succeeds with the client-verified model.
+- DO NOT set `CODEX_HOME` in the ordinary launcher, modify or copy `auth.json`, or select the third-party provider in the base `config.toml`; put the provider in its own profile file inside the normal Codex home.
+- DO NOT make a separate provider home persistent unless the controlled target-CLI comparison described above demonstrates a real collision and the user accepts the broader isolation effects.
 - DO NOT accept a successful agent turn when background model discovery repeatedly returns `401` or `403`; fix or disable the incompatible discovery path using currently documented Codex behavior before persistence.
 - DO NOT lower Codex's retry defaults or repeatedly invoke a throttled provider without current evidence that doing so is appropriate.
