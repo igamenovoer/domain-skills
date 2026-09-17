@@ -22,11 +22,11 @@ Terminal invocation of `imsight-dev-box-init->coding-agent->agy-openlux-launcher
 
 1. Inspect the installed `agy` version and help, the host OS and shell, current Antigravity custom-endpoint documentation, and whether the initial request explicitly opted out of permissive mode. These are read-only checks.
 2. Obtain the OpenLux key under **Required Input**; stop without changing any file when the key is unavailable.
-3. Complete **Compatibility Gate** Phase A against the live Gemini-native model and `generateContent` APIs without creating or modifying any file.
-4. Resolve the optional suffix and resulting launcher name, then complete the gate's isolated Antigravity test using disposable state.
-5. Only after both gate phases succeed, create or merge the dedicated settings profile and implement every invariant in **Launcher Contract** using the host's native lane. Treat the inline templates as worked examples, not mandatory scripts.
+3. Resolve the current endpoint, authentication lane, and any requested model candidate from the user's request plus current Antigravity and OpenLux documentation. Do not call OpenLux APIs directly as a preflight.
+4. Resolve the optional suffix and resulting launcher name, then complete **Phase A: Isolated Antigravity Test** using disposable state. Let `agy` itself exercise model discovery and a real completion end to end.
+5. Only after that target-CLI test succeeds, create or merge the dedicated settings profile and implement every invariant in **Launcher Contract** as **Phase B: Persistent Setup**. Treat the inline templates as worked examples, not mandatory scripts.
 6. Run **Verification**, including redaction-safe inspection, endpoint and model compatibility, argument forwarding, permissive mode, exit-code preservation, and the unchanged plain `agy` route.
-7. Report the launcher name, profile location, Antigravity version, API-discovered model evidence, permission mode, and validation results without printing the key.
+7. Report the launcher name, profile location, Antigravity version, client-verified model evidence, permission mode, and validation results without printing the key.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's naming contract, compatibility gate, platform lanes, examples, and user constraints, then execute the plan without assigning provider behavior to the optional suffix or changing the ordinary Antigravity profile.
 
@@ -105,33 +105,31 @@ Re-check the official Antigravity installation/authentication and settings pages
 - `https://antigravity.google/docs/cli/settings`
 - `https://antigravity.google/docs/cli/headless`
 
-Re-check OpenLux's current Gemini-native reference rather than assuming its OpenAI- or Anthropic-compatible surfaces imply Antigravity compatibility:
+Re-check OpenLux's current Gemini-native documentation rather than assuming its OpenAI- or Anthropic-compatible surfaces imply Antigravity compatibility:
 
 - `https://doc.openlux.ai/`
-- `https://api.openlux.ai/v1beta/models`
 
 ## Compatibility Gate
 
-### Phase A: No-Write API Discovery
+The gate has two ordered phases. Do not require a handcrafted `/models` or `generateContent` request before the target client runs. Antigravity's own end-to-end result is the compatibility authority because client versions can change request shapes, authentication behavior, discovery, streaming, tools, and thinking metadata.
 
-Complete these checks before any filesystem mutation:
+### Phase A: Isolated Antigravity Test
 
-1. Confirm `agy --version` and that current help still exposes `--dangerously-skip-permissions`, `--model`, `--print`, and `models`.
-2. Request `GET https://api.openlux.ai/v1beta/models` with the supplied key in `x-goog-api-key`. Keep the response in memory. A successful OpenAI-style `/v1/models` response alone is not enough.
-3. Confirm the Gemini-native catalog contains at least one plausible model, then run one minimal Gemini-native `generateContent` request with a currently advertised id. Do not start from a historical id, a launcher suffix, or an Antigravity display name.
-4. If the requested behavior depends on OpenLux automatic routing, verify it through current OpenLux account or API evidence. A suffix such as `auto` is not evidence, and an unsupported literal `model=auto` must not be injected as a workaround.
+1. Confirm `agy --version` and inspect current help for the permission, model, non-interactive, and model-listing surfaces needed by the installed version.
+2. Derive the endpoint, environment-variable names, provider setting, and any requested model candidate from current documentation and the user's request. Do not infer a model from the launcher suffix or a historical snapshot.
+3. Create a disposable home with the minimal Antigravity settings required for the Gemini provider. Scope the supplied key and base URL only to this test process.
+4. Use `agy models`, or the current client-equivalent discovery surface, when model selection needs inspection. Treat only models that the installed target CLI can actually use as candidates.
+5. Run one minimal real `agy --print` turn through the disposable home. If the user requested a model pin, pass that exact candidate through `agy` and require the turn to succeed. Otherwise let Antigravity and the relay negotiate without inventing a pin.
+6. If the requested behavior depends on OpenLux automatic routing, validate that behavior through the actual Antigravity turn and current provider-account documentation. A suffix such as `auto` is not evidence, and an unsupported literal `model=auto` must not be injected as a workaround.
+7. Remove the disposable state afterward. If the target CLI fails, stop and report its client-visible authentication, model, or protocol failure; do not substitute a separate raw API probe.
 
-During Phase A, do not create a directory, settings file, launcher, shell-profile block, credential file, response dump, or log. Stop and report the failing layer when the key, Gemini-native endpoint, catalog, or direct request fails.
+Disposable settings are allowed because they make the real target client test possible. They must be isolated from the user's ordinary Antigravity home and must not become the persistent launcher profile unless the complete turn succeeds.
 
-### Phase B: Isolated Antigravity Test
-
-Only after Phase A succeeds, create a disposable home and its minimal Antigravity settings, scope the key and base URL to that process, and run one isolated `agy --print` request. Treat this client request as decisive because it includes tools, system instructions, streaming, and thinking metadata absent from the direct API probe. Remove the disposable state afterward; if the request fails, leave the real Antigravity profile and shell profile unchanged.
-
-### Phase C: Persistent Setup
+### Phase B: Persistent Setup
 
 Only after the isolated Antigravity request succeeds may the workflow create or merge the dedicated settings profile and credential-bearing launcher below.
 
-Verified snapshot, not a permanent guarantee: on 2026-09-17, Antigravity CLI 1.2.5 completed an isolated OpenLux turn through `https://api.openlux.ai` with no launcher-level model pin. OpenLux exposed Gemini-native `/v1beta/models` and `generateContent`; a literal Gemini model id of `auto` was absent from the catalog and rejected. Re-run the gate instead of treating those observations as current forever.
+Verified snapshot, not a permanent guarantee: on 2026-09-17, Antigravity CLI 1.2.5 completed an isolated OpenLux turn through `https://api.openlux.ai` with no launcher-level model pin. A literal model id of `auto` was rejected by that installed client. Re-run the target-CLI gate instead of treating those observations as current forever.
 
 ## Dedicated Profile Layout
 
@@ -310,7 +308,7 @@ Confirm only the presence of the key assignment; never output the function or ma
 For every platform:
 
 1. Confirm the dedicated settings file parses and contains `modelProvider: gemini`.
-2. Run `<launcher-name> models` and compare usable Gemini model families with OpenLux's Gemini-native `/v1beta/models` response.
+2. Run `<launcher-name> models`, or the installed client's equivalent, and confirm that the client exposes at least one usable model or its normal unpinned route.
 3. Run one small completion: `<launcher-name> --output-format json --print="Reply with exactly: AGY_OPENLUX_OK"`.
 4. Confirm the process exits successfully, arguments arrive unchanged, and the default invocation includes `--dangerously-skip-permissions` unless the initial request opted out.
 5. Confirm plain `agy` still uses its pre-existing settings and authentication route. Do not perform a billable official-provider completion unless the user requested it; inspect settings and environment first.
@@ -323,7 +321,7 @@ Record token usage for billable probes when the CLI reports it.
 - If the launcher opens Google sign-in or ignores the key, verify the dedicated settings file contains exactly the recognized `modelProvider` value `gemini` and that the launcher exports `GEMINI_API_KEY`.
 - If requests still go to Google, verify the variable name is `GOOGLE_GEMINI_BASE_URL`, not `GEMINI_BASE_URL`, and confirm the settings file is under the dedicated home actually passed to `agy`.
 - If `agy` rejects a model locally, use a slug listed by the installed `agy models`; do not assume every OpenLux model id is accepted by Antigravity.
-- If OpenLux lists models but the Antigravity turn fails, diagnose the Gemini request shape, streaming, tools, thinking metadata, model mapping, and token entitlement. Model-list success alone does not prove agent compatibility.
+- If model discovery succeeds but the Antigravity turn fails, diagnose the client-visible request, streaming, tools, thinking metadata, model mapping, and token entitlement. Discovery success alone does not prove agent compatibility, and a raw provider call must not override the client failure.
 - If the launcher suffix is `auto`, do not inject `model=auto`. Verify provider-side routing separately or explain that the suffix is only a friendly label.
 - If ordinary Git, SSH, cloud, or skill discovery is missing inside the launcher, review **Isolated-Home Effects** and add only the user-authorized resources needed by that profile.
 - If Windows cannot find the function, reload the exact profile modified during setup and compare its path with `$PROFILE.CurrentUserCurrentHost`.
@@ -331,8 +329,8 @@ Record token usage for billable probes when the CLI reports it.
 ## Guardrails
 
 - DO NOT assign endpoint, model, routing, pricing, credential, or permission semantics to the optional suffix.
-- DO NOT create or modify any setup file before the Gemini-native model catalog and a direct `generateContent` request succeed.
-- DO NOT create the real dedicated profile or launcher until an isolated Antigravity request also succeeds.
+- DO NOT require, recommend, or use direct OpenLux `/models` or `generateContent` calls as launcher compatibility evidence.
+- DO NOT create the real dedicated profile or launcher until an isolated Antigravity request succeeds.
 - DO NOT choose a model from a historical note, suffix, or another client's model catalog.
 - DO NOT replace or alias the plain `agy` command, modify its ordinary settings, or persist OpenLux variables at user or system scope.
 - DO NOT use `GEMINI_BASE_URL` in place of `GOOGLE_GEMINI_BASE_URL`.

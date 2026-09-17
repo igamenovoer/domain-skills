@@ -6,10 +6,10 @@ Use this reference when the user wants a local `claude-kimi` or `claude-kimi-<su
 
 1. Inspect the installed Claude Code version/help, host OS and shell, and current Kimi documentation without changing any file.
 2. Obtain the Kimi key under **Required Input**; stop without creating a launcher or key file when it is unavailable.
-3. Complete **No-Write Provider Preflight**: determine the key's live endpoint lane, query the current model catalog, derive the mapping from current evidence, and prove one model through the Anthropic-compatible Messages protocol without creating or modifying any file.
-4. Resolve the optional suffix and platform paths only after the live provider route succeeds.
-5. Apply the verified lane procedures from **Using Kimi Platform API** or **Using Kimi Coding Plan**. Treat **Fallback Model Knowledge** only as explanatory context; it never authorizes a setup when the live API cannot be verified.
-6. Implement the launcher from the provider lane, OS, and runtime contracts using the API-derived mapping; use the bundled scripts as reference implementations only when their assumptions still match and pass explicit discovered model arguments instead of accepting dated generator defaults.
+3. Determine the key's lane from the issuing console, the user's explicit account information, and current Kimi documentation. Do not probe Kimi APIs directly to infer it; ask the user when the issuer remains ambiguous.
+4. Derive a candidate model mapping from current provider and Claude Code documentation, then complete **Claude Code Compatibility Test** with those settings scoped to a temporary Claude Code invocation.
+5. Resolve the optional suffix and platform paths only after Claude Code completes a minimal real turn. Treat **Fallback Model Knowledge** only as explanatory context; it never authorizes an untested mapping.
+6. Implement the launcher from the provider lane, OS, and runtime contracts using the client-verified mapping; use the bundled scripts as reference implementations only when their assumptions still match and pass explicit verified model arguments instead of accepting dated generator defaults.
 7. Put the launcher directory on PATH for new shells under **Ensure Launcher Directory On PATH**; skipping this leaves the resolved launcher name unresolvable in fresh terminals.
 8. Run every applicable check in **Verification**.
 
@@ -33,51 +33,36 @@ The suffix is a user-facing launcher and credential-file namespace only. It does
 
 ## Required Input
 
-The user must provide a Kimi API key during setup so the live provider lane and model catalog can be verified before any launcher or key file is created. Prefer an existing process-scoped `KIMI_API_KEY` or `ANTHROPIC_API_KEY` only when the user explicitly wants to use it for this setup. If no key is available, stop without writing a placeholder launcher.
+The user must provide a Kimi API key during setup so Claude Code can verify the selected provider lane and model mapping before any persistent launcher or key file is created. Prefer an existing process-scoped `KIMI_API_KEY` or `ANTHROPIC_API_KEY` only when the user explicitly wants to use it for this setup. If no key is available, stop without writing a placeholder launcher.
 
 ```text
-Please provide your Kimi API key so I can identify its live endpoint lane and verify the current model catalog before creating the launcher.
+Please provide your Kimi API key and identify whether it came from Kimi Open Platform or the Kimi Code Console so I can verify that lane with Claude Code before creating the launcher.
 ```
 
-The generated launcher must not hard-code the API key and must not rely on shell-specific automatic env loading. After preflight, setup writes the key to the resolved protected key file. At runtime the launcher reads that file directly and assigns the lane's auth variable (`ANTHROPIC_AUTH_TOKEN` on the **Using Kimi Platform API** lane, `ANTHROPIC_API_KEY` on the **Using Kimi Coding Plan** lane) for the launched Claude process only.
+The generated launcher must not hard-code the API key and must not rely on shell-specific automatic env loading. After the compatibility test, setup writes the key to the resolved protected key file. At runtime the launcher reads that file directly and assigns the lane's auth variable (`ANTHROPIC_AUTH_TOKEN` on the **Using Kimi Platform API** lane, `ANTHROPIC_API_KEY` on the **Using Kimi Coding Plan** lane) for the launched Claude process only.
 
 ## Determine The Key's Lane
 
-Kimi open-platform keys and Kimi Code (coding plan) keys come from different consoles and authenticate against different endpoints. When a key is available, identify its type before choosing the lane: the lane must match the key or every request fails with `401 Invalid Authentication`. Choose the lane that matches the detected key type unless the user explicitly asks for a different lane.
+Kimi open-platform keys and Kimi Code (coding plan) keys come from different consoles and authenticate against different endpoints. Identify the issuing console before choosing the lane: the lane must match the key or Claude Code fails authentication. Prefer the user's account source and current provider documentation over key-prefix guesses.
 
-Prefix heuristic (fast, community-observed — treat as a hint, not proof):
+Prefix heuristic (community-observed — use only as a prompt for clarification, not proof):
 
 - `sk-kimi-...` — Kimi Code Console key → **Using Kimi Coding Plan** lane.
 - `sk-...` — Kimi Open Platform key → **Using Kimi Platform API** lane.
 
-Endpoint probe (reliable): each key type works on exactly one endpoint. Keep the supplied key in a process variable, probe `/v1/models`, and pick the lane whose endpoint returns `200`:
+When the key source is unknown, ask which console issued it. Do not send the key to several endpoints to guess the lane.
 
-```bash
-key="${KIMI_API_KEY:?set KIMI_API_KEY only in this probe process}"
-for url in https://api.moonshot.ai/v1/models \
-           https://api.moonshot.cn/v1/models \
-           https://api.kimi.com/coding/v1/models; do
-  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
-         -H "Authorization: Bearer $key" "$url")
-  echo "$code  $url"
-done
-```
+## Claude Code Compatibility Test
 
-- `200` from `api.moonshot.ai` or `api.moonshot.cn` — open-platform key → **Using Kimi Platform API** lane.
-- `200` from `api.kimi.com/coding/v1/models` — coding-plan key → **Using Kimi Coding Plan** lane.
+Complete this test before running a generator, creating a persistent key file, cleaning settings, or changing PATH or shell startup files:
 
-If the probe fails on every endpoint, use the prefix only to explain the likely lane or ask which console issued the key. Do not create a launcher or key file until one live endpoint succeeds.
+1. Select the lane from the issuing console and current provider guidance.
+2. Derive explicit tier candidates from current Kimi and Claude Code documentation. Historical tables and generator defaults are not candidates by themselves.
+3. Scope the chosen base URL, auth variable, tier mappings, context settings, and the supplied key to one temporary Claude Code process using its current non-interactive mode.
+4. Run a minimal real Claude Code turn for the startup alias. When multiple aliases matter, exercise them through Claude Code's own `--model`, `/model`, or equivalent surface rather than a standalone API call.
+5. If Claude Code rejects a model and exposes an actionable current choice, revise the temporary mapping and retry once. Otherwise stop and ask the user or consult updated provider guidance; do not probe `/models` or `/messages` manually.
 
-## No-Write Provider Preflight
-
-Complete this phase before running a generator, creating a key file, cleaning settings, or changing PATH or shell startup files:
-
-1. Use **Determine The Key's Lane** to find the one live endpoint that accepts the current key.
-2. Keep that endpoint's `/v1/models` response in memory and derive the tier mapping only from ids currently enabled for this key plus current provider documentation. Historical tables and generator defaults are not candidates by themselves.
-3. Select one currently advertised model and send a minimal Anthropic-compatible Messages request to the verified lane using its provider-documented authentication header and request shape.
-4. Stop without modifying the filesystem when lane detection, model discovery, or the direct Messages request fails.
-
-Record the verified lane, exact model ids, mapping rationale, context assumptions, and any thinking requirement without recording the key. If several mappings remain with material cost, quality, or latency differences, ask the user before persistence rather than guessing from model names.
+Record the client-verified lane, exact model ids, mapping rationale, context assumptions, and any thinking requirement without recording the key. If several mappings remain with material cost, quality, or latency differences, ask the user before persistence rather than guessing from model names.
 
 ## Defaults
 
@@ -86,8 +71,8 @@ Record the verified lane, exact model ids, mapping rationale, context assumption
 - Windows launcher path: `%LOCALAPPDATA%\Programs\kimi-launchers\<launcher-name>.ps1`.
 - Windows command shim path: `%LOCALAPPDATA%\Programs\kimi-launchers\<launcher-name>.cmd`.
 - Windows key file: `%LOCALAPPDATA%\Programs\kimi-launchers\kimi-api-key[-<suffix>]`.
-- Provider lane: use only the lane whose current endpoint accepts the supplied key during **No-Write Provider Preflight**. A user may request a lane, but that request does not override a failed live authentication or protocol probe.
-- Default startup alias: `opus` — the launcher starts Claude Code with `--model opus`, and `ANTHROPIC_DEFAULT_OPUS_MODEL` must resolve to the most capable appropriate model established by the current preflight. This guide does not supply a persistent default model id.
+- Provider lane: use the lane identified by the key's issuing console and confirmed by **Claude Code Compatibility Test**. A user request does not override a failed target-client authentication result.
+- Default startup alias: `opus` — the launcher starts Claude Code with `--model opus`, and `ANTHROPIC_DEFAULT_OPUS_MODEL` must resolve to the most capable appropriate model established by the current client test. This guide does not supply a persistent default model id.
 - `DISABLE_AUTOUPDATER=1`, overridable by the caller. Claude Code's background auto-updater reinstalls the npm package mid-session; an interrupted install leaves the placeholder `claude` shim behind and breaks every launcher on the box (see **Notes**). Updates become deliberate: `npm update -g @anthropic-ai/claude-code`.
 
 Imsight's local launcher runs Claude Code with `--dangerously-skip-permissions` by default. Use the generator's permission-prompting option only when the user's initial launcher request explicitly opts out of permissive mode. The generator derives the auth lane, the tier mapping, and the compact window from `--base-url` and the model options.
@@ -101,20 +86,11 @@ Kimi model names, lane endpoints, and Claude Code settings change over time — 
 - Kimi Code third-party coding-agent guide: `https://www.kimi.com/code/docs/en/third-party-tools/other-coding-agents.html` — canonical Coding Plan lane configuration, model names, and membership-tier availability.
 - Kimi Code provider docs: `https://www.kimi.com/code/docs/en/kimi-code-cli/configuration/providers.html` — Kimi-native provider endpoint shape.
 - Claude Code model configuration docs: `https://code.claude.com/docs/en/model-config` and `https://code.claude.com/docs/en/settings` — how `/model`, `--model`, `ANTHROPIC_DEFAULT_*_MODEL`, `availableModels`, and `modelOverrides` behave in the current Claude Code release.
-- Live API query — lists the models the user's key can actually call right now:
-
-  ```bash
-  curl -s https://api.moonshot.ai/v1/models \
-    -H "Authorization: Bearer ${KIMI_API_KEY:?set only in this probe process}" | jq -r '.data[].id'
-  ```
-
-  For the Coding Plan lane, use `https://api.kimi.com/coding/v1/models` with the coding key. Never print the key itself.
-
-Rule of thumb: the docs pages for the official lineup, configuration, and deprecation schedule; `/v1/models` for what is actually enabled on the user's key. When online sources disagree with this page, the online sources win — update launcher defaults accordingly.
+Rule of thumb: use current provider documentation to propose the lineup and the installed Claude Code client to prove the actual launcher behavior. When current documentation or the target client disagrees with this page, the current evidence wins.
 
 ## Fallback Model Knowledge
 
-This embedded snapshot is dated explanatory context for understanding aliases and past provider behavior. It never authorizes launcher creation or model selection when live API discovery is unavailable or disagrees.
+This embedded snapshot is dated explanatory context for understanding aliases and past provider behavior. It never authorizes launcher creation or model selection without a current Claude Code end-to-end test.
 
 ### How Claude Code Model Selection Works
 
@@ -148,7 +124,7 @@ When Kimi or Claude Code updates their model lists, re-derive the tier mapping i
 - Platform API lane: rank models by per-token price from the price details linked on `https://platform.kimi.ai/docs/models`; price is the provider's own capability ranking.
 - Coding Plan lane: models have no per-token price, so rank by the membership tier that unlocks each model — a model gated behind a higher plan ranks above one available on lower plans (for example the 1M `k3` class above `k3-256k` above `kimi-for-coding`).
 - Never map an alias to a highspeed variant (`kimi-k2.7-code-highspeed`, `kimi-for-coding-highspeed`): highspeed models cost more per token but buy speed rather than capability, so cost alone would rank them wrong. They stay reachable by direct name or through `availableModels` picker entries.
-- Verify the literal provider model id with `/v1/models` before mapping. Claude Code's `X[1m]` suffix is its own 1M-context notation, not necessarily a provider id — the coding endpoint rejects `k3[1m]` and serves the 1M model as literal `k3`.
+- Verify every literal provider model id through an actual Claude Code turn before mapping. Claude Code's `X[1m]` suffix is its own 1M-context notation, not necessarily a provider id — the recorded coding endpoint rejected `k3[1m]` and served the 1M model as literal `k3`.
 
 ### Default Tier Mapping (Snapshot 2026-07-25)
 
@@ -205,16 +181,16 @@ Deprecated — do not use: `kimi-k2-0905-preview`, `kimi-k2-0711-preview`, `kimi
 
 ## Using Kimi Platform API
 
-Use this lane only when the supplied key succeeds against the Kimi Open Platform endpoint during **No-Write Provider Preflight**, following the Kimi API Platform guide "Use Kimi in Claude Code".
+Use this lane only when the key came from Kimi Open Platform and succeeds during **Claude Code Compatibility Test**, following the Kimi API Platform guide "Use Kimi in Claude Code".
 
 - Base URL: `https://api.moonshot.ai/anthropic`
 - Auth: `ANTHROPIC_AUTH_TOKEN` with a key created on Kimi Open Platform (the launcher clears `ANTHROPIC_API_KEY` and `CLAUDE_CODE_OAUTH_TOKEN`)
-- Startup alias: `opus`, resolved to `<verified-platform-opus-model>` from the current preflight
+- Startup alias: `opus`, resolved to `<verified-platform-opus-model>` from the current Claude Code test
 - Tier mapping: the generated launcher exports `ANTHROPIC_DEFAULT_OPUS_MODEL`, `ANTHROPIC_DEFAULT_SONNET_MODEL`, `ANTHROPIC_DEFAULT_HAIKU_MODEL`, `ANTHROPIC_DEFAULT_FABLE_MODEL`, and `CLAUDE_CODE_SUBAGENT_MODEL`, derived with **Mapping Rule: Map By Cost** (see the **Default Tier Mapping** snapshot for dated examples)
 - `ENABLE_TOOL_SEARCH=false` (the Kimi endpoint does not support Claude Code Tool Search)
 - `CLAUDE_CODE_AUTO_COMPACT_WINDOW=1048576` for K3-class resolved startup models; `262144` for K2-series
 
-Generate for this lane only with an explicit tier mapping derived from the current key's catalog. Replace every placeholder before execution:
+Generate for this lane only with an explicit tier mapping derived from current documentation and proven by the current key through Claude Code. Replace every placeholder before execution:
 
 ```bash
 <coding-agent-subskill-dir>/scripts/create-claude-kimi-launcher.sh \
@@ -225,7 +201,7 @@ Generate for this lane only with an explicit tier mapping derived from the curre
   --model-haiku <verified-platform-haiku-model>
 ```
 
-Verify inside Claude Code with `/status`: Base URL `https://api.moonshot.ai/anthropic`, with each alias resolving to the exact model recorded during the current preflight.
+Verify inside Claude Code with `/status`: Base URL `https://api.moonshot.ai/anthropic`, with each alias resolving to the exact model proven during the current compatibility test.
 
 ## Using Kimi Coding Plan
 
@@ -312,7 +288,7 @@ HINDSIGHT_API_LLM_EXTRA_BODY='{"thinking":{"type":"enabled","effort":"high"}}'
 
 If no explicit `thinking.effort` reaches the Coding Plan API, K3 uses `high`.
 
-Generate for this lane by passing the coding-plan endpoint and the exact mapping derived from the current key. Replace every placeholder before execution:
+Generate for this lane by passing the coding-plan endpoint and the exact mapping proven by the current key through Claude Code. Replace every placeholder before execution:
 
 ```bash
 <coding-agent-subskill-dir>/scripts/create-claude-kimi-launcher.sh \
@@ -343,7 +319,7 @@ The generator derives `ANTHROPIC_API_KEY` auth, the tier defaults, and the compa
 
 ## Reference Implementations
 
-The bundled scripts are worked Linux and Windows implementations of the principles above. Resolve `<coding-agent-subskill-dir>` to the `subskills/coding-agent/` directory whose `references/` folder contains this page, inspect the relevant script, and do not run it before **No-Write Provider Preflight** succeeds. Pass explicit API-derived model mappings; do not accept its recorded model defaults merely because its endpoint and OS assumptions match. Otherwise adapt the implementation and run the same verification checks.
+The bundled scripts are worked Linux and Windows implementations of the principles above. Resolve `<coding-agent-subskill-dir>` to the `subskills/coding-agent/` directory whose `references/` folder contains this page, inspect the relevant script, and do not run it before **Claude Code Compatibility Test** succeeds. Pass explicit client-verified model mappings; do not accept its recorded model defaults merely because its endpoint and OS assumptions match. Otherwise adapt the implementation and run the same verification checks.
 
 The following commands demonstrate the current examples; they are not the only valid way to implement the launcher. If an installed skill copy lost the script's execute bit, invoke the example through the interpreter: `bash <coding-agent-subskill-dir>/scripts/create-claude-kimi-launcher.sh ...` (or `pwsh -File ...ps1` on Windows).
 
@@ -379,13 +355,13 @@ If a future launcher needs its own runtime flags, use launcher-prefixed names su
 
 ### Unix Or Linux Shell
 
-After preflight, execute the fully substituted lane-specific generator command from **Using Kimi Platform API** or **Using Kimi Coding Plan** and add `--api-key "$KIMI_API_KEY"`. The invocation must contain the explicit API-derived model mapping; do not run the generator with only an API key.
+After the compatibility test, execute the fully substituted lane-specific generator command from **Using Kimi Platform API** or **Using Kimi Coding Plan** and add `--api-key "$KIMI_API_KEY"`. The invocation must contain the explicit client-verified model mapping; do not run the generator with only an API key.
 
 The script also accepts `--suffix`, `--output`, `--key-file`, `--base-url`, `--model`, `--model-opus`, `--model-sonnet`, `--model-haiku`, `--model-fable`, `--model-subagent`, `--compact-window`, and `--claude-bin`. Use the model and context options as required current inputs, not optional convenience overrides. For example, `--suffix work` creates `claude-kimi-work` with `kimi-api-key-work`. Add `--require-permission-prompts` to the same fully specified command only for an explicit initial opt-out.
 
 ### Windows PowerShell
 
-The PowerShell script creates a `.ps1` launcher and adjacent `.cmd` shim in a common `kimi-launchers` directory. After preflight, pass `-ApiKey $env:KIMI_API_KEY`, the verified `-BaseUrl`, and explicit `-ModelOpus`, `-ModelSonnet`, `-ModelHaiku`, `-ModelFable`, and `-ModelSubagent` values derived from the current catalog. Do not invoke the script with its recorded model defaults. The `.cmd` shim lets users run the resolved launcher name from `cmd.exe`, PowerShell, or other launchers when the directory is on `PATH`.
+The PowerShell script creates a `.ps1` launcher and adjacent `.cmd` shim in a common `kimi-launchers` directory. After the compatibility test, pass `-ApiKey $env:KIMI_API_KEY`, the verified `-BaseUrl`, and explicit `-ModelOpus`, `-ModelSonnet`, `-ModelHaiku`, `-ModelFable`, and `-ModelSubagent` values proven through the target client. Do not invoke the script with its recorded model defaults. The `.cmd` shim lets users run the resolved launcher name from `cmd.exe`, PowerShell, or other launchers when the directory is on `PATH`.
 
 The script also accepts `-Suffix`, `-OutputPath`, `-KeyFilePath`, `-Model`, `-CompactWindow`, and `-ClaudeBin`. For example, `-Suffix work` creates `claude-kimi-work.ps1`, `claude-kimi-work.cmd`, and `kimi-api-key-work`. Add `-RequirePermissionPrompts` to the same fully specified command only for an explicit initial opt-out.
 
@@ -421,7 +397,7 @@ Select-String -Path "$env:LOCALAPPDATA\Programs\kimi-launchers\<launcher-name>.p
 if (Test-Path "$env:LOCALAPPDATA\Programs\kimi-launchers\<key-file-name>") { '<redacted>' }
 ```
 
-Inside Claude Code, `/status` should show the base URL selected during preflight and every alias must resolve to the exact current model mapping recorded before generation. The default generated launcher must invoke `claude` with `--dangerously-skip-permissions`; an explicit permission-prompting opt-out must omit it.
+Inside Claude Code, `/status` should show the selected base URL and every alias must resolve to the exact mapping proven before generation. The default generated launcher must invoke `claude` with `--dangerously-skip-permissions`; an explicit permission-prompting opt-out must omit it.
 
 ## Notes
 
@@ -436,9 +412,10 @@ Inside Claude Code, `/status` should show the base URL selected during preflight
 ## Guardrails
 
 - DO NOT print, hard-code, or echo the Kimi API key in commands, responses, or the generated launcher.
-- DO NOT create a key file, launcher, temporary config, PATH entry, settings cleanup, or shell-profile block before live lane detection, model discovery, and a direct Messages request succeed.
-- DO NOT run the generator with its recorded model defaults; pass the exact mapping derived from the current key's model catalog.
-- DO NOT use the dated fallback snapshot to authorize setup when the live provider API cannot be verified.
+- DO NOT create a persistent key file, launcher, PATH entry, settings cleanup, or shell-profile block before the temporary Claude Code end-to-end test succeeds.
+- DO NOT run the generator with its recorded model defaults; pass the exact mapping proven through the current Claude Code compatibility test.
+- DO NOT require or use direct Kimi model or Messages API probes as launcher compatibility evidence.
+- DO NOT use the dated fallback snapshot to authorize setup without a successful current Claude Code test.
 - DO NOT map Claude Code model aliases to highspeed Kimi variants (`kimi-k2.7-code-highspeed`, `kimi-for-coding-highspeed`) in launcher defaults; keep them selectable only by direct model name or `availableModels` picker entries.
 - DO NOT remove the `--dangerously-skip-permissions` flag from the generated launcher unless the user's initial launcher request explicitly asks for permission prompts.
 - DO NOT assign endpoint, lane, account, model, routing, pricing, credential, context, or permission semantics to the optional suffix.

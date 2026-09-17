@@ -20,11 +20,11 @@ Use this reference only for a `claude-gac` or `claude-gac-<suffix>` launcher tha
 
 1. Identify the installed Claude Code version, the host OS and shell, and whether the initial request explicitly opted out of permissive mode. Re-check current Claude environment-variable and permission-flag behavior using read-only inspection.
 2. Obtain the GAC API key under **Required Input**; stop without changing any file when the key is unavailable.
-3. Complete **No-Write Provider Preflight** against GAC's model and Messages APIs. Do not resolve the implementation by running a generator or creating any launcher, key file, temporary config, response dump, or log first.
-4. Resolve the optional suffix under **Launcher Name and Suffix Contract** after the live provider route succeeds.
+3. Complete **Claude Code Compatibility Test** with the GAC variables scoped only to a temporary Claude Code invocation. Do not call GAC model or Messages endpoints directly as a preflight.
+4. Resolve the optional suffix under **Launcher Name and Suffix Contract** after the target CLI completes a minimal real turn.
 5. Implement every invariant in **GAC Launcher Contract** using an OS-native launcher. The bundled scripts under **Reference Implementations** are worked examples, not mandatory entrypoints.
 6. Run **Verification** against the resulting launcher, including environment scoping, argument forwarding, model discovery, permission mode, and exit-code preservation.
-7. Report the launcher location, implementation choices, API-advertised model catalog, and validation results without printing the key.
+7. Report the launcher location, implementation choices, Claude Code-visible model behavior, and validation results without printing the key.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's GAC-only contract, platform lanes, reference implementations, and user constraints, then execute the plan without loading or imitating sibling-provider configuration.
 
@@ -67,16 +67,17 @@ The user must provide a GAC API key issued by `gaccode.com`. A compliant impleme
 
 The generated launcher contains the key in plaintext. Tell the user this before generation when they have not already requested embedded credentials. Never print the key, include it in verification output, commit the generated launcher, or reuse it outside the user's requested host.
 
-## No-Write Provider Preflight
+## Claude Code Compatibility Test
 
-Complete this preflight before running either bundled generator or writing any setup file:
+Complete this test before running either bundled generator or writing persistent setup:
 
-1. Request `GET https://gaccode.com/claudecode/v1/models` with the supplied key using GAC's current Anthropic-compatible authentication and version headers. Keep the response in memory and record only nonsensitive model ids.
-2. Require a nonempty current catalog. Do not expect a particular Claude family or historical model name merely because this guide once mentioned it.
-3. Select one currently advertised model only for the probe and send a minimal `POST https://gaccode.com/claudecode/v1/messages` request using the same authentication lane Claude Code will use.
-4. Stop without modifying the filesystem when discovery, authentication, or the Messages request fails. Report the failing endpoint and status without printing request headers or the key.
+1. Inspect the installed Claude Code help and choose its current non-interactive one-turn mode.
+2. Scope the exact launcher environment—GAC base URL, `ANTHROPIC_API_KEY`, cleared competing auth variables, and gateway model discovery—to that process only.
+3. Run one minimal Claude Code turn using its normal agent request shape. Inspect Claude Code's own `/status`, `/model`, or equivalent model surface when an interactive check is needed.
+4. If the user requested a pinned model, pass that model through Claude Code and require the real turn to succeed. Otherwise let Claude Code and the gateway negotiate without inventing a historical pin.
+5. Stop without creating the launcher when the target CLI fails. Report Claude Code's visible authentication, model, or protocol failure; do not replace this test with handcrafted `/models` or `/messages` calls.
 
-The launcher does not persist a model pin; the probe model only proves that the current key, endpoint, Anthropic-compatible protocol, and at least one advertised model work together. If the user later requests a pinned model, require that exact id in the current catalog and probe it before adding the pin.
+The launcher does not persist a model pin by default. The successful Claude Code turn proves compatibility for the installed client version and current gateway behavior; a raw API response does not.
 
 ## Defaults
 
@@ -95,7 +96,7 @@ Windows:
 
 Resolve `<coding-agent-subskill-dir>` to the `subskills/coding-agent/` directory whose `references/` folder contains this page.
 
-The scripts below demonstrate the contract for the currently recorded Claude Code and GAC behavior. Inspect them before use, but do not run them until **No-Write Provider Preflight** succeeds. Run them unchanged only when the installed CLI and OS match their assumptions; otherwise adapt their environment setup, executable discovery, and invocation syntax while preserving the contract and verification requirements.
+The scripts below demonstrate the contract for the currently recorded Claude Code and GAC behavior. Inspect them before use, but do not run them until **Claude Code Compatibility Test** succeeds. Run them unchanged only when the installed CLI and OS match their assumptions; otherwise adapt their environment setup, executable discovery, and invocation syntax while preserving the contract and verification requirements.
 
 ### Linux
 
@@ -181,9 +182,9 @@ The managed-block count must be `1`, and every following expression must return 
 
 ### Gateway Models
 
-Start a fresh `<launcher-name>` session and inspect `/status` and `/model`. The base URL must be `https://gaccode.com/claudecode`, and gateway-discovered rows must agree with the current model catalog recorded during preflight.
+Start a fresh `<launcher-name>` session and inspect `/status` and `/model`. The base URL must be `https://gaccode.com/claudecode`, and the shown models must be usable through a real Claude Code turn.
 
-If a model advertised during preflight is absent, repeat the gateway's `/v1/models` request without printing the embedded key, verify the discovery variable, and restart Claude Code. If the endpoint no longer advertises it, treat the current key or plan as authoritative rather than preserving a stale expectation.
+If an expected model is absent, verify the discovery variable, restart Claude Code, and use the target CLI's own model surface. Do not query the gateway API separately to overrule what the installed Claude Code client can actually use.
 
 ## Troubleshooting
 
@@ -196,7 +197,8 @@ If a model advertised during preflight is absent, repeat the gateway's `/v1/mode
 ## Guardrails
 
 - DO NOT load, copy, or generalize from the Kimi or OpenLux launcher references while handling `claude-gac`.
-- DO NOT run a generator or create or modify a setup file before the live GAC model catalog and a direct Messages request succeed.
+- DO NOT run a generator or create persistent setup before the temporary Claude Code end-to-end turn succeeds.
+- DO NOT require or use direct GAC `/models` or `/messages` probes as launcher compatibility evidence.
 - DO NOT require or pin a model merely because it appeared in a historical guide, example, or previous launcher.
 - DO NOT externalize the GAC endpoint or API key into side files or runtime configuration variables.
 - DO NOT use `ANTHROPIC_AUTH_TOKEN` for GAC.

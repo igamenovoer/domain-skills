@@ -20,11 +20,11 @@ Use this reference when the user wants a local `claude-openlux` or `claude-openl
 
 1. Identify the installed Claude Code version, host OS and shell, current OpenLux API guidance, and whether the initial request opts out of permissive mode using read-only inspection.
 2. Obtain the OpenLux key under **Required Input**; stop without changing any file when it is unavailable.
-3. Complete **No-Write Provider Preflight** against OpenLux's Anthropic-compatible model and Messages APIs before creating a key file, launcher, temporary config, response dump, log, PATH entry, or shell-profile block.
-4. Resolve the optional suffix, authentication lane, and credential placement only after the live provider route succeeds.
+3. Complete **Claude Code Compatibility Test** with OpenLux variables scoped to a temporary Claude Code invocation. Do not call OpenLux APIs directly as a preflight.
+4. Resolve the optional suffix, authentication lane, and credential placement only after Claude Code completes a minimal real turn.
 5. Implement the launcher from **Launcher Design Principles** and **Runtime Argument Contract**. Treat the inline script as a Unix reference implementation rather than mandatory machinery.
 6. Put the launcher directory on PATH for new shells using the host's native startup mechanism.
-7. Run **Verification**, including redaction-safe inspection, argument and permission checks, and comparison with the preflight model catalog.
+7. Run **Verification**, including redaction-safe inspection, argument and permission checks, and Claude Code's own endpoint and model surfaces.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's inputs, defaults, launcher contract, verification rules, and user constraints, then execute the plan without exposing credentials.
 
@@ -36,31 +36,32 @@ The suffix is a user-facing launcher and credential-file namespace only. It does
 
 ## Required Input
 
-The user must provide an OpenLux API key during setup so the no-write provider preflight can run before any launcher or key file is created. Prefer an existing process-scoped `OPENLUX_API_KEY` only when the user explicitly wants to use it for this setup. If no key is available, stop without writing a placeholder launcher.
+The user must provide an OpenLux API key during setup so Claude Code can verify the route before any persistent launcher or key file is created. Prefer an existing process-scoped `OPENLUX_API_KEY` only when the user explicitly wants to use it for this setup. If no key is available, stop without writing a placeholder launcher.
 
 ```text
-Please provide your OpenLux API key so I can verify the live Anthropic-compatible API before creating the launcher.
+Please provide your OpenLux API key so I can verify the route with Claude Code before creating the launcher.
 ```
 
 The generated launcher must not hard-code the API key. It reads its resolved key file directly at runtime and assigns `ANTHROPIC_AUTH_TOKEN` for the launched Claude process only. Embed the key in the launcher script itself only when the user explicitly requests that layout; in that case the launcher file must be `chmod 700` and must never be committed or shared.
 
-## No-Write Provider Preflight
+## Claude Code Compatibility Test
 
-Complete this phase while keeping the key process-scoped and all API responses in memory:
+Complete this test with the key and relay variables scoped to one temporary Claude Code process:
 
-1. Request `GET https://api.openlux.ai/v1/models` with the current key using OpenLux's documented Anthropic-compatible headers.
-2. Require a nonempty catalog whose ids match the current Claude-compatible namespace advertised by the provider. Do not require a particular historical model family or id.
-3. Select one currently advertised id only for the probe and send a minimal `POST https://api.openlux.ai/v1/messages` request through the same authentication lane Claude Code will use.
-4. Stop without modifying the filesystem when model discovery, authentication, or the Messages request fails. Report the failing layer without printing headers or the key.
+1. Inspect the installed Claude Code help and select its current non-interactive one-turn mode.
+2. Apply the same base URL, auth lane, conflicting-variable cleanup, and gateway model-discovery settings intended for the launcher without creating persistent files.
+3. Run one minimal Claude Code turn. Use `/status`, `/model`, or the current equivalent to inspect the endpoint and client-visible models when an interactive check is needed.
+4. If the user requested a model pin, pass it through Claude Code and require the real turn to succeed. Otherwise leave model choice to Claude Code and the relay.
+5. Stop without creating the launcher when Claude Code fails. Report its client-visible authentication, model, or protocol error; do not replace this test with handcrafted `/models` or `/messages` calls.
 
-The launcher intentionally does not persist a model pin. The probe model proves only that the current key, endpoint, protocol, and at least one advertised model work together. A user-requested pin requires a fresh catalog check and direct probe of that exact id.
+The launcher intentionally does not persist a model pin. A user-requested pin requires a fresh Claude Code end-to-end test of that exact id.
 
 ## Launcher Design Principles
 
 - Treat Claude Code, OpenLux, and the host shell as separate compatibility surfaces. Re-check current Claude flags and environment variables, OpenLux's endpoint and authentication requirements, and the host's executable-resolution rules before implementation.
 - Scope OpenLux variables to the launched Claude process and clear conflicting auth and model variables so ambient configuration cannot select another provider.
 - Use the resolved full launcher name and matching key-file namespace consistently; never derive provider behavior from the optional suffix.
-- Keep the relay's advertised model catalog authoritative; do not hard-code model mappings merely because an older example did.
+- Keep Claude Code's current gateway-visible model behavior authoritative for the launcher; do not hard-code model mappings merely because an older example did.
 - Use native process semantics: a Unix wrapper can export then `exec`; a Windows implementation should use PowerShell-native argument arrays and restore any caller environment it mutates.
 - Apply the shared permissive default, forward caller arguments exactly, preserve the exit code, and verify the effective endpoint and model catalog.
 
@@ -79,7 +80,7 @@ Imsight's local launcher runs Claude Code with `--dangerously-skip-permissions` 
 
 ## Reference Unix Implementation
 
-The following Bash template illustrates the current contract after **No-Write Provider Preflight** succeeds. Compare it with the installed Claude Code version and current OpenLux documentation before using it. Adapt executable discovery, paths, or OS-specific process handling as needed; do not discard the principles above merely because this exact script stops matching a future version. Write an adapted Unix launcher to the selected launcher path and `chmod 700` the result:
+The following Bash template illustrates the current contract after **Claude Code Compatibility Test** succeeds. Compare it with the installed Claude Code version and current OpenLux documentation before using it. Adapt executable discovery, paths, or OS-specific process handling as needed; do not discard the principles above merely because this exact script stops matching a future version. Write an adapted Unix launcher to the selected launcher path and `chmod 700` the result:
 
 ```bash
 #!/usr/bin/env bash
@@ -184,24 +185,15 @@ rg -n 'openlux-api-key|ANTHROPIC_AUTH_TOKEN|ANTHROPIC_BASE_URL|API_TIMEOUT_MS|DI
 test -f "$HOME/.local/bin/<key-file-name>" && sed 's/.*/<redacted>/' "$HOME/.local/bin/<key-file-name>"
 ```
 
-Repeat the relay model check and compare it with the catalog recorded during preflight:
-
-```bash
-curl -s --max-time 20 https://api.openlux.ai/v1/models \
-  -H "x-api-key: $(tr -d '[:space:]' < "$HOME/.local/bin/<key-file-name>")" \
-  -H "anthropic-version: 2023-06-01" \
-  | python3 -c "import json,sys; ids=[m['id'] for m in json.load(sys.stdin)['data']]; print('\n'.join(ids)); assert ids and all(i.startswith('claude-') for i in ids), 'relay exposes non-official model ids'"
-```
-
-Inside Claude Code, `/status` should show Base URL `https://api.openlux.ai`, and the `/model` picker should agree with the current relay catalog rather than expose unrelated upstream ids. The default launcher must invoke `claude` with `--dangerously-skip-permissions`; an explicit permission-prompting opt-out must omit it.
+Run one minimal turn through the generated launcher. Inside Claude Code, `/status` should show Base URL `https://api.openlux.ai`, and the `/model` picker should expose models usable through Claude Code rather than stale local overrides. The default launcher must invoke `claude` with `--dangerously-skip-permissions`; an explicit permission-prompting opt-out must omit it.
 
 ## Notes
 
 - Store the OpenLux key in the resolved `openlux-api-key[-<suffix>]` file next to the launcher, not in the launcher script itself. The key file must be `chmod 600`.
-- OpenLux exposes Anthropic-compatible `/v1/models` and `/v1/messages` surfaces. The launcher clears every `ANTHROPIC_*` model variable so Claude Code and gateway discovery use the current relay lineup unchanged. Pinning a historical model name client-side breaks when the relay changes its catalog.
-- End-to-end compatibility was verified on 2026-09-11 with Claude Code v2.1.268 in a scrubbed environment. Historical model ids are intentionally omitted; repeat the live catalog and Messages checks instead of reusing that snapshot.
+- OpenLux currently documents an Anthropic-compatible Claude route. Re-check that route with the installed Claude Code version. The launcher clears every `ANTHROPIC_*` model variable so Claude Code and gateway discovery use the current relay lineup unchanged; pinning a historical model name client-side breaks when the relay changes its catalog.
+- End-to-end compatibility was verified on 2026-09-11 with Claude Code v2.1.268 in a scrubbed environment. Historical model ids are intentionally omitted; repeat the Claude Code compatibility turn instead of reusing that snapshot.
 - `/model <name>` saves the pick as the default for new sessions by writing `model` to `~/.claude/settings.json`; that saved default then leaks into every Claude Code launcher on the box. Revert by choosing the picker's `Default (recommended)` row or by removing the `model` key from `settings.json`.
-- If `/model` or `/status` shows an upstream id such as `k3[1m]`, restart the session first. Usage history under `projects.<path>.lastModelUsage` in `~/.claude.json` keeps old upstream names and is cosmetic. A selectable picker row with a non-`claude-` id after a restart means the relay's `/v1/models` is leaking upstream names; confirm with the check in **Verification** and report it to the relay operator, not to the launcher.
+- If `/model` or `/status` shows an unexpected upstream id such as `k3[1m]`, restart the session first. Usage history under `projects.<path>.lastModelUsage` in `~/.claude.json` keeps old upstream names and is cosmetic. If the row remains selectable but fails through a real Claude Code turn, report that client-visible mismatch to the relay operator; do not diagnose it with a separate API probe.
 - If `claude` prints `Error: claude native binary not installed`, the Claude Code package's postinstall did not run; repair it with `node <npm-global-root>/node_modules/@anthropic-ai/claude-code/install.cjs` and re-verify `claude --version`. The usual cause is the background auto-updater: it reinstalls the npm package mid-session, and an install interrupted between package extraction and postinstall leaves the placeholder shim as the `claude` entrypoint. The template prevents recurrence by exporting `DISABLE_AUTOUPDATER=1`; update deliberately with `npm update -g @anthropic-ai/claude-code` instead.
 - If first launch gets stuck in Claude Code onboarding, the template's embedded Node script already sets `hasCompletedOnboarding` in `~/.claude.json`; confirm the file is writable.
 - Retire any leftover `claude-yunwu` launcher and `YUNWU_*` env vars; `yunwu.ai` no longer serves.
@@ -209,7 +201,8 @@ Inside Claude Code, `/status` should show Base URL `https://api.openlux.ai`, and
 ## Guardrails
 
 - DO NOT print, hard-code, or echo the OpenLux API key in commands, responses, or the generated launcher, except inside the launcher file itself when the user explicitly requests an embedded key with `chmod 700`.
-- DO NOT create a key file, launcher, temporary config, PATH entry, or shell-profile block before the current model catalog and a direct Messages request succeed.
+- DO NOT create a persistent key file, launcher, PATH entry, or shell-profile block before the temporary Claude Code end-to-end turn succeeds.
+- DO NOT require or use direct OpenLux `/models` or `/messages` probes as launcher compatibility evidence.
 - DO NOT require or pin a model merely because it appeared in a historical guide, verification snapshot, or previous launcher.
 - DO NOT name generated launchers or key files after OpenLux pricing, discount, or token-group names (such as `0.5x`) unless the user explicitly asks for that name.
 - DO NOT pin model names or export `ANTHROPIC_DEFAULT_*_MODEL` variables in the generated launcher.
