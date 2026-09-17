@@ -2,12 +2,18 @@
 param(
     [string]$ApiKey = "",
     [string]$ProfilePath = "",
+    [string]$Suffix = "",
     [switch]$RequirePermissionPrompts
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 $baseUrl = 'https://gaccode.com/claudecode'
+
+if (-not [string]::IsNullOrEmpty($Suffix) -and $Suffix -notmatch '^[a-z0-9]+(?:-[a-z0-9]+)*$') {
+    throw "create-claude-gac-launcher: invalid suffix: $Suffix"
+}
+$launcherName = if ([string]::IsNullOrEmpty($Suffix)) { 'claude-gac' } else { "claude-gac-$Suffix" }
 
 if ([string]::IsNullOrWhiteSpace($ProfilePath)) {
     $ProfilePath = $PROFILE.CurrentUserCurrentHost
@@ -40,7 +46,7 @@ $baseUrlLiteral = ConvertTo-SingleQuotedLiteral -Value $baseUrl
 $permissionArgumentsLiteral = if ($RequirePermissionPrompts) { '@()' } else { "@('--dangerously-skip-permissions')" }
 
 $functionTemplate = @'
-function claude-gac {
+function __LAUNCHER_NAME__ {
     $previousBaseUrlExists = Test-Path Env:ANTHROPIC_BASE_URL
     $previousApiKeyExists = Test-Path Env:ANTHROPIC_API_KEY
     $previousAuthTokenExists = Test-Path Env:ANTHROPIC_AUTH_TOKEN
@@ -108,9 +114,9 @@ function claude-gac {
 }
 '@
 
-$functionBody = $functionTemplate.Replace('__BASE_URL__', $baseUrlLiteral).Replace('__API_KEY__', $apiKeyLiteral).Replace('__PERMISSION_ARGUMENTS__', $permissionArgumentsLiteral)
-$startMarker = '# >>> claude-gac launcher >>>'
-$endMarker = '# <<< claude-gac launcher <<<'
+$functionBody = $functionTemplate.Replace('__LAUNCHER_NAME__', $launcherName).Replace('__BASE_URL__', $baseUrlLiteral).Replace('__API_KEY__', $apiKeyLiteral).Replace('__PERMISSION_ARGUMENTS__', $permissionArgumentsLiteral)
+$startMarker = "# >>> $launcherName launcher >>>"
+$endMarker = "# <<< $launcherName launcher <<<"
 $managedBlock = $startMarker + [Environment]::NewLine + $functionBody.TrimEnd() + [Environment]::NewLine + $endMarker
 
 $profileDirectory = Split-Path -Parent $ProfilePath
@@ -125,7 +131,7 @@ if ($null -eq $profileText) {
     $profileText = ""
 }
 
-$managedPattern = '(?ms)^# >>> claude-gac launcher >>>\r?\n.*?^# <<< claude-gac launcher <<<\r?$'
+$managedPattern = '(?ms)^' + [regex]::Escape($startMarker) + '\r?\n.*?^' + [regex]::Escape($endMarker) + '\r?$'
 if ([regex]::IsMatch($profileText, $managedPattern)) {
     $profileText = [regex]::Replace($profileText, $managedPattern, [System.Text.RegularExpressions.MatchEvaluator]{
         param($match)
@@ -133,8 +139,9 @@ if ([regex]::IsMatch($profileText, $managedPattern)) {
     })
 }
 else {
-    if ($profileText -match '(?im)^\s*function\s+claude-gac\b') {
-        throw "An unmanaged claude-gac function already exists in $ProfilePath; migrate it manually before running this generator."
+    $unmanagedPattern = '(?im)^\s*function\s+' + [regex]::Escape($launcherName) + '(?=\s|\{)'
+    if ($profileText -match $unmanagedPattern) {
+        throw "An unmanaged $launcherName function already exists in $ProfilePath; migrate it manually before running this generator."
     }
 
     if (-not [string]::IsNullOrEmpty($profileText) -and -not $profileText.EndsWith("`n")) {
@@ -150,7 +157,7 @@ Set-Content -LiteralPath $ProfilePath -Value $profileText -Encoding UTF8 -NoNewl
 $ApiKey = $null
 
 Write-Host "updated PowerShell profile: $ProfilePath"
-Write-Host 'embedded the fixed GAC endpoint and provided API key in the managed claude-gac block'
+Write-Host "embedded the fixed GAC endpoint and provided API key in the managed $launcherName block"
 if ($RequirePermissionPrompts) {
     Write-Host 'permission mode: prompts enabled (explicit opt-out)'
 }

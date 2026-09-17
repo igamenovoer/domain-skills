@@ -14,40 +14,48 @@ metadata:
 
 # Claude-OpenLux Launcher Setup
 
-Use this reference when the user wants a local `claude-openlux` launcher that runs Claude Code against the OpenLux relay (`https://api.openlux.ai`). OpenLux replaces the retired Yunwu relay (`yunwu.ai` no longer serves); migrate any `claude-yunwu` launcher to this guide.
+Use this reference when the user wants a local `claude-openlux` or `claude-openlux-<suffix>` launcher that runs Claude Code against the OpenLux relay (`https://api.openlux.ai`). OpenLux replaces the retired Yunwu relay (`yunwu.ai` no longer serves); migrate any `claude-yunwu` launcher to this guide.
 
 ## Workflow
 
 1. Identify the installed Claude Code version, host OS and shell, current OpenLux API guidance, and whether the initial request opts out of permissive mode.
-2. Resolve API-key handling under **Required Input** without printing the key, then establish the endpoint, authentication lane, model-discovery behavior, and credential placement.
-3. Implement the launcher from **Launcher Design Principles** and **Runtime Argument Contract**. Treat the inline script as a Unix reference implementation rather than mandatory machinery.
-4. Put the launcher directory on PATH for new shells using the host's native startup mechanism.
-5. Run **Verification**, including redaction-safe inspection, argument and permission checks, and a relay model check.
+2. Resolve the optional suffix under **Launcher Name and Suffix Contract**.
+3. Resolve API-key handling under **Required Input** without printing the key, then establish the endpoint, authentication lane, model-discovery behavior, and credential placement.
+4. Implement the launcher from **Launcher Design Principles** and **Runtime Argument Contract**. Treat the inline script as a Unix reference implementation rather than mandatory machinery.
+5. Put the launcher directory on PATH for new shells using the host's native startup mechanism.
+6. Run **Verification**, including redaction-safe inspection, argument and permission checks, and a relay model check.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's inputs, defaults, launcher contract, verification rules, and user constraints, then execute the plan without exposing credentials.
 
+## Launcher Name and Suffix Contract
+
+Use `claude-openlux` when no suffix is provided. When the user provides a suffix such as `work`, use `claude-openlux-work`. Accept lowercase letters, digits, and internal hyphens; omit the separator when the suffix is absent.
+
+The suffix is a user-facing launcher and credential-file namespace only. It does not select an OpenLux account, token group, endpoint, model, automatic-routing mode, price tier, or permission mode. Use `openlux-api-key` for the unsuffixed launcher and `openlux-api-key-<suffix>` for a suffixed variant so side-by-side launchers do not accidentally share credentials. In examples, `<key-file-name>` means the corresponding resolved filename. Do not ask for a suffix when the user does not provide one.
+
 ## Required Input
 
-You can provide an OpenLux API key during setup, or let the generated launcher fail with a clear message until the key file exists. Prefer an existing `OPENLUX_API_KEY` only when the user explicitly wants to seed the shared key file during setup.
+You can provide an OpenLux API key during setup, or let the generated launcher fail with a clear message until the key file exists. Prefer an existing `OPENLUX_API_KEY` only when the user explicitly wants to seed this launcher's resolved key file during setup.
 
 ```text
-Please provide your OpenLux API key for the shared OpenLux launcher key file, or confirm that you will create the key file yourself.
+Please provide your OpenLux API key for this launcher's OpenLux key file, or confirm that you will create the key file yourself.
 ```
 
-The generated launcher must not hard-code the API key. It reads the shared key file directly at runtime and assigns `ANTHROPIC_AUTH_TOKEN` for the launched Claude process only. Embed the key in the launcher script itself only when the user explicitly requests that layout; in that case the launcher file must be `chmod 700` and must never be committed or shared.
+The generated launcher must not hard-code the API key. It reads its resolved key file directly at runtime and assigns `ANTHROPIC_AUTH_TOKEN` for the launched Claude process only. Embed the key in the launcher script itself only when the user explicitly requests that layout; in that case the launcher file must be `chmod 700` and must never be committed or shared.
 
 ## Launcher Design Principles
 
 - Treat Claude Code, OpenLux, and the host shell as separate compatibility surfaces. Re-check current Claude flags and environment variables, OpenLux's endpoint and authentication requirements, and the host's executable-resolution rules before implementation.
 - Scope OpenLux variables to the launched Claude process and clear conflicting auth and model variables so ambient configuration cannot select another provider.
+- Use the resolved full launcher name and matching key-file namespace consistently; never derive provider behavior from the optional suffix.
 - Keep the relay's advertised model catalog authoritative; do not hard-code model mappings merely because an older example did.
 - Use native process semantics: a Unix wrapper can export then `exec`; a Windows implementation should use PowerShell-native argument arrays and restore any caller environment it mutates.
 - Apply the shared permissive default, forward caller arguments exactly, preserve the exit code, and verify the effective endpoint and model catalog.
 
 ## Defaults
 
-- Unix launcher path: `$HOME/.local/bin/claude-openlux`. Omit provider pricing or discount suffixes (such as token-group names like `0.5x`) from launcher and key-file names by default; they encode the provider's billing tiers, go stale when the plan changes, and leak account details into shell history. Add a suffix only when the user explicitly runs several OpenLux keys side by side, and then choose a neutral descriptor such as `claude-openlux-b` rather than the provider's group name.
-- Unix shared key file: `$HOME/.local/bin/openlux-api-key` (one file per box; a second key gets a neutral sibling name such as `openlux-api-key-b`).
+- Unix launcher path: `$HOME/.local/bin/<launcher-name>`, resolving to `claude-openlux` or `claude-openlux-<suffix>`.
+- Unix key file: `$HOME/.local/bin/openlux-api-key` without a suffix, or `$HOME/.local/bin/openlux-api-key-<suffix>` with one.
 - Base URL: `https://api.openlux.ai`
 - Auth: `ANTHROPIC_AUTH_TOKEN` with a key from the OpenLux console; the launcher clears `ANTHROPIC_API_KEY` and `CLAUDE_CODE_OAUTH_TOKEN` so Claude Code does not choose an older auth lane.
 - `API_TIMEOUT_MS=300000` and `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1`, both overridable by the caller. These follow the OpenLux tutorial recommendation.
@@ -69,9 +77,10 @@ set -euo pipefail
 # Config is injected via environment only; settings.json is left untouched.
 # Ref: https://doc.openlux.ai/tutorials/plugins-7010249
 
-key_file="$HOME/.local/bin/openlux-api-key"
+launcher_name='<launcher-name>'
+key_file="$HOME/.local/bin/<key-file-name>"
 if [[ ! -f "$key_file" ]]; then
-  echo "claude-openlux: key file $key_file missing; store your OpenLux key there" >&2
+  echo "$launcher_name: key file $key_file missing; store your OpenLux key there" >&2
   exit 1
 fi
 
@@ -130,7 +139,7 @@ if [[ -z "$claude_bin" ]]; then
   claude_bin="$(command -v claude || true)"
 fi
 if [[ -z "$claude_bin" ]]; then
-  echo "claude-openlux: claude binary not found" >&2
+  echo "$launcher_name: claude binary not found" >&2
   exit 127
 fi
 
@@ -143,31 +152,31 @@ The example candidate loop covers nvm, bun, and `~/.local/bin` installs before f
 
 ## Runtime Argument Contract
 
-`claude-openlux` runtime arguments are Claude Code arguments. The launcher prepends `--dangerously-skip-permissions` by default, passes every user-supplied argument through unchanged, and injects no `--model` default; model selection is left to the relay unless the caller passes `--model` explicitly. An explicit permission-prompting opt-out changes only the final `exec` line to `exec "$claude_bin" "$@"`.
+`<launcher-name>` runtime arguments are Claude Code arguments. The launcher prepends `--dangerously-skip-permissions` by default, passes every user-supplied argument through unchanged, and injects no `--model` default; model selection is left to the relay unless the caller passes `--model` explicitly. The setup-time suffix is never forwarded. An explicit permission-prompting opt-out changes only the final `exec` line to `exec "$claude_bin" "$@"`.
 
 ## Verification
 
 Verify the launcher exists and resolves in fresh shells:
 
 ```bash
-command -v claude-openlux
-bash -ic 'command -v claude-openlux'   # must also resolve in a fresh non-login terminal
-test -x "$HOME/.local/bin/claude-openlux"
-test -f "$HOME/.local/bin/openlux-api-key" || echo "key file still needed"
+command -v <launcher-name>
+bash -ic 'command -v <launcher-name>'   # must also resolve in a fresh non-login terminal
+test -x "$HOME/.local/bin/<launcher-name>"
+test -f "$HOME/.local/bin/<key-file-name>" || echo "key file still needed"
 ```
 
 Inspect the generated launcher and key file only with redaction:
 
 ```bash
-rg -n 'openlux-api-key|ANTHROPIC_AUTH_TOKEN|ANTHROPIC_BASE_URL|API_TIMEOUT_MS|DISABLE_EXPERIMENTAL_BETAS|GATEWAY_MODEL_DISCOVERY|DISABLE_AUTOUPDATER|dangerously-skip-permissions' "$HOME/.local/bin/claude-openlux"
-test -f "$HOME/.local/bin/openlux-api-key" && sed 's/.*/<redacted>/' "$HOME/.local/bin/openlux-api-key"
+rg -n 'openlux-api-key|ANTHROPIC_AUTH_TOKEN|ANTHROPIC_BASE_URL|API_TIMEOUT_MS|DISABLE_EXPERIMENTAL_BETAS|GATEWAY_MODEL_DISCOVERY|DISABLE_AUTOUPDATER|dangerously-skip-permissions' "$HOME/.local/bin/<launcher-name>"
+test -f "$HOME/.local/bin/<key-file-name>" && sed 's/.*/<redacted>/' "$HOME/.local/bin/<key-file-name>"
 ```
 
 Verify the relay exposes the official Anthropic API surface. Every model id must start with `claude-`:
 
 ```bash
 curl -s --max-time 20 https://api.openlux.ai/v1/models \
-  -H "x-api-key: $(tr -d '[:space:]' < "$HOME/.local/bin/openlux-api-key")" \
+  -H "x-api-key: $(tr -d '[:space:]' < "$HOME/.local/bin/<key-file-name>")" \
   -H "anthropic-version: 2023-06-01" \
   | python3 -c "import json,sys; ids=[m['id'] for m in json.load(sys.stdin)['data']]; print('\n'.join(ids)); assert ids and all(i.startswith('claude-') for i in ids), 'relay exposes non-official model ids'"
 ```
@@ -176,7 +185,7 @@ Inside Claude Code, `/status` should show Base URL `https://api.openlux.ai`, and
 
 ## Notes
 
-- Store the OpenLux key in the shared `openlux-api-key` file next to the launcher, not in the launcher script itself. The key file must be `chmod 600`.
+- Store the OpenLux key in the resolved `openlux-api-key[-<suffix>]` file next to the launcher, not in the launcher script itself. The key file must be `chmod 600`.
 - OpenLux mimics the official Anthropic API: `/v1/models` returns official ids such as `claude-fable-5`, and `/v1/messages` echoes the requested official model name back. The launcher clears every `ANTHROPIC_*` model variable so Claude Code's built-in lineup (Opus, Sonnet, Fable, Haiku) passes through to the relay unchanged. Pinning a model name client-side breaks when the relay changes its lineup.
 - End-to-end verified on 2026-09-11 with Claude Code v2.1.268 in a scrubbed environment (`env -i`, no inherited variables): the launcher starts on the default `Opus 5 (1M context)`, `/model claude-fable-5` switches the session to Fable 5, and a prompt returns a normal completion through the relay. With gateway model discovery enabled, the picker lists relay rows (Fable 5.1, Fable 5, Opus 5, Opus 4.8, Opus 4.5, and more) with gateway-supplied descriptions.
 - `/model <name>` saves the pick as the default for new sessions by writing `model` to `~/.claude/settings.json`; that saved default then leaks into every Claude Code launcher on the box. Revert by choosing the picker's `Default (recommended)` row or by removing the `model` key from `settings.json`.
@@ -191,3 +200,4 @@ Inside Claude Code, `/status` should show Base URL `https://api.openlux.ai`, and
 - DO NOT name generated launchers or key files after OpenLux pricing, discount, or token-group names (such as `0.5x`) unless the user explicitly asks for that name.
 - DO NOT pin model names or export `ANTHROPIC_DEFAULT_*_MODEL` variables in the generated launcher.
 - DO NOT remove the `--dangerously-skip-permissions` flag from the generated launcher unless the user's initial launcher request explicitly asks for permission prompts.
+- DO NOT assign endpoint, account, model, routing, pricing, credential, or permission semantics to the optional suffix.

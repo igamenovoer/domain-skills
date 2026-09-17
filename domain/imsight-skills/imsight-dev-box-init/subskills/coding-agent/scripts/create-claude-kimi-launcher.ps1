@@ -1,5 +1,6 @@
 param(
     [string]$ApiKey = "",
+    [string]$Suffix = "",
     [string]$OutputPath = "",
     [string]$CmdShimPath = "",
     [string]$KeyFilePath = "",
@@ -18,6 +19,11 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+if (-not [string]::IsNullOrEmpty($Suffix) -and $Suffix -notmatch '^[a-z0-9]+(?:-[a-z0-9]+)*$') {
+    throw "create-claude-kimi-launcher: invalid suffix: $Suffix"
+}
+$launcherName = if ([string]::IsNullOrEmpty($Suffix)) { 'claude-kimi' } else { "claude-kimi-$Suffix" }
+
 if ([string]::IsNullOrWhiteSpace($ApiKey)) {
     $ApiKey = $env:KIMI_API_KEY
 }
@@ -26,13 +32,14 @@ if ([string]::IsNullOrWhiteSpace($ApiKey)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($OutputPath)) {
-    $OutputPath = Join-Path $env:LOCALAPPDATA "Programs\kimi-launchers\claude-kimi.ps1"
+    $OutputPath = Join-Path $env:LOCALAPPDATA "Programs\kimi-launchers\$launcherName.ps1"
 }
 if ([string]::IsNullOrWhiteSpace($CmdShimPath)) {
-    $CmdShimPath = Join-Path (Split-Path -Parent $OutputPath) "claude-kimi.cmd"
+    $CmdShimPath = Join-Path (Split-Path -Parent $OutputPath) "$launcherName.cmd"
 }
 if ([string]::IsNullOrWhiteSpace($KeyFilePath)) {
-    $KeyFilePath = Join-Path (Split-Path -Parent $OutputPath) "kimi-api-key"
+    $keyFileName = if ([string]::IsNullOrEmpty($Suffix)) { 'kimi-api-key' } else { "kimi-api-key-$Suffix" }
+    $KeyFilePath = Join-Path (Split-Path -Parent $OutputPath) $keyFileName
 }
 
 # The Kimi Code membership endpoint authenticates with ANTHROPIC_API_KEY;
@@ -96,6 +103,7 @@ $modelHaikuLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ModelHaiku
 $modelFableLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ModelFable
 $modelSubagentLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ModelSubagent
 $claudeBinLiteral = ConvertTo-SingleQuotedLiteralValue -Value $ClaudeBin
+$launcherNameLiteral = ConvertTo-SingleQuotedLiteralValue -Value $launcherName
 $permissionArgumentsLiteral = if ($RequirePermissionPrompts) { '@()' } else { "@('--dangerously-skip-permissions')" }
 
 if ($useApiKeyAuth) {
@@ -150,7 +158,7 @@ if (-not (Test-Path -LiteralPath `$keyFile)) {
         [Runtime.InteropServices.Marshal]::ZeroFreeBSTR(`$keyPtr)
     }
     if ([string]::IsNullOrWhiteSpace(`$apiKey)) {
-        Write-Error 'claude-kimi: empty Kimi API key'
+        Write-Error '$($launcherNameLiteral): empty Kimi API key'
         exit 2
     }
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent `$keyFile) | Out-Null
@@ -158,7 +166,7 @@ if (-not (Test-Path -LiteralPath `$keyFile)) {
 } else {
     `$apiKey = (Get-Content -LiteralPath `$keyFile -Raw).Trim()
     if ([string]::IsNullOrWhiteSpace(`$apiKey)) {
-        Write-Error "claude-kimi: empty Kimi API key in `$keyFile"
+        Write-Error "$($launcherNameLiteral): empty Kimi API key in `$keyFile"
         exit 2
     }
 }
@@ -214,7 +222,7 @@ if ([string]::IsNullOrWhiteSpace(`$claudeBin)) {
     }
 }
 if ([string]::IsNullOrWhiteSpace(`$claudeBin)) {
-    Write-Error 'claude-kimi: claude binary not found'
+    Write-Error '$($launcherNameLiteral): claude binary not found'
     exit 127
 }
 

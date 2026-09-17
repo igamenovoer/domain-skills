@@ -5,11 +5,12 @@ usage() {
   cat <<'EOF'
 Usage: create-claude-gac-launcher.sh [options]
 
-Creates a Linux claude-gac launcher with the fixed GAC endpoint and the GAC API
-key embedded directly in the generated file.
+Creates a Linux claude-gac or claude-gac-<suffix> launcher with the fixed GAC
+endpoint and the GAC API key embedded directly in the generated file.
 
 Options:
-  --output PATH                  Launcher path. Default: $HOME/.local/bin/claude-gac.
+  --suffix SUFFIX                Optional user-facing launcher suffix.
+  --output PATH                  Launcher path. Default: $HOME/.local/bin/<launcher-name>.
   --claude-bin PATH              Optional fixed Claude Code executable path.
   --require-permission-prompts   Do not inject --dangerously-skip-permissions.
   -h, --help                     Show this help.
@@ -20,13 +21,22 @@ EOF
 }
 
 api_key="${GAC_API_KEY:-}"
-output="$HOME/.local/bin/claude-gac"
+suffix=""
+output=""
 claude_bin=""
 base_url='https://gaccode.com/claudecode'
 permissive=1
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --suffix)
+      suffix="${2:?missing value for --suffix}"
+      shift 2
+      ;;
+    --suffix=*)
+      suffix="${1#*=}"
+      shift
+      ;;
     --output)
       output="${2:?missing value for --output}"
       shift 2
@@ -59,6 +69,15 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [[ -n "$suffix" && ! "$suffix" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+  echo "create-claude-gac-launcher: invalid suffix: $suffix" >&2
+  exit 2
+fi
+launcher_name="claude-gac${suffix:+-$suffix}"
+if [[ -z "$output" ]]; then
+  output="$HOME/.local/bin/$launcher_name"
+fi
+
 if [[ -z "$api_key" ]]; then
   if [[ ! -t 0 ]]; then
     echo 'create-claude-gac-launcher: GAC_API_KEY is required without an interactive terminal' >&2
@@ -79,6 +98,7 @@ shell_quote() {
 api_key_q="$(shell_quote "$api_key")"
 base_url_q="$(shell_quote "$base_url")"
 claude_bin_q="$(shell_quote "$claude_bin")"
+launcher_name_q="$(shell_quote "$launcher_name")"
 output_dir="$(dirname "$output")"
 permission_args_line='permission_args=(--dangerously-skip-permissions)'
 if [[ "$permissive" -eq 0 ]]; then
@@ -94,6 +114,7 @@ set -euo pipefail
 
 # GAC-specific Claude Code launcher. The endpoint and API key are intentionally
 # embedded; do not replace them with token or endpoint side files.
+launcher_name=$launcher_name_q
 export ANTHROPIC_BASE_URL=$base_url_q
 export ANTHROPIC_API_KEY=$api_key_q
 export CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY='1'
@@ -104,7 +125,7 @@ if [[ -z "\$claude_bin" ]]; then
   claude_bin="\$(command -v claude || true)"
 fi
 if [[ -z "\$claude_bin" ]]; then
-  echo 'claude-gac: claude binary not found' >&2
+  echo "\$launcher_name: claude binary not found" >&2
   exit 127
 fi
 

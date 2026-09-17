@@ -5,15 +5,18 @@ usage() {
   cat <<'EOF'
 Usage: create-claude-kimi-launcher.sh [options]
 
-Creates a Unix claude-kimi launcher that runs Claude Code against Kimi Code.
-The generated launcher reads a shared kimi-api-key file from the launcher dir.
+Creates a Unix claude-kimi or claude-kimi-<suffix> launcher that runs Claude
+Code against Kimi Code.
+The generated launcher reads its resolved kimi-api-key[-<suffix>] file from the
+launcher directory.
 If the key file is missing, the launcher prompts once and writes it there.
 
 Options:
-  --api-key KEY       Optional Kimi API key to seed the shared key file.
+  --suffix SUFFIX    Optional user-facing launcher suffix.
+  --api-key KEY       Optional Kimi API key to seed the resolved key file.
                      Defaults to KIMI_API_KEY, then ANTHROPIC_API_KEY.
-  --output PATH      Launcher path. Default: $HOME/.local/bin/claude-kimi.
-  --key-file PATH    Shared key file. Default: <launcher-dir>/kimi-api-key.
+  --output PATH      Launcher path. Default: $HOME/.local/bin/<launcher-name>.
+  --key-file PATH    Key file. Default: <launcher-dir>/kimi-api-key[-<suffix>].
   --base-url URL     Anthropic-compatible Kimi endpoint. Default: https://api.moonshot.ai/anthropic.
   --model MODEL      Startup model passed to Claude Code --model. Default: opus.
                      Use a Claude tier alias (opus, sonnet, haiku, fable) or a raw
@@ -40,7 +43,8 @@ EOF
 }
 
 api_key="${KIMI_API_KEY:-${ANTHROPIC_API_KEY:-}}"
-output="$HOME/.local/bin/claude-kimi"
+suffix=""
+output=""
 key_file=""
 base_url="https://api.moonshot.ai/anthropic"
 model="opus"
@@ -55,6 +59,14 @@ permissive=1
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --suffix)
+      suffix="${2:?missing value for --suffix}"
+      shift 2
+      ;;
+    --suffix=*)
+      suffix="${1#*=}"
+      shift
+      ;;
     --api-key)
       api_key="${2:?missing value for --api-key}"
       shift 2
@@ -167,9 +179,18 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [[ -n "$suffix" && ! "$suffix" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+  echo "create-claude-kimi-launcher: invalid suffix: $suffix" >&2
+  exit 2
+fi
+launcher_name="claude-kimi${suffix:+-$suffix}"
+if [[ -z "$output" ]]; then
+  output="$HOME/.local/bin/$launcher_name"
+fi
+
 output_dir="$(dirname "$output")"
 if [[ -z "$key_file" ]]; then
-  key_file="$output_dir/kimi-api-key"
+  key_file="$output_dir/kimi-api-key${suffix:+-$suffix}"
 fi
 
 # The Kimi Coding Plan endpoint (api.kimi.com) authenticates with
@@ -261,6 +282,7 @@ model_fable_q="$(shell_quote "$model_fable")"
 model_subagent_q="$(shell_quote "$model_subagent")"
 claude_bin_q="$(shell_quote "$claude_bin")"
 key_file_q="$(shell_quote "$key_file")"
+launcher_name_q="$(shell_quote "$launcher_name")"
 permission_args_line='permission_args=(--dangerously-skip-permissions)'
 if [[ "$permissive" -eq 0 ]]; then
   permission_args_line='permission_args=()'
@@ -279,16 +301,17 @@ cat > "$output" <<SH
 #!/usr/bin/env bash
 set -euo pipefail
 
+launcher_name=$launcher_name_q
 key_file=$key_file_q
 if [[ ! -r "\$key_file" ]]; then
   if [[ ! -t 0 ]]; then
-    echo "claude-kimi: missing \$key_file and cannot prompt for a key without a terminal" >&2
+    echo "\$launcher_name: missing \$key_file and cannot prompt for a key without a terminal" >&2
     exit 2
   fi
   read -r -s -p "Kimi API key: " kimi_key
   echo >&2
   if [[ -z "\$kimi_key" ]]; then
-    echo "claude-kimi: empty Kimi API key" >&2
+    echo "\$launcher_name: empty Kimi API key" >&2
     exit 2
   fi
   mkdir -p "\$(dirname "\$key_file")"
@@ -298,7 +321,7 @@ if [[ ! -r "\$key_file" ]]; then
 else
   IFS= read -r kimi_key < "\$key_file" || true
   if [[ -z "\$kimi_key" ]]; then
-    echo "claude-kimi: empty Kimi API key in \$key_file" >&2
+    echo "\$launcher_name: empty Kimi API key in \$key_file" >&2
     exit 2
   fi
 fi
@@ -356,7 +379,7 @@ if [[ -z "\$claude_bin" ]]; then
   claude_bin="\$(command -v claude || true)"
 fi
 if [[ -z "\$claude_bin" ]]; then
-  echo "claude-kimi: claude binary not found" >&2
+  echo "\$launcher_name: claude binary not found" >&2
   exit 127
 fi
 

@@ -1,6 +1,6 @@
 ---
 name: coding-agent
-description: Use when an Imsight dev-box task configures Codex CLI, third-party Codex providers, a Claude Code launcher that uses Kimi Platform API, Kimi Coding Plan, GAC, or OpenLux relay credentials, or a Kimi Code CLI multi-credential launcher with an isolated KIMI_CODE_HOME.
+description: Use when an Imsight dev-box task configures Codex CLI, third-party Codex providers, Claude Code launchers for Kimi, GAC, or OpenLux, Antigravity CLI launchers for OpenLux, or Kimi Code CLI multi-credential launchers with an isolated KIMI_CODE_HOME.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -41,26 +41,36 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | --- | --- | --- |
 | `codex-cli-setup` | Configure Imsight-preferred Codex CLI behavior. | `references/codex-cli-setup.md` |
 | `codex-cli-3rd-party` | Configure Codex CLI for third-party OpenAI-compatible APIs. | `references/codex-cli-3rd-party.md` |
-| `codex-gac-launcher` | Create or repair a Linux or Windows `codex-gac` launcher that uses a dedicated GAC profile and embedded key while leaving plain `codex` on the official provider. | `references/codex-gac-launcher.md` |
-| `claude-kimi-launcher` | Create or repair a Claude Code launcher backed by Kimi, including Coding Plan thinking effort. | `references/claude-kimi-launcher.md` |
-| `claude-gac-launcher` | Create or repair a Linux or Windows GAC launcher with the endpoint and provided key embedded, without Claude JSON changes or sibling-provider conventions. | `references/claude-gac-launcher.md` |
-| `claude-openlux-launcher` | Create or repair a Claude Code launcher backed by the OpenLux relay, replacing the retired Yunwu relay. | `references/claude-openlux-launcher.md` |
+| `codex-gac-launcher` | Create or repair `codex-gac` or `codex-gac-<suffix>` with a dedicated GAC profile and embedded key while leaving plain `codex` official. | `references/codex-gac-launcher.md` |
+| `claude-kimi-launcher` | Create or repair `claude-kimi` or `claude-kimi-<suffix>`, including Kimi Coding Plan thinking effort. | `references/claude-kimi-launcher.md` |
+| `claude-gac-launcher` | Create or repair `claude-gac` or `claude-gac-<suffix>` with the endpoint and key embedded, without Claude JSON changes. | `references/claude-gac-launcher.md` |
+| `claude-openlux-launcher` | Create or repair `claude-openlux` or `claude-openlux-<suffix>`, replacing the retired Yunwu relay. | `references/claude-openlux-launcher.md` |
+| `agy-openlux-launcher` | Create or repair a Windows, Linux, or macOS Antigravity launcher named `agy-openlux` or `agy-openlux-<suffix>` that uses OpenLux without changing plain `agy`. | `references/agy-openlux-launcher.md` |
 | `kimi-multi-credential` | Create Kimi Code CLI launchers named `kimi-<suffix>`, each with an isolated OAuth credential home and `--auto` startup default unless no-auto mode is explicitly requested. | `references/kimi-multi-credential.md` |
 | `help` | Explain this subskill and list its commands. | This entrypoint |
 
 ## Resource Ownership
 
-This subskill owns its Codex, Codex-GAC, Claude-Kimi, Claude-GAC, Claude-OpenLux, and Kimi multi-credential references, the cross-platform Claude-Kimi and Claude-GAC launcher generators, and the Unix Kimi Code credential launcher generator under `scripts/`.
+This subskill owns its Codex, Codex-GAC, Claude-Kimi, Claude-GAC, Claude-OpenLux, Antigravity-OpenLux, and Kimi multi-credential references, the cross-platform Claude-Kimi and Claude-GAC launcher generators, and the Unix Kimi Code credential launcher generator under `scripts/`.
 
 ## Custom Launcher Permission Policy
 
 Apply this policy to every custom launcher created or repaired by this subskill, including future agent CLIs:
 
-- Default to the target CLI's most permissive documented execution mode. For the launchers currently covered here, that means `--dangerously-skip-permissions` for Claude Code, `--dangerously-bypass-approvals-and-sandbox` for Codex CLI, and `--auto` for Kimi Code CLI.
+- Default to the target CLI's most permissive documented execution mode. For the launchers currently covered here, that means `--dangerously-skip-permissions` for Claude Code and Antigravity CLI, `--dangerously-bypass-approvals-and-sandbox` for Codex CLI, and `--auto` for Kimi Code CLI.
 - Treat permission prompts, approvals, or sandboxing as an opt-out. Use the less-permissive path only when the user's initial launcher request explicitly rejects the permissive mode. Silence is not an opt-out, and the agent must not ask the user to reconfirm the default.
 - When the user opts out at the beginning, use the target launcher generator's permission-prompting option or omit the permissive flag from a hand-written launcher. Preserve that choice when repairing or regenerating the launcher.
 - For a future agent CLI, inspect its current help or authoritative documentation and use its strongest supported approval-free or sandbox-bypass launcher option. Do not copy another CLI's flag by name when the target CLI does not support it.
 - Report which permission mode the launcher uses. A permissive launcher changes the launched agent's runtime behavior; it does not expand the scope of the setup task or authorize unrelated changes.
+
+## Custom Launcher Naming Policy
+
+- Use the provider-family base name when the user gives no suffix: `codex-gac`, `claude-gac`, `claude-kimi`, `claude-openlux`, or `agy-openlux`.
+- When the user gives a suffix, append exactly one hyphen and the suffix: `<base-name>-<suffix>`. Accept lowercase letters, digits, and internal hyphens; ask for a portable replacement when the value contains uppercase letters, spaces, path separators, or shell metacharacters.
+- Treat the suffix only as a friendly launcher/profile namespace for distinguishing variants. Do not infer endpoint, account, model, routing, pricing, permission, or credential behavior from its text.
+- Use the resolved full launcher name consistently for the executable or function, managed-block marker, and isolated profile namespace. Use a matching credential-file namespace only when the provider guide stores credentials in side files.
+- Omit the suffix and separator when the user does not provide one. Do not ask for a suffix merely because the guide supports it.
+- Keep `kimi-<suffix>` suffix-required in the Kimi Code multi-credential workflow because the unsuffixed `kimi` name belongs to the upstream CLI; its suffix remains only a user-facing credential/profile label.
 
 ## Launcher Guide Authoring Contract
 
@@ -77,6 +87,6 @@ Do not reduce a launcher guide to “run this script.” The guide must remain u
 ## Guardrails
 
 - DO NOT expose API keys while configuring a provider or launcher.
-- DO NOT overwrite unrelated Codex or Claude Code settings.
+- DO NOT overwrite unrelated Codex, Claude Code, or Antigravity settings.
 - DO NOT bypass a selected reference's compatibility checks.
 - DO NOT silently generate a permission-prompting or sandboxed custom launcher when the initial request did not explicitly opt out of permissive mode.

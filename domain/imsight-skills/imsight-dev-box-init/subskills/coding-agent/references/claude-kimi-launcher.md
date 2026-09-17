@@ -1,37 +1,45 @@
 # Claude-Kimi Launcher Setup
 
-Use this reference when the user wants a local `claude-kimi` launcher that runs Claude Code against a Kimi Anthropic-compatible endpoint.
+Use this reference when the user wants a local `claude-kimi` or `claude-kimi-<suffix>` launcher that runs Claude Code against a Kimi Anthropic-compatible endpoint.
 
 ## Workflow
 
-1. Resolve API-key handling under **Required Input** without printing or hard-coding the key.
-2. When an API key is available, determine its type and the matching lane under **Determine The Key's Lane**; the user's explicit lane choice overrides the detected lane.
-3. Check the latest Kimi model lineup and configuration guidance online first, following **Check Latest Kimi Info First**; when the lineup changed, re-derive the tier mapping with **Mapping Rule: Map By Cost**. Only when online sources are unreachable, fall back to the embedded snapshot in **Fallback Model Knowledge**.
-4. Apply the platform-specific paths in **Defaults** and the lane procedures from **Using Kimi Platform API** or **Using Kimi Coding Plan**.
-5. Implement the launcher from the provider lane, OS, and runtime contracts; use the bundled scripts as reference implementations when their assumptions still match.
-6. Put the launcher directory on PATH for new shells under **Ensure Launcher Directory On PATH**; skipping this leaves `claude-kimi` unresolvable in fresh terminals.
-7. Run every applicable check in **Verification**.
+1. Resolve the optional suffix under **Launcher Name and Suffix Contract**.
+2. Resolve API-key handling under **Required Input** without printing or hard-coding the key.
+3. When an API key is available, determine its type and the matching lane under **Determine The Key's Lane**; the user's explicit lane choice overrides the detected lane.
+4. Check the latest Kimi model lineup and configuration guidance online first, following **Check Latest Kimi Info First**; when the lineup changed, re-derive the tier mapping with **Mapping Rule: Map By Cost**. Only when online sources are unreachable, fall back to the embedded snapshot in **Fallback Model Knowledge**.
+5. Apply the platform-specific paths in **Defaults** and the lane procedures from **Using Kimi Platform API** or **Using Kimi Coding Plan**.
+6. Implement the launcher from the provider lane, OS, and runtime contracts; use the bundled scripts as reference implementations when their assumptions still match.
+7. Put the launcher directory on PATH for new shells under **Ensure Launcher Directory On PATH**; skipping this leaves the resolved launcher name unresolvable in fresh terminals.
+8. Run every applicable check in **Verification**.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's inputs, defaults, launcher contract, verification rules, and user constraints, then execute the plan without exposing credentials.
+
+## Launcher Name and Suffix Contract
+
+Use `claude-kimi` when no suffix is provided. When the user provides a suffix such as `work`, use `claude-kimi-work`. Accept lowercase letters, digits, and internal hyphens; omit the separator when the suffix is absent.
+
+The suffix is a user-facing launcher and credential-file namespace only. It does not choose the Kimi Platform API or Coding Plan lane, endpoint, account type, model mapping, context size, permission mode, or pricing. A suffixed launcher uses `kimi-api-key-<suffix>` by default so separate launcher variants cannot accidentally share credentials; the suffix itself still has no runtime meaning. In examples, `<key-file-name>` means `kimi-api-key` without a suffix or `kimi-api-key-<suffix>` with one. Do not ask for a suffix when the user does not provide one.
 
 ## Launcher Design Principles
 
 - Determine the agent CLI version, host OS, provider lane, and key type before choosing syntax. Kimi Platform API and Kimi Coding Plan use different endpoints, auth variables, model catalogs, and entitlements.
 - Scope provider variables to the launched Claude process. On Unix, export them in a child launcher and `exec` Claude; on Windows, use a native PowerShell launcher or function that does not permanently contaminate the caller's environment.
 - Keep credential placement an explicit design choice. This guide's default is a protected local key file, but the runtime contract matters more than the example path.
+- Use the resolved full launcher name and matching key-file namespace consistently; never derive provider behavior from the optional suffix.
 - Derive model aliases and context settings from current provider documentation and the installed Claude Code version. Treat dated mappings below as fallback evidence, not timeless constants.
 - Apply the shared permissive-launcher default, preserve all caller arguments, avoid duplicate `--model` injection, and return Claude's exit code.
 - Validate the effective endpoint, auth lane, model mapping, permission mode, and argument forwarding. Merely running a generator is not proof that the launcher is correct.
 
 ## Required Input
 
-You can provide a Kimi API key during setup, or let the generated launcher prompt for it on first run. Prefer an existing `KIMI_API_KEY` or `ANTHROPIC_API_KEY` only when the user explicitly wants to seed the shared Kimi key file during setup. If no key is available, still create the launcher; the launcher will prompt interactively on first use. When a key is available during setup, identify its type under **Determine The Key's Lane** before choosing the lane.
+You can provide a Kimi API key during setup, or let the generated launcher prompt for it on first run. Prefer an existing `KIMI_API_KEY` or `ANTHROPIC_API_KEY` only when the user explicitly wants to seed the resolved Kimi key file during setup. If no key is available, still create the launcher; the launcher will prompt interactively on first use. When a key is available during setup, identify its type under **Determine The Key's Lane** before choosing the lane.
 
 ```text
-Please provide your Kimi API key for the shared Kimi launcher key file, or confirm that the launcher should prompt on first run.
+Please provide your Kimi API key for this launcher's Kimi key file, or confirm that the launcher should prompt on first run.
 ```
 
-The generated launcher must not hard-code the API key and must not rely on shell-specific automatic env loading. It reads the shared key file directly at runtime, assigns the lane's auth variable (`ANTHROPIC_AUTH_TOKEN` on the **Using Kimi Platform API** lane, `ANTHROPIC_API_KEY` on the **Using Kimi Coding Plan** lane) for the launched Claude process only, and prompts/writes the key file if the file is missing.
+The generated launcher must not hard-code the API key and must not rely on shell-specific automatic env loading. It reads its resolved key file directly at runtime, assigns the lane's auth variable (`ANTHROPIC_AUTH_TOKEN` on the **Using Kimi Platform API** lane, `ANTHROPIC_API_KEY` on the **Using Kimi Coding Plan** lane) for the launched Claude process only, and prompts/writes the key file if the file is missing.
 
 ## Determine The Key's Lane
 
@@ -62,11 +70,11 @@ If the probe fails on every endpoint (network blocked or invalid key), fall back
 
 ## Defaults
 
-- Unix launcher path: `$HOME/.local/bin/claude-kimi`
-- Unix shared key file: `$HOME/.local/bin/kimi-api-key`
-- Windows launcher path: `%LOCALAPPDATA%\Programs\kimi-launchers\claude-kimi.ps1`
-- Windows command shim path: `%LOCALAPPDATA%\Programs\kimi-launchers\claude-kimi.cmd`
-- Windows shared key file: `%LOCALAPPDATA%\Programs\kimi-launchers\kimi-api-key`
+- Unix launcher path: `$HOME/.local/bin/<launcher-name>`.
+- Unix key file: `$HOME/.local/bin/kimi-api-key` without a suffix, or `$HOME/.local/bin/kimi-api-key-<suffix>` with one.
+- Windows launcher path: `%LOCALAPPDATA%\Programs\kimi-launchers\<launcher-name>.ps1`.
+- Windows command shim path: `%LOCALAPPDATA%\Programs\kimi-launchers\<launcher-name>.cmd`.
+- Windows key file: `%LOCALAPPDATA%\Programs\kimi-launchers\kimi-api-key[-<suffix>]`.
 - Default lane: when a key is available, the lane matching the detected key type under **Determine The Key's Lane**; otherwise **Using Kimi Platform API**. Use **Using Kimi Coding Plan** when the key is a coding-plan key, or when the user has a Kimi membership and asks for the coding-plan endpoint, or when the user wants help choosing between the lanes. The user's explicit lane choice always wins.
 - Default startup model: `opus` — the launcher starts Claude Code with `--model opus`, and the `opus` alias resolves through `ANTHROPIC_DEFAULT_OPUS_MODEL` to the lane's most capable Kimi model (`kimi-k3` on the Platform API lane, `k3` on the Coding Plan lane).
 - `DISABLE_AUTOUPDATER=1`, overridable by the caller. Claude Code's background auto-updater reinstalls the npm package mid-session; an interrupted install leaves the placeholder `claude` shim behind and breaks every launcher on the box (see **Notes**). Updates become deliberate: `npm update -g @anthropic-ai/claude-code`.
@@ -332,7 +340,7 @@ The following commands demonstrate the current examples; they are not the only v
 
 A launcher that is not on PATH fails with `command not found` in new terminals. After creating the launcher, make its directory resolvable in the user's everyday shell, not only in login shells.
 
-On Unix, `~/.profile` typically adds `$HOME/.local/bin` for login shells only. Most terminal emulators start non-login interactive shells that read `~/.bashrc` (bash) or `~/.zshrc` (zsh) and never see that entry, so `claude-kimi` is missing from fresh terminals until the rc file adds it. Check a fresh interactive shell first:
+On Unix, `~/.profile` typically adds `$HOME/.local/bin` for login shells only. Most terminal emulators start non-login interactive shells that read `~/.bashrc` (bash) or `~/.zshrc` (zsh) and never see that entry, so `<launcher-name>` is missing from fresh terminals until the rc file adds it. Check a fresh interactive shell first:
 
 ```bash
 bash -ic 'command -v claude-kimi'   # zsh: zsh -ic 'command -v claude-kimi'
@@ -354,13 +362,13 @@ On Windows, add `%LOCALAPPDATA%\Programs\kimi-launchers` to the user PATH so the
 
 ## Runtime Argument Contract
 
-`claude-kimi` runtime arguments are Claude Code arguments by default. The launcher prepends `--dangerously-skip-permissions` unless permission prompts were explicitly requested at the beginning of the launcher task. It may observe arguments only to avoid injecting duplicate defaults, such as not adding its default `--model` when the user already passed `--model`. It must not consume, rename, reorder, or reinterpret underlying Claude CLI arguments.
+`<launcher-name>` runtime arguments are Claude Code arguments by default. The launcher prepends `--dangerously-skip-permissions` unless permission prompts were explicitly requested at the beginning of the launcher task. It may observe arguments only to avoid injecting duplicate defaults, such as not adding its default `--model` when the user already passed `--model`. It must not consume, rename, reorder, or reinterpret underlying Claude CLI arguments, and the setup-time suffix must never be forwarded as one.
 
 If a future launcher needs its own runtime flags, use launcher-prefixed names such as `--claude-kimi-key-file` or `--claude-kimi-no-default-model`, and strip only those prefixed launcher flags before calling `claude`.
 
 ### Unix Or Linux Shell
 
-Create the launcher and, when available, seed the shared key file:
+Create the launcher and, when available, seed its resolved key file:
 
 ```bash
 <coding-agent-subskill-dir>/scripts/create-claude-kimi-launcher.sh --api-key "$KIMI_API_KEY"
@@ -372,7 +380,7 @@ If no key is available during setup, omit `--api-key`; the generated launcher wi
 <coding-agent-subskill-dir>/scripts/create-claude-kimi-launcher.sh
 ```
 
-The script also accepts `--output`, `--key-file`, `--base-url`, `--model`, `--model-opus`, `--model-sonnet`, `--model-haiku`, `--model-fable`, `--model-subagent`, `--compact-window`, and `--claude-bin` when the user wants non-default values. Pass `--require-permission-prompts` only for an explicit initial opt-out:
+The script also accepts `--suffix`, `--output`, `--key-file`, `--base-url`, `--model`, `--model-opus`, `--model-sonnet`, `--model-haiku`, `--model-fable`, `--model-subagent`, `--compact-window`, and `--claude-bin` when the user wants non-default values. For example, `--suffix work` creates `claude-kimi-work` with `kimi-api-key-work`. Pass `--require-permission-prompts` only for an explicit initial opt-out:
 
 ```bash
 <coding-agent-subskill-dir>/scripts/create-claude-kimi-launcher.sh --require-permission-prompts
@@ -380,7 +388,7 @@ The script also accepts `--output`, `--key-file`, `--base-url`, `--model`, `--mo
 
 ### Windows PowerShell
 
-The PowerShell script creates a `.ps1` launcher and adjacent `.cmd` shim in a common `kimi-launchers` directory. The `.cmd` shim lets users run `claude-kimi` from `cmd.exe`, PowerShell, or other launchers when the directory is on `PATH`.
+The PowerShell script creates a `.ps1` launcher and adjacent `.cmd` shim in a common `kimi-launchers` directory. The `.cmd` shim lets users run the resolved launcher name from `cmd.exe`, PowerShell, or other launchers when the directory is on `PATH`.
 
 ```powershell
 & <coding-agent-subskill-dir>\scripts\create-claude-kimi-launcher.ps1 -ApiKey $env:KIMI_API_KEY
@@ -392,7 +400,7 @@ If no key is available during setup, omit `-ApiKey`; the generated launcher will
 & <coding-agent-subskill-dir>\scripts\create-claude-kimi-launcher.ps1
 ```
 
-The script also accepts `-OutputPath`, `-KeyFilePath`, `-BaseUrl`, `-Model`, `-ModelOpus`, `-ModelSonnet`, `-ModelHaiku`, `-ModelFable`, `-ModelSubagent`, `-CompactWindow`, and `-ClaudeBin` for non-default values. Pass `-RequirePermissionPrompts` only for an explicit initial opt-out:
+The script also accepts `-Suffix`, `-OutputPath`, `-KeyFilePath`, `-BaseUrl`, `-Model`, `-ModelOpus`, `-ModelSonnet`, `-ModelHaiku`, `-ModelFable`, `-ModelSubagent`, `-CompactWindow`, and `-ClaudeBin` for non-default values. For example, `-Suffix work` creates `claude-kimi-work.ps1`, `claude-kimi-work.cmd`, and `kimi-api-key-work`. Pass `-RequirePermissionPrompts` only for an explicit initial opt-out:
 
 ```powershell
 & <coding-agent-subskill-dir>\scripts\create-claude-kimi-launcher.ps1 -RequirePermissionPrompts
@@ -403,48 +411,48 @@ The script also accepts `-OutputPath`, `-KeyFilePath`, `-BaseUrl`, `-Model`, `-M
 Verify the Unix launcher exists:
 
 ```bash
-command -v claude-kimi
-bash -ic 'command -v claude-kimi'   # must also resolve in a fresh non-login terminal; fix PATH per **Ensure Launcher Directory On PATH** if not
-test -x "$HOME/.local/bin/claude-kimi"
-ls -l "$HOME/.local/bin/claude-kimi"
-test -f "$HOME/.local/bin/kimi-api-key" || echo "key file will be created on first run"
+command -v <launcher-name>
+bash -ic 'command -v <launcher-name>'   # must also resolve in a fresh non-login terminal; fix PATH per **Ensure Launcher Directory On PATH** if not
+test -x "$HOME/.local/bin/<launcher-name>"
+ls -l "$HOME/.local/bin/<launcher-name>"
+test -f "$HOME/.local/bin/<key-file-name>" || echo "key file will be created on first run"
 ```
 
 Verify the Windows launcher exists:
 
 ```powershell
-Test-Path "$env:LOCALAPPDATA\Programs\kimi-launchers\claude-kimi.ps1"
-Test-Path "$env:LOCALAPPDATA\Programs\kimi-launchers\claude-kimi.cmd"
-Test-Path "$env:LOCALAPPDATA\Programs\kimi-launchers\kimi-api-key"
+Test-Path "$env:LOCALAPPDATA\Programs\kimi-launchers\<launcher-name>.ps1"
+Test-Path "$env:LOCALAPPDATA\Programs\kimi-launchers\<launcher-name>.cmd"
+Test-Path "$env:LOCALAPPDATA\Programs\kimi-launchers\<key-file-name>"
 ```
 
 Inspect generated launchers and key files only with redaction:
 
 ```bash
-rg -n 'kimi-api-key|ANTHROPIC_BASE_URL|ANTHROPIC_DEFAULT_|CLAUDE_CODE_SUBAGENT_MODEL|ENABLE_TOOL_SEARCH|CLAUDE_CODE_AUTO_COMPACT_WINDOW|DISABLE_AUTOUPDATER|dangerously-skip-permissions' "$HOME/.local/bin/claude-kimi"
-test -f "$HOME/.local/bin/kimi-api-key" && sed 's/.*/<redacted>/' "$HOME/.local/bin/kimi-api-key"
+rg -n 'kimi-api-key|ANTHROPIC_BASE_URL|ANTHROPIC_DEFAULT_|CLAUDE_CODE_SUBAGENT_MODEL|ENABLE_TOOL_SEARCH|CLAUDE_CODE_AUTO_COMPACT_WINDOW|DISABLE_AUTOUPDATER|dangerously-skip-permissions' "$HOME/.local/bin/<launcher-name>"
+test -f "$HOME/.local/bin/<key-file-name>" && sed 's/.*/<redacted>/' "$HOME/.local/bin/<key-file-name>"
 ```
 
 ```powershell
-Select-String -Path "$env:LOCALAPPDATA\Programs\kimi-launchers\claude-kimi.ps1" -Pattern 'kimi-api-key|ANTHROPIC_BASE_URL|ANTHROPIC_DEFAULT_|CLAUDE_CODE_SUBAGENT_MODEL|ENABLE_TOOL_SEARCH|CLAUDE_CODE_AUTO_COMPACT_WINDOW|DISABLE_AUTOUPDATER|dangerously-skip-permissions'
-if (Test-Path "$env:LOCALAPPDATA\Programs\kimi-launchers\kimi-api-key") { '<redacted>' }
+Select-String -Path "$env:LOCALAPPDATA\Programs\kimi-launchers\<launcher-name>.ps1" -Pattern 'kimi-api-key|ANTHROPIC_BASE_URL|ANTHROPIC_DEFAULT_|CLAUDE_CODE_SUBAGENT_MODEL|ENABLE_TOOL_SEARCH|CLAUDE_CODE_AUTO_COMPACT_WINDOW|DISABLE_AUTOUPDATER|dangerously-skip-permissions'
+if (Test-Path "$env:LOCALAPPDATA\Programs\kimi-launchers\<key-file-name>") { '<redacted>' }
 ```
 
 Inside Claude Code, `/status` should show Base URL `https://api.moonshot.ai/anthropic` on the **Using Kimi Platform API** lane or `https://api.kimi.com/coding/` on the **Using Kimi Coding Plan** lane, with the model resolving to the opus tier (`kimi-k3` or `k3` by default). The default generated launcher must invoke `claude` with `--dangerously-skip-permissions`; an explicit permission-prompting opt-out must omit it.
 
 ## Notes
 
-- Store the Kimi key in the shared `kimi-api-key` file next to the launcher, not in the launcher script itself.
-- The shared key file is intentionally named generically so future launchers such as `codex-kimi` and `opencode-kimi` can live in the same directory and read the same file directly.
+- Store the Kimi key in the resolved `kimi-api-key[-<suffix>]` file next to the launcher, not in the launcher script itself. Unsuffixed launchers retain the existing `kimi-api-key` default.
 - Keep reference launcher implementations in `<coding-agent-subskill-dir>/scripts/`; do not make a script invocation the only explanation of the launcher contract.
 - Prefer `ANTHROPIC_AUTH_TOKEN` on the **Using Kimi Platform API** lane and clear `ANTHROPIC_API_KEY` and `CLAUDE_CODE_OAUTH_TOKEN` so Claude Code does not choose an older auth lane. On the **Using Kimi Coding Plan** lane (`api.kimi.com`), the generated launcher uses `ANTHROPIC_API_KEY` instead and clears `ANTHROPIC_AUTH_TOKEN`.
-- The default startup model is `opus`. Override it with `CLAUDE_KIMI_MODEL=<model> claude-kimi ...` or an explicit Claude Code `--model`; `CLAUDE_KIMI_MODEL` is the single knob that resets the startup model and every tier at once. Per-tier runtime overrides are `CLAUDE_KIMI_MODEL_OPUS`, `CLAUDE_KIMI_MODEL_SONNET`, `CLAUDE_KIMI_MODEL_HAIKU`, `CLAUDE_KIMI_MODEL_FABLE`, and `CLAUDE_KIMI_MODEL_SUBAGENT`.
+- The default startup model is `opus`. Override it with `CLAUDE_KIMI_MODEL=<model> <launcher-name> ...` or an explicit Claude Code `--model`; `CLAUDE_KIMI_MODEL` is the single knob that resets the startup model and every tier at once. Per-tier runtime overrides are `CLAUDE_KIMI_MODEL_OPUS`, `CLAUDE_KIMI_MODEL_SONNET`, `CLAUDE_KIMI_MODEL_HAIKU`, `CLAUDE_KIMI_MODEL_FABLE`, and `CLAUDE_KIMI_MODEL_SUBAGENT`.
 - If `claude` is not on `PATH`, install Claude Code first before testing the launcher.
 - If `claude` prints `Error: claude native binary not installed`, the Claude Code package's postinstall did not run; repair it with `node <npm-global-root>/node_modules/@anthropic-ai/claude-code/install.cjs` and re-verify `claude --version`. The usual cause is the background auto-updater: it reinstalls the npm package mid-session, and an install interrupted between package extraction and postinstall leaves the placeholder shim as the `claude` entrypoint. Generated launchers prevent recurrence by exporting `DISABLE_AUTOUPDATER=1`; update deliberately with `npm update -g @anthropic-ai/claude-code` instead.
-- If first launch gets stuck in Claude Code onboarding, run the official Kimi guide's Node onboarding-complete script before starting `claude-kimi`.
+- If first launch gets stuck in Claude Code onboarding, run the official Kimi guide's Node onboarding-complete script before starting `<launcher-name>`.
 
 ## Guardrails
 
 - DO NOT print, hard-code, or echo the Kimi API key in commands, responses, or the generated launcher.
 - DO NOT map Claude Code model aliases to highspeed Kimi variants (`kimi-k2.7-code-highspeed`, `kimi-for-coding-highspeed`) in launcher defaults; keep them selectable only by direct model name or `availableModels` picker entries.
 - DO NOT remove the `--dangerously-skip-permissions` flag from the generated launcher unless the user's initial launcher request explicitly asks for permission prompts.
+- DO NOT assign endpoint, lane, account, model, routing, pricing, credential, context, or permission semantics to the optional suffix.
