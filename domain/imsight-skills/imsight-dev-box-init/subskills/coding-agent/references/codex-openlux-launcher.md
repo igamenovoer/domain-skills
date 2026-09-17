@@ -20,13 +20,14 @@ Terminal invocation of `imsight-dev-box-init->coding-agent->codex-openlux-launch
 
 ## Workflow
 
-1. Inspect the installed Codex version and help, the host OS and shell, OpenLux's current Codex endpoint and model guidance, and whether the initial request explicitly opted out of permissive mode.
-2. Resolve the optional suffix and launcher/profile names under **Launcher Name and Suffix Contract**.
-3. Obtain an OpenLux key entitled for the Codex-compatible Responses route; stop instead of writing a placeholder launcher when the key is unavailable.
-4. Pass **Compatibility Gate** before persisting the dedicated profile or credential-bearing launcher.
-5. Implement **Codex-OpenLux Contract** with the installed version's profile layout and an OS-native launcher. Treat **Reference Implementations** as worked examples rather than mandatory machinery.
-6. Run **Verification**, including profile loading, scoped authentication, argument forwarding, permission mode, one OpenLux completion, and a non-billable check that plain `codex` remains unchanged.
-7. Report the profile and launcher locations, Codex version, selected model, permission mode, validation results, and any model-metadata warning without printing the key.
+1. Inspect the installed Codex version and help, the host OS and shell, OpenLux's current Codex endpoint guidance, and whether the initial request explicitly opted out of permissive mode. These are read-only checks.
+2. Obtain an OpenLux key entitled for the Codex-compatible Responses route; stop without changing any file when the key is unavailable.
+3. Complete **Phase A: No-Write API Discovery**. Do not create or modify a profile, launcher, credential file, shell profile, temporary config, or any other file during this phase.
+4. Select `<verified-openlux-model>` only from the current API evidence gathered in Phase A. Do not start from a model name recorded elsewhere in this guide.
+5. Resolve the optional suffix and launcher/profile names under **Launcher Name and Suffix Contract**, then complete **Phase B: Isolated Codex Test** using disposable state.
+6. Only after Phases A and B succeed, implement **Codex-OpenLux Contract** as **Phase C: Persistent Setup**. Treat **Reference Implementations** as worked examples rather than mandatory machinery.
+7. Run **Verification**, including profile loading, scoped authentication, argument forwarding, permission mode, one OpenLux completion, and a non-billable check that plain `codex` remains unchanged.
+8. Report the profile and launcher locations, Codex version, API-discovered model, permission mode, validation results, and any model-metadata warning without printing the key.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's OpenLux-only contract, compatibility evidence, platform examples, and user constraints, then execute the plan without changing the base Codex configuration or borrowing another OpenLux product's authentication conventions.
 
@@ -50,7 +51,7 @@ Every generated setup must satisfy these invariants:
 | Credential placement | Embed the user-provided key directly in the local launcher or managed PowerShell profile block; never put it in the tracked skill or Codex TOML. |
 | Suffix | Use it only as the optional launcher/profile namespace defined above. Do not derive runtime behavior from its text. |
 | Environment scope | Expose `OPENLUX_API_KEY` only to the launched Codex process. A PowerShell function must restore the caller's previous value. |
-| Model | Pin a model confirmed by both the current OpenLux key and a real Codex turn; do not infer model validity only from `/models`. |
+| Model | Pin `<verified-openlux-model>`, selected from the current key's `/models` response and confirmed by both a direct `/responses` probe and an isolated Codex turn. Never seed selection from a model shown in historical notes or examples. |
 | Arguments | Forward every caller argument to Codex unchanged after the fixed profile and permission defaults. |
 | Permissions | Inject Codex's strongest current approval-free, sandbox-bypass mode by default. Omit it only when the user's initial request explicitly asks to retain approvals or sandboxing. |
 | Executable | Resolve the real installed Codex command without replacing or recursing into plain `codex`. |
@@ -84,18 +85,37 @@ Treat installed help, current official Codex documentation, and an isolated prof
 
 ## Compatibility Gate
 
-Pass all applicable checks before writing persistent configuration:
+The gate has three ordered phases. Crossing a phase authorizes only the next phase; it does not authorize skipping ahead.
+
+### Phase A: No-Write API Discovery
+
+Complete this phase before any filesystem mutation:
+
+1. Request `GET https://api.openlux.ai/v1/models` with the supplied key. Keep the response in memory and record only nonsensitive model ids and relevant capability metadata.
+2. If the user requested a model, require that exact id to be present. Otherwise, prefer a provider-designated Codex default or recommendation when the current response or provider documentation supplies one.
+3. When several plausible models remain and no provider default resolves the choice, compare their advertised capabilities. Ask the user before persistence when the remaining choice materially changes cost, quality, latency, or routing; do not guess from version-like names.
+4. Probe the selected candidate with one minimal `POST https://api.openlux.ai/v1/responses`, `store: false`, and a deterministic short response.
+5. Set `<verified-openlux-model>` to the exact model id that passed the direct Responses probe. If no candidate passes, stop and report the API-layer evidence.
+
+During Phase A, do not create a temporary directory, profile, launcher, response dump, credential file, log file, or shell-profile block. Do not use output redirection or a helper that persists the response by default. Scope the key to the probe process and never place it in the command line.
+
+### Phase B: Isolated Codex Test
+
+Only after Phase A succeeds:
 
 1. Confirm the installed Codex supports `--profile` and its strongest current approval/sandbox bypass flag. On the verified version that flag was `--dangerously-bypass-approvals-and-sandbox`.
-2. Request `GET https://api.openlux.ai/v1/models` with the supplied key and record only model ids, not credentials or full headers.
-3. Request one minimal `POST https://api.openlux.ai/v1/responses` with a candidate model, `store: false`, and a deterministic short response.
-4. Create an isolated temporary `CODEX_HOME`, write the candidate profile there, and run one minimal `codex --profile <profile-name> exec --skip-git-repo-check ...` turn with the key scoped only to that process.
-5. Treat the Codex turn as decisive. A successful `/models` or direct Responses request alone does not prove Codex compatibility because agent requests include streaming, tools, instructions, and reasoning metadata.
-6. Remove the isolated test profile after the gate. Persist the real profile and launcher only when the Codex turn succeeds.
+2. Create a disposable isolated `CODEX_HOME` outside the real Codex home and write a test profile using the exact `<verified-openlux-model>` from Phase A.
+3. Run one minimal `codex --profile <profile-name> exec --skip-git-repo-check ...` turn with the key scoped only to that process.
+4. Treat this Codex turn as decisive because agent requests include streaming, tools, instructions, and reasoning metadata absent from a trivial API probe.
+5. Remove the disposable state after the test. If the turn fails, stop without modifying the real Codex home or shell profile.
 
-Stop and report the failing layer when key entitlement, endpoint, model, Responses behavior, or the Codex request fails. Do not compensate for an incompatible key by trying it against OpenLux's Claude or Gemini routes.
+### Phase C: Persistent Setup
 
-Verified snapshot, not a permanent guarantee: on 2026-09-17, OpenLux returned HTTP 200 from `/v1/responses` for `gpt-5-codex`, and Codex CLI 0.154.0 completed an isolated turn through provider `openlux` with exit code 0. Re-run the gate instead of treating those observations as permanent.
+Only after the isolated Codex turn succeeds, write the dedicated provider profile and credential-bearing launcher described below. Substitute the exact `<verified-openlux-model>` from the current run; a file that still contains the placeholder is incomplete and must not be installed.
+
+Stop and report the failing layer when key entitlement, endpoint, model discovery, Responses behavior, or the Codex request fails. Do not compensate for an incompatible key by trying it against OpenLux's Claude or Gemini routes.
+
+Historical compatibility evidence is diagnostic context only: one OpenLux model completed both a direct Responses request and an isolated Codex CLI 0.154.0 turn on 2026-09-17. That historical id is intentionally omitted because it must not influence a future model choice.
 
 ## Dedicated Provider Profile
 
@@ -103,7 +123,7 @@ Resolve the active Codex home from `CODEX_HOME` when intentionally set; otherwis
 
 ```toml
 model_provider = "openlux"
-model = "gpt-5-codex"
+model = "<verified-openlux-model>"
 model_reasoning_effort = "high"
 disable_response_storage = true
 
@@ -118,7 +138,7 @@ stream_max_retries = 1
 stream_idle_timeout_ms = 120000
 ```
 
-This is a verified provider example, not a timeless vendor script. Re-check the endpoint, model, retry policy, and timeout against current OpenLux behavior and the user's needs. Keep the model explicit because a model listed by the provider can still lack Codex-local metadata or reject Codex's richer request shape.
+This is a provider-profile shape, not a source of model selection. Replace `<verified-openlux-model>` only with the exact id produced by the current Phase A and Phase B checks. Re-check the endpoint, retry policy, and timeout against current OpenLux behavior and the user's needs. Keep the verified model explicit because a model listed by the provider can still lack Codex-local metadata or reject Codex's richer request shape.
 
 The profile contains no credential. Its purpose is provider selection, endpoint, protocol, authentication variable name, and model defaults. The launcher supplies the secret and activates the profile.
 
@@ -133,7 +153,7 @@ Use the shell the user actually launches. Do not install a compatibility shell s
 
 ## Reference Implementations
 
-These examples implement the verified contract. Re-check exact flags, profile behavior, executable resolution, endpoint, and model against the installed CLI and current OpenLux guidance before copying them. Substitute the real key only in the user's local credential-bearing file.
+These examples implement the launcher contract after the compatibility gate has succeeded. They do not discover or select a model. Re-check exact flags, profile behavior, executable resolution, and endpoint against the installed CLI and current OpenLux guidance before copying them. Substitute the real key only in the user's local credential-bearing file.
 
 ### Linux or macOS
 
@@ -254,16 +274,17 @@ Do not output `$profileText`, the function definition, or matching key-assignmen
 ### End-to-End Route Checks
 
 1. Record whether `OPENLUX_API_KEY` exists in the caller and, when present, compare its restored value without printing it.
-2. Run `<launcher-name> exec --skip-git-repo-check "Reply with exactly: OPENLUX_OK"` in a disposable directory when needed.
-3. Confirm the run reports provider `openlux`, the selected model, approval mode `never`, and full host access for the default launcher, then returns `OPENLUX_OK` with exit code 0.
-4. Confirm the caller's `OPENLUX_API_KEY` presence and value are unchanged after the process.
-5. Inspect plain `codex` resolution, base config, and auth state to confirm the launcher did not alter them. Do not issue a billable official-provider completion solely for this check unless the user requests it.
+2. Confirm the persistent profile contains the exact `<verified-openlux-model>` selected during the current compatibility gate and contains no unresolved placeholder.
+3. Run `<launcher-name> exec --skip-git-repo-check "Reply with exactly: OPENLUX_OK"` in a disposable directory when needed.
+4. Confirm the run reports provider `openlux`, the selected model, approval mode `never`, and full host access for the default launcher, then returns `OPENLUX_OK` with exit code 0.
+5. Confirm the caller's `OPENLUX_API_KEY` presence and value are unchanged after the process.
+6. Inspect plain `codex` resolution, base config, and auth state to confirm the launcher did not alter them. Do not issue a billable official-provider completion solely for this check unless the user requests it.
 
 Record token usage for billable probes when Codex reports it.
 
 ## Model Metadata and Catalog Compatibility
 
-On 2026-09-17, Codex CLI 0.154.0 completed an OpenLux `gpt-5-codex` request but warned that the model was unknown locally and fallback model metadata would be used. Treat that warning as a Codex-local model-catalog limitation when the explicit completion succeeds. It is not evidence that the key, profile, endpoint, or Responses route failed.
+During the 2026-09-17 compatibility snapshot, Codex CLI 0.154.0 completed the API-discovered OpenLux model request but warned that the model was unknown locally and fallback model metadata would be used. Treat that warning as a Codex-local model-catalog limitation when the explicit completion succeeds. It is not evidence that the key, profile, endpoint, or Responses route failed, and the historical model id must not be reused as a default.
 
 Fallback metadata can still degrade model-specific defaults, context sizing, or other behavior. Report the warning, keep the explicitly tested model, and re-check newer Codex versions or a provider model that Codex recognizes. Do not silence the warning by inventing a local model catalog unless the user explicitly asks for and validates one.
 
@@ -281,6 +302,9 @@ Fallback metadata can still degrade model-specific defaults, context sizing, or 
 ## Guardrails
 
 - DO NOT put the OpenLux key in this skill, the Codex TOML profile, a git-tracked file, command history, logs, or validation output.
+- DO NOT create or modify any file before `/models` discovery and a direct `/responses` probe succeed for the current key.
+- DO NOT choose or test a model merely because it appeared in this guide, a historical note, a previous launcher, or another user's setup.
+- DO NOT create the real profile or launcher until the isolated Codex test succeeds with the exact API-verified model.
 - DO NOT use an OpenLux key from a Claude- or Gemini-only product route as evidence of Codex compatibility.
 - DO NOT modify the base Codex `config.toml` or `auth.json` for the dedicated OpenLux route.
 - DO NOT use a legacy `[profiles.<profile-name>]` table when the installed Codex version requires profile files.

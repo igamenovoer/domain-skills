@@ -18,13 +18,13 @@ Use this reference only for a `claude-gac` or `claude-gac-<suffix>` launcher tha
 
 ## Workflow
 
-1. Identify the installed Claude Code version, the host OS and shell, and whether the initial request explicitly opted out of permissive mode.
-2. Resolve the optional suffix under **Launcher Name and Suffix Contract**.
-3. Re-check Claude Code's current environment-variable and permission-flag behavior plus GAC's current endpoint and model-discovery behavior. Treat the contract below as authoritative for this skill, but adapt version-sensitive syntax when current evidence requires it.
-4. Obtain the GAC API key under **Required Input**; stop instead of generating a placeholder or partial launcher when the key is unavailable.
+1. Identify the installed Claude Code version, the host OS and shell, and whether the initial request explicitly opted out of permissive mode. Re-check current Claude environment-variable and permission-flag behavior using read-only inspection.
+2. Obtain the GAC API key under **Required Input**; stop without changing any file when the key is unavailable.
+3. Complete **No-Write Provider Preflight** against GAC's model and Messages APIs. Do not resolve the implementation by running a generator or creating any launcher, key file, temporary config, response dump, or log first.
+4. Resolve the optional suffix under **Launcher Name and Suffix Contract** after the live provider route succeeds.
 5. Implement every invariant in **GAC Launcher Contract** using an OS-native launcher. The bundled scripts under **Reference Implementations** are worked examples, not mandatory entrypoints.
 6. Run **Verification** against the resulting launcher, including environment scoping, argument forwarding, model discovery, permission mode, and exit-code preservation.
-7. Report the launcher location, implementation choices, and validation results without printing the key.
+7. Report the launcher location, implementation choices, API-advertised model catalog, and validation results without printing the key.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's GAC-only contract, platform lanes, reference implementations, and user constraints, then execute the plan without loading or imitating sibling-provider configuration.
 
@@ -67,6 +67,17 @@ The user must provide a GAC API key issued by `gaccode.com`. A compliant impleme
 
 The generated launcher contains the key in plaintext. Tell the user this before generation when they have not already requested embedded credentials. Never print the key, include it in verification output, commit the generated launcher, or reuse it outside the user's requested host.
 
+## No-Write Provider Preflight
+
+Complete this preflight before running either bundled generator or writing any setup file:
+
+1. Request `GET https://gaccode.com/claudecode/v1/models` with the supplied key using GAC's current Anthropic-compatible authentication and version headers. Keep the response in memory and record only nonsensitive model ids.
+2. Require a nonempty current catalog. Do not expect a particular Claude family or historical model name merely because this guide once mentioned it.
+3. Select one currently advertised model only for the probe and send a minimal `POST https://gaccode.com/claudecode/v1/messages` request using the same authentication lane Claude Code will use.
+4. Stop without modifying the filesystem when discovery, authentication, or the Messages request fails. Report the failing endpoint and status without printing request headers or the key.
+
+The launcher does not persist a model pin; the probe model only proves that the current key, endpoint, Anthropic-compatible protocol, and at least one advertised model work together. If the user later requests a pinned model, require that exact id in the current catalog and probe it before adding the pin.
+
 ## Defaults
 
 Linux:
@@ -84,7 +95,7 @@ Windows:
 
 Resolve `<coding-agent-subskill-dir>` to the `subskills/coding-agent/` directory whose `references/` folder contains this page.
 
-The scripts below demonstrate the contract for the currently recorded Claude Code and GAC behavior. Inspect them before use. Run them unchanged only when the installed CLI and OS match their assumptions; otherwise adapt their environment setup, executable discovery, and invocation syntax while preserving the contract and verification requirements.
+The scripts below demonstrate the contract for the currently recorded Claude Code and GAC behavior. Inspect them before use, but do not run them until **No-Write Provider Preflight** succeeds. Run them unchanged only when the installed CLI and OS match their assumptions; otherwise adapt their environment setup, executable discovery, and invocation syntax while preserving the contract and verification requirements.
 
 ### Linux
 
@@ -170,9 +181,9 @@ The managed-block count must be `1`, and every following expression must return 
 
 ### Gateway Models
 
-Start a fresh `<launcher-name>` session and inspect `/status` and `/model`. The base URL must be `https://gaccode.com/claudecode`, and gateway-discovered rows should include `claude-fable-5` when the provided key's plan exposes it.
+Start a fresh `<launcher-name>` session and inspect `/status` and `/model`. The base URL must be `https://gaccode.com/claudecode`, and gateway-discovered rows must agree with the current model catalog recorded during preflight.
 
-If Fable 5 is absent, test the gateway's `/v1/models` endpoint with an `x-api-key` header without printing the embedded key. If the endpoint advertises `claude-fable-5`, verify the discovery variable and restart Claude Code. If the endpoint omits it, the key or plan lacks server-side access.
+If a model advertised during preflight is absent, repeat the gateway's `/v1/models` request without printing the embedded key, verify the discovery variable, and restart Claude Code. If the endpoint no longer advertises it, treat the current key or plan as authoritative rather than preserving a stale expectation.
 
 ## Troubleshooting
 
@@ -185,6 +196,8 @@ If Fable 5 is absent, test the gateway's `/v1/models` endpoint with an `x-api-ke
 ## Guardrails
 
 - DO NOT load, copy, or generalize from the Kimi or OpenLux launcher references while handling `claude-gac`.
+- DO NOT run a generator or create or modify a setup file before the live GAC model catalog and a direct Messages request succeed.
+- DO NOT require or pin a model merely because it appeared in a historical guide, example, or previous launcher.
 - DO NOT externalize the GAC endpoint or API key into side files or runtime configuration variables.
 - DO NOT use `ANTHROPIC_AUTH_TOKEN` for GAC.
 - DO NOT omit `--dangerously-skip-permissions` from the default launcher; omit it only for an explicit permission-prompting request made at the beginning.

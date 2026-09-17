@@ -6,10 +6,11 @@ Use this reference when the user wants one or more Kimi Code CLI launchers named
 
 1. Resolve the launcher name and data home under **Required Input**.
 2. Check the installed `kimi` binary under **Prerequisite: Kimi Code CLI**.
-3. Implement the launcher from **Launcher Contract**, applying **Defaults** for unspecified values and disabling auto mode only when the initial request explicitly opts out. Use the bundled script as a Unix reference implementation when its assumptions match.
-4. Put the launcher directory on PATH for new shells under **Ensure Launcher Directory On PATH**; skipping this leaves `kimi-<suffix>` unresolvable in fresh terminals.
-5. Trigger the OAuth device-code login under **OAuth Login** when the user wants the new credential authorized now.
-6. Run every applicable check in **Verification**.
+3. Complete **No-Write Compatibility Preflight**. This launcher has no third-party provider key to probe before login, so verify the installed CLI and target isolation contract without creating the home, launcher, PATH entry, or shell startup block.
+4. Implement the launcher from **Launcher Contract**, applying **Defaults** for unspecified values and disabling auto mode only when the initial request explicitly opts out. Use the bundled script as a Unix reference implementation when its assumptions match.
+5. Put the launcher directory on PATH for new shells under **Ensure Launcher Directory On PATH**; skipping this leaves `kimi-<suffix>` unresolvable in fresh terminals.
+6. Trigger the OAuth device-code login under **OAuth Login** when the user wants the new credential authorized now.
+7. Run every applicable check in **Verification**.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's inputs, defaults, launcher contract, verification rules, and user constraints, then execute the plan without exposing credentials.
 
@@ -42,6 +43,15 @@ command -v kimi || ls "$HOME/.kimi-code/bin/kimi"
 
 At runtime the generated launcher resolves the binary in this order: the `--kimi-bin` path when pinned at generation time, `$HOME/.kimi-code/bin/kimi`, `$HOME/.local/bin/kimi`, then `command -v kimi`. If no binary is available, install Kimi Code CLI first.
 
+## No-Write Compatibility Preflight
+
+This workflow wraps Kimi Code's own interactive OAuth route, so a provider API-key probe is not applicable before setup. Before running the generator:
+
+1. Run `kimi --version` and inspect `kimi --help` plus `kimi login --help` without setting `KIMI_CODE_HOME` to a new path.
+2. Confirm the installed version still supports the intended permissive mode (`--auto` for the recorded version), device-code login, and the documented `KIMI_CODE_HOME` isolation variable.
+3. Resolve the proposed launcher path and data-home path and confirm they do not collide with the default home, another launcher, or an unrelated existing file. Read existing state when needed, but do not create directories or files yet.
+4. Stop without running the generator when the CLI, flags, login flow, or isolation variable no longer matches the contract. Do not infer compatibility from the bundled script.
+
 ## Defaults
 
 - Launcher path: `$HOME/.local/bin/kimi-<suffix>`
@@ -54,7 +64,7 @@ At runtime the generated launcher resolves the binary in this order: the `--kimi
 
 ## Reference Unix Implementation
 
-The bundled script demonstrates the contract for the currently documented Kimi Code CLI on Unix. Resolve `<coding-agent-subskill-dir>` to the `subskills/coding-agent/` directory whose `references/` folder contains this page. Inspect the script and current `kimi --help`; run it unchanged only when its flags, paths, and executable-discovery assumptions match the host. Otherwise adapt the implementation and preserve the contract above.
+The bundled script demonstrates the contract for the currently documented Kimi Code CLI on Unix. Resolve `<coding-agent-subskill-dir>` to the `subskills/coding-agent/` directory whose `references/` folder contains this page. Inspect the script during the read-only phase, but run it only after **No-Write Compatibility Preflight** succeeds and only when its flags, paths, and executable-discovery assumptions match the host. Otherwise adapt the implementation and preserve the contract above.
 
 ```bash
 <coding-agent-subskill-dir>/scripts/create-kimi-credential-launcher.sh --name kimi-<suffix>
@@ -136,6 +146,7 @@ The launcher's home must differ from `~/.kimi-code` and from every other generat
 ## Guardrails
 
 - DO NOT print, hard-code, or commit OAuth tokens or credential file contents handled by this workflow.
+- DO NOT run the launcher generator or create its data home, PATH entry, or shell-profile block before the no-write CLI compatibility preflight succeeds.
 - DO NOT point two launchers at the same data home unless the user explicitly asks for shared state.
 - DO NOT overwrite or reuse the default `~/.kimi-code` home for a generated launcher.
 - DO NOT omit the default `--auto` mode unless the user's initial launcher request explicitly opts out; select no-auto behavior with the generator's `--no-auto` option.

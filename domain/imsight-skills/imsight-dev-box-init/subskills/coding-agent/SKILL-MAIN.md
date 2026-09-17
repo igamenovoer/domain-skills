@@ -54,6 +54,18 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 This subskill owns its Codex, Codex-GAC, Codex-OpenLux, Claude-Kimi, Claude-GAC, Claude-OpenLux, Antigravity-OpenLux, and Kimi multi-credential references, the cross-platform Claude-Kimi and Claude-GAC launcher generators, and the Unix Kimi Code credential launcher generator under `scripts/`.
 
+## Custom Launcher Preflight Policy
+
+Apply this policy before creating, repairing, or regenerating every custom launcher owned by this subskill:
+
+1. Start with a no-write preflight. Read installed CLI version/help, current provider documentation, existing relevant state, and the user's requested endpoint/auth behavior without creating or modifying any file, directory, launcher, profile, shell startup block, credential store, response dump, or log.
+2. For a provider-backed launcher, keep the supplied key process-scoped and query the provider's current discovery or model endpoint first. Then run one minimal direct request through the same protocol the target agent will use. Select endpoint, auth lane, model ids, aliases, context settings, and routing only from current evidence; never seed them from a historical example or generator default.
+3. If live discovery or the direct protocol request fails, stop without running a generator or modifying the filesystem. Report the failing layer instead of installing an unverified launcher.
+4. After the no-write provider checks succeed, test the actual agent CLI with disposable isolated state when the client requires configuration files. Remove that state after the test. Persistent launcher, profile, key-file, PATH, or shell-profile changes are allowed only after this client-level test succeeds.
+5. For a launcher that has no third-party provider API, such as an isolated OAuth credential-home wrapper, explicitly record that the provider probe is not applicable. Complete a read-only CLI compatibility and existing-state preflight before any write, then proceed with the workflow's interactive authorization boundary.
+
+Reading existing files is allowed during preflight; changing them is not. Keep API responses in memory, avoid output redirection and helpers that persist responses by default, and never place a secret in command arguments or logs.
+
 ## Custom Launcher Permission Policy
 
 Apply this policy to every custom launcher created or repaired by this subskill, including future agent CLIs:
@@ -78,7 +90,7 @@ Apply this policy to every custom launcher created or repaired by this subskill,
 Write and apply custom-launcher guidance principle-first:
 
 1. State the stable runtime contract before showing commands: target agent CLI, provider endpoint and authentication lane, credential placement, environment isolation, permission mode, executable discovery, argument forwarding, and exit-code behavior.
-2. Separate durable principles from version-sensitive details such as CLI flags, model names, endpoint quirks, config keys, and install paths. Re-check the installed CLI's version and help plus the provider's current authoritative documentation before implementing those details.
+2. Separate durable principles from version-sensitive details such as CLI flags, model names, endpoint quirks, config keys, and install paths. Apply **Custom Launcher Preflight Policy** and inspect the live provider before implementing those details.
 3. Choose an OS-native implementation: Bash or another native shell on Linux/macOS, and PowerShell functions or scripts on Windows. Preserve the caller's environment when an in-process function temporarily changes variables.
 4. Present bundled generators, vendor snippets, and inline templates as reference implementations. Use them unchanged only when their recorded assumptions match the current CLI version, provider behavior, OS, and user request; otherwise adapt the implementation while preserving the stated contract.
 5. Verify observable behavior rather than merely confirming that a helper script ran: inspect the generated launcher safely, exercise argument forwarding and exit codes, and confirm the active endpoint, auth lane, model discovery, and permission mode.
@@ -88,6 +100,7 @@ Do not reduce a launcher guide to “run this script.” The guide must remain u
 ## Guardrails
 
 - DO NOT expose API keys while configuring a provider or launcher.
+- DO NOT run a launcher generator or create, modify, or delete setup files before the applicable no-write preflight succeeds.
 - DO NOT overwrite unrelated Codex, Claude Code, or Antigravity settings.
 - DO NOT bypass a selected reference's compatibility checks.
 - DO NOT silently generate a permission-prompting or sandboxed custom launcher when the initial request did not explicitly opt out of permissive mode.

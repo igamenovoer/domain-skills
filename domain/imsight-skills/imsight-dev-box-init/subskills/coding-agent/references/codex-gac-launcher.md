@@ -20,13 +20,13 @@ Terminal invocation of `imsight-dev-box-init->coding-agent->codex-gac-launcher()
 
 ## Workflow
 
-1. Inspect the installed Codex version and help, the host OS and shell, GAC's current Codex endpoint and model guidance, and whether the initial request explicitly opted out of permissive mode.
-2. Resolve the optional suffix and the launcher/profile names under **Launcher Name and Suffix Contract**.
-3. Obtain the GAC API key under **Required Input**; stop instead of writing a placeholder launcher when the key is unavailable.
-4. Select the installed Codex version's profile layout under **Version and Profile Compatibility**.
-5. Implement every invariant in **Codex-GAC Contract** using the dedicated provider profile and an OS-native launcher. Treat **Reference Implementations** as worked examples rather than mandatory machinery.
+1. Inspect the installed Codex version and help, the host OS and shell, GAC's current Codex endpoint guidance, and whether the initial request explicitly opted out of permissive mode. These are read-only checks.
+2. Obtain the GAC API key under **Required Input**; stop without changing any file when the key is unavailable.
+3. Complete **Compatibility Gate** Phase A without creating or modifying any file. Discover current models from the GAC API and verify a candidate with a direct Responses request.
+4. Resolve the optional suffix and launcher/profile names, then complete the gate's disposable isolated Codex test using the exact API-verified model.
+5. Only after both gate phases succeed, select the installed Codex version's profile layout and implement every invariant in **Codex-GAC Contract**. Treat **Reference Implementations** as worked examples rather than mandatory machinery.
 6. Run **Verification**, including profile loading, scoped authentication, argument forwarding, permission mode, GAC completion, and the unchanged plain Codex route.
-7. Report the profile and launcher locations, Codex version, selected model, permission mode, and validation results without printing the key.
+7. Report the profile and launcher locations, Codex version, API-discovered model, permission mode, and validation results without printing the key.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's GAC-only contract, version evidence, platform examples, and user constraints, then execute the plan without changing the base Codex configuration or borrowing another provider's authentication conventions.
 
@@ -50,6 +50,7 @@ Every generated setup must satisfy these invariants:
 | Credential placement | Embed the user-provided GAC key directly in the local launcher or managed PowerShell profile block; never put it in the tracked skill or Codex TOML. |
 | Suffix | Use it only as the optional launcher/profile namespace defined above. Do not derive runtime behavior from its text. |
 | Environment scope | Expose `GAC_API_KEY` only to the launched Codex process. A PowerShell function must restore the caller's previous value. |
+| Model | Pin `<verified-gac-model>`, selected from the current key's model catalog and confirmed by a direct Responses request plus an isolated Codex turn. Never seed selection from this guide's historical notes. |
 | Arguments | Forward every caller argument to Codex unchanged after the fixed profile and permission defaults. |
 | Permissions | Inject Codex's strongest approval-free, sandbox-bypass mode by default. Omit it only when the user's initial request explicitly asks to retain approvals or sandboxing. |
 | Exit status | Preserve Codex's exit status. |
@@ -79,13 +80,32 @@ Treat the installed CLI's help and behavior as authoritative when another versio
 
 Do not silently migrate or delete legacy profile tables. If the existing setup uses a different profile format, show the conflict and adapt only after preserving unrelated configuration.
 
+## Compatibility Gate
+
+### Phase A: No-Write API Discovery
+
+Complete these checks before any filesystem mutation:
+
+1. Request `GET https://gaccode.com/codex/v1/models` with the supplied key and keep the response in memory.
+2. If the user requested a model, require that exact id to be present. Otherwise, use current GAC documentation or response metadata to identify a candidate; when several materially different candidates remain and no provider default resolves the choice, ask the user instead of guessing from names.
+3. Send one minimal `POST https://gaccode.com/codex/v1/responses` request with the candidate, `store: false`, and a deterministic short response.
+4. Set `<verified-gac-model>` to the exact id that passed. If discovery or the direct request fails, stop without creating a profile, launcher, temporary directory, key file, response dump, or log.
+
+Keep the key process-scoped and out of command arguments. Do not use the historical model noted later, a vendor-script default, or a previous launcher as the starting candidate unless the current API also advertises it and the direct request succeeds now.
+
+### Phase B: Isolated Codex Test
+
+Only after Phase A succeeds, create a disposable `CODEX_HOME` outside the real Codex home, write a test profile with `<verified-gac-model>`, and run one minimal `codex --profile <profile-name> exec --skip-git-repo-check ...` request. Remove the disposable state afterward. If the Codex turn fails, stop without modifying the real Codex home or shell profile.
+
+Only after this isolated turn succeeds may the workflow write the persistent profile and credential-bearing launcher below.
+
 ## Dedicated Provider Profile
 
 Resolve the active Codex home from `CODEX_HOME` when it is intentionally set; otherwise use `~/.codex`. Resolve `<profile-name>` to `gac` or `gac-<suffix>`, then create `<codex-home>/<profile-name>.config.toml` without changing `<codex-home>/config.toml` or `<codex-home>/auth.json`:
 
 ```toml
 model_provider = "gac"
-model = "gpt-5.6-terra"
+model = "<verified-gac-model>"
 model_reasoning_effort = "high"
 disable_response_storage = true
 
@@ -97,7 +117,7 @@ env_key = "GAC_API_KEY"
 requires_openai_auth = false
 ```
 
-`gpt-5.6-terra` was the GAC vendor recommendation and the successfully tested model on 2026-09-17. Re-check GAC's current model list before changing it. Keep the model explicit because a third-party `/models` response can be usable by the provider while remaining incompatible with Codex's model-catalog decoder.
+The placeholder must be replaced with the exact model verified during the current Compatibility Gate; a profile that still contains it is incomplete and must not be installed. Keep the model explicit because a third-party `/models` response can be usable by the provider while remaining incompatible with Codex's model-catalog decoder.
 
 The profile contains no credential. Its purpose is provider selection, endpoint, wire protocol, authentication variable name, and model defaults. The launcher supplies the secret and activates the profile.
 
@@ -229,6 +249,8 @@ Do not output `$profileText`, the function definition, or matching key-assignmen
 
 ### End-to-End Route Checks
 
+Before launching, confirm the persistent profile contains the exact `<verified-gac-model>` selected during the current gate and contains no unresolved placeholder.
+
 Run one small request through each command:
 
 ```text
@@ -242,7 +264,7 @@ If a Windows function previously had `GAC_API_KEY` set in the caller, verify tha
 
 ## GAC Model-Catalog Compatibility
 
-On 2026-09-17, GAC's `/models` endpoint returned an OpenAI-style `{ "object": "list", "data": [...] }` payload, while Codex CLI 0.154.0's catalog refresh expected a top-level `models` field. Codex therefore warned `failed to decode models response: missing field models` even though an explicit `gpt-5.6-terra` Responses request completed successfully.
+On 2026-09-17, GAC's `/models` endpoint returned an OpenAI-style `{ "object": "list", "data": [...] }` payload, while Codex CLI 0.154.0's catalog refresh expected a top-level `models` field. Codex therefore warned `failed to decode models response: missing field models` even though an API-discovered model completed successfully. The historical model id is intentionally omitted so it cannot become a future default.
 
 Treat that warning as an endpoint catalog-schema compatibility issue when the pinned-model completion succeeds. It is not evidence that the launcher, profile, endpoint, or key is wrong. If the completion itself fails, diagnose the HTTP status, provider entitlement, model id, endpoint, and authentication separately.
 
@@ -258,6 +280,9 @@ Treat that warning as an endpoint catalog-schema compatibility issue when the pi
 ## Guardrails
 
 - DO NOT put the GAC API key in this skill, the Codex TOML profile, a git-tracked file, command history, logs, or validation output.
+- DO NOT create or modify any setup file before current `/models` discovery and a direct `/responses` request succeed.
+- DO NOT choose a model from a historical note, vendor example, generator default, or previous launcher without current API verification.
+- DO NOT create the real profile or launcher until the isolated Codex turn succeeds with the exact API-verified model.
 - DO NOT modify the base Codex `config.toml` or `auth.json` for the dedicated GAC route.
 - DO NOT use a legacy `[profiles.<profile-name>]` table when the installed Codex version requires profile-v2 files.
 - DO NOT replace, alias, or wrap the plain `codex` command with GAC behavior.

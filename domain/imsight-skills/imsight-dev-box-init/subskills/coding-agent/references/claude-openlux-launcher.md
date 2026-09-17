@@ -18,12 +18,13 @@ Use this reference when the user wants a local `claude-openlux` or `claude-openl
 
 ## Workflow
 
-1. Identify the installed Claude Code version, host OS and shell, current OpenLux API guidance, and whether the initial request opts out of permissive mode.
-2. Resolve the optional suffix under **Launcher Name and Suffix Contract**.
-3. Resolve API-key handling under **Required Input** without printing the key, then establish the endpoint, authentication lane, model-discovery behavior, and credential placement.
-4. Implement the launcher from **Launcher Design Principles** and **Runtime Argument Contract**. Treat the inline script as a Unix reference implementation rather than mandatory machinery.
-5. Put the launcher directory on PATH for new shells using the host's native startup mechanism.
-6. Run **Verification**, including redaction-safe inspection, argument and permission checks, and a relay model check.
+1. Identify the installed Claude Code version, host OS and shell, current OpenLux API guidance, and whether the initial request opts out of permissive mode using read-only inspection.
+2. Obtain the OpenLux key under **Required Input**; stop without changing any file when it is unavailable.
+3. Complete **No-Write Provider Preflight** against OpenLux's Anthropic-compatible model and Messages APIs before creating a key file, launcher, temporary config, response dump, log, PATH entry, or shell-profile block.
+4. Resolve the optional suffix, authentication lane, and credential placement only after the live provider route succeeds.
+5. Implement the launcher from **Launcher Design Principles** and **Runtime Argument Contract**. Treat the inline script as a Unix reference implementation rather than mandatory machinery.
+6. Put the launcher directory on PATH for new shells using the host's native startup mechanism.
+7. Run **Verification**, including redaction-safe inspection, argument and permission checks, and comparison with the preflight model catalog.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's inputs, defaults, launcher contract, verification rules, and user constraints, then execute the plan without exposing credentials.
 
@@ -35,13 +36,24 @@ The suffix is a user-facing launcher and credential-file namespace only. It does
 
 ## Required Input
 
-You can provide an OpenLux API key during setup, or let the generated launcher fail with a clear message until the key file exists. Prefer an existing `OPENLUX_API_KEY` only when the user explicitly wants to seed this launcher's resolved key file during setup.
+The user must provide an OpenLux API key during setup so the no-write provider preflight can run before any launcher or key file is created. Prefer an existing process-scoped `OPENLUX_API_KEY` only when the user explicitly wants to use it for this setup. If no key is available, stop without writing a placeholder launcher.
 
 ```text
-Please provide your OpenLux API key for this launcher's OpenLux key file, or confirm that you will create the key file yourself.
+Please provide your OpenLux API key so I can verify the live Anthropic-compatible API before creating the launcher.
 ```
 
 The generated launcher must not hard-code the API key. It reads its resolved key file directly at runtime and assigns `ANTHROPIC_AUTH_TOKEN` for the launched Claude process only. Embed the key in the launcher script itself only when the user explicitly requests that layout; in that case the launcher file must be `chmod 700` and must never be committed or shared.
+
+## No-Write Provider Preflight
+
+Complete this phase while keeping the key process-scoped and all API responses in memory:
+
+1. Request `GET https://api.openlux.ai/v1/models` with the current key using OpenLux's documented Anthropic-compatible headers.
+2. Require a nonempty catalog whose ids match the current Claude-compatible namespace advertised by the provider. Do not require a particular historical model family or id.
+3. Select one currently advertised id only for the probe and send a minimal `POST https://api.openlux.ai/v1/messages` request through the same authentication lane Claude Code will use.
+4. Stop without modifying the filesystem when model discovery, authentication, or the Messages request fails. Report the failing layer without printing headers or the key.
+
+The launcher intentionally does not persist a model pin. The probe model proves only that the current key, endpoint, protocol, and at least one advertised model work together. A user-requested pin requires a fresh catalog check and direct probe of that exact id.
 
 ## Launcher Design Principles
 
@@ -59,7 +71,7 @@ The generated launcher must not hard-code the API key. It reads its resolved key
 - Base URL: `https://api.openlux.ai`
 - Auth: `ANTHROPIC_AUTH_TOKEN` with a key from the OpenLux console; the launcher clears `ANTHROPIC_API_KEY` and `CLAUDE_CODE_OAUTH_TOKEN` so Claude Code does not choose an older auth lane.
 - `API_TIMEOUT_MS=300000` and `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS=1`, both overridable by the caller. These follow the OpenLux tutorial recommendation.
-- `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1`, overridable by the caller. Without it, the `/model` picker shows only Claude Code's built-in five-row lineup (verified on Claude Code v2.1.268); with it, the picker additionally lists the relay's advertised models such as Fable 5 and Fable 5.1 with gateway-supplied descriptions.
+- `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1`, overridable by the caller. Without it, the `/model` picker shows only Claude Code's built-in lineup; with it, the picker can additionally list the relay's currently advertised models with gateway-supplied descriptions.
 - `DISABLE_AUTOUPDATER=1`, overridable by the caller. Claude Code's background auto-updater reinstalls the npm package mid-session; an interrupted install leaves the placeholder `claude` shim behind and breaks every launcher on the box (see **Notes**). Updates become deliberate: `npm update -g @anthropic-ai/claude-code`.
 - Official OpenLux Claude Code tutorial: `https://doc.openlux.ai/tutorials/plugins-7010249`.
 
@@ -67,7 +79,7 @@ Imsight's local launcher runs Claude Code with `--dangerously-skip-permissions` 
 
 ## Reference Unix Implementation
 
-The following Bash template illustrates the current contract. Compare it with the installed Claude Code version and current OpenLux documentation before using it. Adapt executable discovery, paths, or OS-specific process handling as needed; do not discard the principles above merely because this exact script stops matching a future version. Write an adapted Unix launcher to the selected launcher path and `chmod 700` the result:
+The following Bash template illustrates the current contract after **No-Write Provider Preflight** succeeds. Compare it with the installed Claude Code version and current OpenLux documentation before using it. Adapt executable discovery, paths, or OS-specific process handling as needed; do not discard the principles above merely because this exact script stops matching a future version. Write an adapted Unix launcher to the selected launcher path and `chmod 700` the result:
 
 ```bash
 #!/usr/bin/env bash
@@ -92,7 +104,7 @@ unset ANTHROPIC_API_KEY CLAUDE_CODE_OAUTH_TOKEN
 export API_TIMEOUT_MS="${API_TIMEOUT_MS:-300000}"
 export CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS="${CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS:-1}"
 
-# List the relay's advertised models (Fable 5, Fable 5.1, ...) in the /model
+# List the relay's currently advertised models in the /model
 # picker; without this the picker shows only the built-in lineup.
 export CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY="${CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY:-1}"
 
@@ -172,7 +184,7 @@ rg -n 'openlux-api-key|ANTHROPIC_AUTH_TOKEN|ANTHROPIC_BASE_URL|API_TIMEOUT_MS|DI
 test -f "$HOME/.local/bin/<key-file-name>" && sed 's/.*/<redacted>/' "$HOME/.local/bin/<key-file-name>"
 ```
 
-Verify the relay exposes the official Anthropic API surface. Every model id must start with `claude-`:
+Repeat the relay model check and compare it with the catalog recorded during preflight:
 
 ```bash
 curl -s --max-time 20 https://api.openlux.ai/v1/models \
@@ -181,13 +193,13 @@ curl -s --max-time 20 https://api.openlux.ai/v1/models \
   | python3 -c "import json,sys; ids=[m['id'] for m in json.load(sys.stdin)['data']]; print('\n'.join(ids)); assert ids and all(i.startswith('claude-') for i in ids), 'relay exposes non-official model ids'"
 ```
 
-Inside Claude Code, `/status` should show Base URL `https://api.openlux.ai`, and the `/model` picker should list official names such as Opus and Fable 5 rather than upstream ids. The default launcher must invoke `claude` with `--dangerously-skip-permissions`; an explicit permission-prompting opt-out must omit it.
+Inside Claude Code, `/status` should show Base URL `https://api.openlux.ai`, and the `/model` picker should agree with the current relay catalog rather than expose unrelated upstream ids. The default launcher must invoke `claude` with `--dangerously-skip-permissions`; an explicit permission-prompting opt-out must omit it.
 
 ## Notes
 
 - Store the OpenLux key in the resolved `openlux-api-key[-<suffix>]` file next to the launcher, not in the launcher script itself. The key file must be `chmod 600`.
-- OpenLux mimics the official Anthropic API: `/v1/models` returns official ids such as `claude-fable-5`, and `/v1/messages` echoes the requested official model name back. The launcher clears every `ANTHROPIC_*` model variable so Claude Code's built-in lineup (Opus, Sonnet, Fable, Haiku) passes through to the relay unchanged. Pinning a model name client-side breaks when the relay changes its lineup.
-- End-to-end verified on 2026-09-11 with Claude Code v2.1.268 in a scrubbed environment (`env -i`, no inherited variables): the launcher starts on the default `Opus 5 (1M context)`, `/model claude-fable-5` switches the session to Fable 5, and a prompt returns a normal completion through the relay. With gateway model discovery enabled, the picker lists relay rows (Fable 5.1, Fable 5, Opus 5, Opus 4.8, Opus 4.5, and more) with gateway-supplied descriptions.
+- OpenLux exposes Anthropic-compatible `/v1/models` and `/v1/messages` surfaces. The launcher clears every `ANTHROPIC_*` model variable so Claude Code and gateway discovery use the current relay lineup unchanged. Pinning a historical model name client-side breaks when the relay changes its catalog.
+- End-to-end compatibility was verified on 2026-09-11 with Claude Code v2.1.268 in a scrubbed environment. Historical model ids are intentionally omitted; repeat the live catalog and Messages checks instead of reusing that snapshot.
 - `/model <name>` saves the pick as the default for new sessions by writing `model` to `~/.claude/settings.json`; that saved default then leaks into every Claude Code launcher on the box. Revert by choosing the picker's `Default (recommended)` row or by removing the `model` key from `settings.json`.
 - If `/model` or `/status` shows an upstream id such as `k3[1m]`, restart the session first. Usage history under `projects.<path>.lastModelUsage` in `~/.claude.json` keeps old upstream names and is cosmetic. A selectable picker row with a non-`claude-` id after a restart means the relay's `/v1/models` is leaking upstream names; confirm with the check in **Verification** and report it to the relay operator, not to the launcher.
 - If `claude` prints `Error: claude native binary not installed`, the Claude Code package's postinstall did not run; repair it with `node <npm-global-root>/node_modules/@anthropic-ai/claude-code/install.cjs` and re-verify `claude --version`. The usual cause is the background auto-updater: it reinstalls the npm package mid-session, and an install interrupted between package extraction and postinstall leaves the placeholder shim as the `claude` entrypoint. The template prevents recurrence by exporting `DISABLE_AUTOUPDATER=1`; update deliberately with `npm update -g @anthropic-ai/claude-code` instead.
@@ -197,6 +209,8 @@ Inside Claude Code, `/status` should show Base URL `https://api.openlux.ai`, and
 ## Guardrails
 
 - DO NOT print, hard-code, or echo the OpenLux API key in commands, responses, or the generated launcher, except inside the launcher file itself when the user explicitly requests an embedded key with `chmod 700`.
+- DO NOT create a key file, launcher, temporary config, PATH entry, or shell-profile block before the current model catalog and a direct Messages request succeed.
+- DO NOT require or pin a model merely because it appeared in a historical guide, verification snapshot, or previous launcher.
 - DO NOT name generated launchers or key files after OpenLux pricing, discount, or token-group names (such as `0.5x`) unless the user explicitly asks for that name.
 - DO NOT pin model names or export `ANTHROPIC_DEFAULT_*_MODEL` variables in the generated launcher.
 - DO NOT remove the `--dangerously-skip-permissions` flag from the generated launcher unless the user's initial launcher request explicitly asks for permission prompts.
