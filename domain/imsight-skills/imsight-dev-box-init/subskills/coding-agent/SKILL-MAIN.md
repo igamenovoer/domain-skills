@@ -42,6 +42,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | `codex-cli-setup` | Configure Imsight-preferred Codex CLI behavior. | `references/codex-cli-setup.md` |
 | `codex-cli-3rd-party` | Configure Codex CLI for third-party OpenAI-compatible APIs. | `references/codex-cli-3rd-party.md` |
 | `codex-gac-launcher` | Create or repair `codex-gac` or `codex-gac-<suffix>` with a dedicated GAC profile and embedded key while leaving plain `codex` official. | `references/codex-gac-launcher.md` |
+| `codex-openlux-launcher` | Create or repair `codex-openlux` or `codex-openlux-<suffix>` with a dedicated OpenLux profile and embedded key while leaving plain `codex` official. | `references/codex-openlux-launcher.md` |
 | `claude-kimi-launcher` | Create or repair `claude-kimi` or `claude-kimi-<suffix>`, including Kimi Coding Plan thinking effort. | `references/claude-kimi-launcher.md` |
 | `claude-gac-launcher` | Create or repair `claude-gac` or `claude-gac-<suffix>` with the endpoint and key embedded, without Claude JSON changes. | `references/claude-gac-launcher.md` |
 | `claude-openlux-launcher` | Create or repair `claude-openlux` or `claude-openlux-<suffix>`, replacing the retired Yunwu relay. | `references/claude-openlux-launcher.md` |
@@ -51,7 +52,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 ## Resource Ownership
 
-This subskill owns its Codex, Codex-GAC, Claude-Kimi, Claude-GAC, Claude-OpenLux, Antigravity-OpenLux, and Kimi multi-credential references, the cross-platform Claude-Kimi and Claude-GAC launcher generators, and the Unix Kimi Code credential launcher generator under `scripts/`.
+This subskill owns its Codex, Codex-GAC, Codex-OpenLux, Claude-Kimi, Claude-GAC, Claude-OpenLux, Antigravity-OpenLux, and Kimi multi-credential references, the cross-platform Claude-Kimi and Claude-GAC launcher generators, and the Unix Kimi Code credential launcher generator under `scripts/`.
 
 ## Custom Launcher Permission Policy
 
@@ -65,7 +66,7 @@ Apply this policy to every custom launcher created or repaired by this subskill,
 
 ## Custom Launcher Naming Policy
 
-- Use the provider-family base name when the user gives no suffix: `codex-gac`, `claude-gac`, `claude-kimi`, `claude-openlux`, or `agy-openlux`.
+- Use the provider-family base name when the user gives no suffix: `codex-gac`, `codex-openlux`, `claude-gac`, `claude-kimi`, `claude-openlux`, or `agy-openlux`.
 - When the user gives a suffix, append exactly one hyphen and the suffix: `<base-name>-<suffix>`. Accept lowercase letters, digits, and internal hyphens; ask for a portable replacement when the value contains uppercase letters, spaces, path separators, or shell metacharacters.
 - Treat the suffix only as a friendly launcher/profile namespace for distinguishing variants. Do not infer endpoint, account, model, routing, pricing, permission, or credential behavior from its text.
 - Use the resolved full launcher name consistently for the executable or function, managed-block marker, and isolated profile namespace. Use a matching credential-file namespace only when the provider guide stores credentials in side files.

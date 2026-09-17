@@ -16,17 +16,17 @@ metadata:
 
 Use this reference as the entrypoint for configuring Codex CLI to call third-party OpenAI-compatible APIs.
 
-Codex CLI 0.2+ expects the OpenAI **Responses** wire protocol (`/v1/responses`) for custom providers. Do not configure `wire_api = "chat"`; current Codex rejects it.
+Current Codex configuration supports the OpenAI **Responses** wire protocol (`/v1/responses`) for custom providers; `responses` is the only documented `wire_api` value. Re-check the installed CLI and official configuration reference before implementation instead of carrying forward an old `wire_api = "chat"` example.
 
 There are two generic provider categories. Find your provider in the routing table below and follow the matching procedure.
 
-GAC has a dedicated profile-and-launcher contract. For GAC, invoke `imsight-dev-box-init->coding-agent->codex-gac-launcher()` and load `codex-gac-launcher.md` instead of adapting the generic examples on this page.
+GAC and OpenLux have dedicated profile-and-launcher contracts. Invoke `imsight-dev-box-init->coding-agent->codex-gac-launcher()` for GAC or `imsight-dev-box-init->coding-agent->codex-openlux-launcher()` for OpenLux instead of adapting the generic examples on this page.
 
-For the generic procedures on this page, never bake API keys into this skill, generated documentation, git-tracked config, or launcher scripts. Store keys in environment variables, a local untracked secret file, or a shell-specific secret manager chosen by the user. The dedicated GAC page intentionally defines a different local-launcher credential contract.
+For the generic procedures on this page, never bake API keys into this skill, generated documentation, git-tracked config, or launcher scripts. Store keys in environment variables, a local untracked secret file, or a shell-specific secret manager chosen by the user. The dedicated GAC and OpenLux pages intentionally define a different local-launcher credential contract.
 
 ## Workflow
 
-1. Route GAC to the dedicated `codex-gac-launcher` command; otherwise select `responses-api` or `chat-completions-only` from **Subcommands**, testing `/v1/responses` when the provider is unlisted.
+1. Route GAC or OpenLux to its dedicated launcher command; otherwise select `responses-api` or `chat-completions-only` from **Subcommands**, testing `/v1/responses` when the provider is unlisted.
 2. Follow the selected provider procedure without embedding API keys.
 3. Preserve unrelated Codex configuration and launcher settings.
 4. Run **Validation** and report the configured route.
@@ -59,7 +59,7 @@ Terminal invocation of `imsight-dev-box-init->coding-agent->codex-cli-3rd-party(
 | Provider | Endpoint base | Category | Notes |
 | --- | --- | --- | --- |
 | GAC | `https://gaccode.com/codex/v1` | Dedicated launcher | Use `imsight-dev-box-init->coding-agent->codex-gac-launcher()`; do not adapt this page's generic credential layout |
-| OpenLux | `https://api.openlux.ai/v1` | `responses-api` | Requires a Codex-dedicated token group; model `gpt-5-codex` |
+| OpenLux | `https://api.openlux.ai/v1` | Dedicated launcher | Use `imsight-dev-box-init->coding-agent->codex-openlux-launcher()`; verify current Codex token entitlement and model compatibility |
 | OpenRouter | `https://openrouter.ai/api/v1` | `responses-api` | Responses-compatible gateway; proxy for many providers |
 | SiliconFlow | `https://api.siliconflow.cn/v1` | `chat-completions-only` | Use `codex-relay` or OpenRouter |
 | DeepSeek direct | `https://api.deepseek.com/v1` | `chat-completions-only` | Use `codex-relay` or OpenRouter |
@@ -74,76 +74,39 @@ If a provider is not listed, test `POST /v1/responses` directly with a valid key
 
 These endpoints already implement `/v1/responses`. Configure Codex to call them directly.
 
-### Generic config shape
+### Generic dedicated-profile shape
+
+Current Codex profile files live beside the base config as `$CODEX_HOME/<profile-name>.config.toml` and are selected with `--profile <profile-name>`. Put provider selection in that separate file when plain `codex` must remain on its existing route. Do not add a legacy `[profiles.<name>]` table to the base `config.toml` when the installed Codex version uses profile files.
 
 ```toml
 model = "<model-name>"
 model_provider = "<provider-id>"
 disable_response_storage = true
-preferred_auth_method = "apikey"
+model_reasoning_effort = "high"
 
 [model_providers.<provider-id>]
 name = "<display-name>"
 base_url = "<provider-base-url>"
 env_key = "<API_KEY_ENV_VAR>"
 wire_api = "responses"
+requires_openai_auth = false
 request_max_retries = 4
 stream_max_retries = 5
 stream_idle_timeout_ms = 300000
-
-[profiles.<provider-id>]
-model_provider = "<provider-id>"
-model = "<model-name>"
-model_reasoning_effort = "high"
-model_reasoning_summary = "auto"
 ```
 
-`disable_response_storage = true` turns off Codex's default server-side response storage, which third-party relays commonly reject or mishandle. `preferred_auth_method = "apikey"` keeps Codex on API-key auth instead of steering into the ChatGPT OAuth login flow.
+`disable_response_storage = true` turns off Codex's default server-side response storage, which third-party relays commonly reject or mishandle. `env_key` selects the scoped environment variable and `requires_openai_auth = false` prevents the custom provider from depending on the official OpenAI login.
 
 ```bash
 export <API_KEY_ENV_VAR>='<set locally, do not commit>'
-codex exec -p <provider-id> --skip-git-repo-check "Reply with exactly: ok"
+codex --profile <profile-name> exec --skip-git-repo-check "Reply with exactly: ok"
 ```
-
-### Example: OpenLux
-
-OpenLux (`https://api.openlux.ai`) natively serves `/v1/responses` for Codex. Official tutorial: `https://doc.openlux.ai/tutorials/plugins-7422014`.
-
-Create the token in the OpenLux console under a Codex-dedicated token group (named along the lines of "codex专属" or "codex渠道-gpt"). OpenLux partitions keys into per-product groups, so a Claude-group key is rejected for Codex use and vice versa.
-
-```toml
-model = "gpt-5-codex"
-model_provider = "openlux"
-model_reasoning_effort = "high"
-disable_response_storage = true
-preferred_auth_method = "apikey"
-
-[model_providers.openlux]
-name = "OpenLux"
-base_url = "https://api.openlux.ai/v1"
-env_key = "OPENLUX_API_KEY"
-wire_api = "responses"
-request_max_retries = 4
-stream_max_retries = 5
-stream_idle_timeout_ms = 300000
-
-[profiles.openlux]
-model_provider = "openlux"
-model = "gpt-5-codex"
-model_reasoning_effort = "high"
-model_reasoning_summary = "auto"
-```
-
-```bash
-export OPENLUX_API_KEY='<set locally, do not commit>'
-codex exec -p openlux --skip-git-repo-check "Reply with exactly: ok"
-```
-
-The official tutorial stores the key in `~/.codex/auth.json` instead; this skill prefers `env_key` so no key is written to config files. For Claude Code against the same relay, see `claude-openlux-launcher.md`.
 
 ### Example: OpenRouter
 
 OpenRouter supports `/v1/responses` and can proxy many Chat-only providers.
+
+Put this provider layer in `$CODEX_HOME/openrouter.config.toml` when plain `codex` must remain unchanged:
 
 ```toml
 model = "zai-org/GLM-5.2"
@@ -158,7 +121,7 @@ wire_api = "responses"
 
 ```bash
 export OPENROUTER_API_KEY='<set locally, do not commit>'
-codex exec "Reply with exactly: ok"
+codex --profile openrouter exec "Reply with exactly: ok"
 ```
 
 ---
@@ -174,7 +137,7 @@ These endpoints implement `/v1/chat/completions` but return `404` for `/v1/respo
    - OpenRouter (no local proxy needed; OpenRouter handles the translation)
    - CC Switch (desktop app with built-in proxy)
 2. Configure Codex with `wire_api = "responses"` pointing at the translator.
-3. Validate with a small `codex exec` request.
+3. Validate with a small `codex --profile <profile-name> exec` request.
 
 ### Using codex-relay
 
@@ -195,7 +158,7 @@ CODEX_RELAY_PORT=4446 \
 codex-relay
 ```
 
-Configure Codex:
+Configure Codex in a dedicated profile file such as `$CODEX_HOME/siliconflow-relay.config.toml`:
 
 ```toml
 model = "zai-org/GLM-5.2"
@@ -212,12 +175,14 @@ Codex needs a non-empty `OPENAI_API_KEY` for its client-side check, but the rela
 
 ```bash
 export OPENAI_API_KEY='not-needed'
-codex exec "Reply with exactly: ok"
+codex --profile siliconflow-relay exec "Reply with exactly: ok"
 ```
 
 ### Using OpenRouter as the translator
 
 If your model is listed on OpenRouter, you can skip the local proxy:
+
+Put this layer in `$CODEX_HOME/openrouter.config.toml`:
 
 ```toml
 model = "zai-org/GLM-5.2"
@@ -232,7 +197,7 @@ wire_api = "responses"
 
 ```bash
 export OPENROUTER_API_KEY='<set locally, do not commit>'
-codex exec "Reply with exactly: ok"
+codex --profile openrouter exec "Reply with exactly: ok"
 ```
 
 ### Reference Unix launcher for an isolated provider
@@ -328,10 +293,10 @@ curl -sS --fail-with-body \
 curl -s http://127.0.0.1:4446/v1/models
 ```
 
-4. Run a small Codex request:
+4. Run a small Codex request through the configured profile:
 
 ```bash
-codex exec "Reply with exactly: ok"
+codex --profile <profile-name> exec "Reply with exactly: ok"
 ```
 
 Expected success: Codex returns `ok`.
@@ -343,6 +308,6 @@ Expected success: Codex returns `ok`.
 - Keep provider IDs stable so profiles and historical Codex sessions remain understandable.
 - Some relays partition keys into per-product token groups. An OpenLux Claude-group key does not work for Codex, and a Codex-group key does not work for the Anthropic Messages API; create the key in the group matching the client.
 - Prefer `env_key` over `experimental_bearer_token`; do not store bearer tokens in tracked config.
-- Avoid `--ignore-user-config` except for tests. Normal setup should update `~/.codex/config.toml` or add a named profile.
+- Avoid `--ignore-user-config` except for tests. When plain `codex` must remain unchanged, add a separate `$CODEX_HOME/<profile-name>.config.toml` instead of selecting the provider in the base config.
 - For providers that only expose a thinking on/off switch (such as SiliconFlow), Codex's `model_reasoning_effort` level may have no effect; the translator forwards the on/off switch only.
 - Current Codex model listing may log errors if a third-party `/models` response shape differs from Codex's expected catalog schema. A small `codex exec` request is the decisive validation.
