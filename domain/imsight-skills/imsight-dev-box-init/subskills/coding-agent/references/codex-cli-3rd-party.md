@@ -18,13 +18,15 @@ Use this reference as the entrypoint for configuring Codex CLI to call third-par
 
 Codex CLI 0.2+ expects the OpenAI **Responses** wire protocol (`/v1/responses`) for custom providers. Do not configure `wire_api = "chat"`; current Codex rejects it.
 
-There are two provider categories. Find your provider in the routing table below and follow the matching procedure.
+There are two generic provider categories. Find your provider in the routing table below and follow the matching procedure.
 
-Never bake API keys into this skill, generated documentation, git-tracked config, or launcher scripts. Store keys in environment variables, a local untracked secret file, or a shell-specific secret manager chosen by the user.
+GAC has a dedicated profile-and-launcher contract. For GAC, invoke `imsight-dev-box-init->coding-agent->codex-gac-launcher()` and load `codex-gac-launcher.md` instead of adapting the generic examples on this page.
+
+For the generic procedures on this page, never bake API keys into this skill, generated documentation, git-tracked config, or launcher scripts. Store keys in environment variables, a local untracked secret file, or a shell-specific secret manager chosen by the user. The dedicated GAC page intentionally defines a different local-launcher credential contract.
 
 ## Workflow
 
-1. Select `responses-api` or `chat-completions-only` from **Subcommands**, testing `/v1/responses` when the provider is unlisted.
+1. Route GAC to the dedicated `codex-gac-launcher` command; otherwise select `responses-api` or `chat-completions-only` from **Subcommands**, testing `/v1/responses` when the provider is unlisted.
 2. Follow the selected provider procedure without embedding API keys.
 3. Preserve unrelated Codex configuration and launcher settings.
 4. Run **Validation** and report the configured route.
@@ -56,6 +58,7 @@ Terminal invocation of `imsight-dev-box-init->coding-agent->codex-cli-3rd-party(
 
 | Provider | Endpoint base | Category | Notes |
 | --- | --- | --- | --- |
+| GAC | `https://gaccode.com/codex/v1` | Dedicated launcher | Use `imsight-dev-box-init->coding-agent->codex-gac-launcher()`; do not adapt this page's generic credential layout |
 | OpenLux | `https://api.openlux.ai/v1` | `responses-api` | Requires a Codex-dedicated token group; model `gpt-5-codex` |
 | OpenRouter | `https://openrouter.ai/api/v1` | `responses-api` | Responses-compatible gateway; proxy for many providers |
 | SiliconFlow | `https://api.siliconflow.cn/v1` | `chat-completions-only` | Use `codex-relay` or OpenRouter |

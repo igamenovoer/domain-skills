@@ -41,6 +41,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | --- | --- | --- |
 | `codex-cli-setup` | Configure Imsight-preferred Codex CLI behavior. | `references/codex-cli-setup.md` |
 | `codex-cli-3rd-party` | Configure Codex CLI for third-party OpenAI-compatible APIs. | `references/codex-cli-3rd-party.md` |
+| `codex-gac-launcher` | Create or repair a Linux or Windows `codex-gac` launcher that uses a dedicated GAC profile and embedded key while leaving plain `codex` on the official provider. | `references/codex-gac-launcher.md` |
 | `claude-kimi-launcher` | Create or repair a Claude Code launcher backed by Kimi, including Coding Plan thinking effort. | `references/claude-kimi-launcher.md` |
 | `claude-gac-launcher` | Create or repair a Linux or Windows GAC launcher with the endpoint and provided key embedded, without Claude JSON changes or sibling-provider conventions. | `references/claude-gac-launcher.md` |
 | `claude-openlux-launcher` | Create or repair a Claude Code launcher backed by the OpenLux relay, replacing the retired Yunwu relay. | `references/claude-openlux-launcher.md` |
@@ -49,7 +50,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 ## Resource Ownership
 
-This subskill owns its Codex, Claude-Kimi, Claude-GAC, Claude-OpenLux, and Kimi multi-credential references, the cross-platform Claude-Kimi and Claude-GAC launcher generators, and the Unix Kimi Code credential launcher generator under `scripts/`.
+This subskill owns its Codex, Codex-GAC, Claude-Kimi, Claude-GAC, Claude-OpenLux, and Kimi multi-credential references, the cross-platform Claude-Kimi and Claude-GAC launcher generators, and the Unix Kimi Code credential launcher generator under `scripts/`.
 
 ## Custom Launcher Permission Policy
 
