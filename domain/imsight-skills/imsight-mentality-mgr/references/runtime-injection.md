@@ -120,7 +120,7 @@ Use readable prose, bullets, or a compact table suited to the file. Meaning is f
 
 - One entry per family combines its selection and catalog reference. Put enabled IDs/names and priority before the link; list actual IDs, not `all`, ranges, or a preset that could expand later.
 - Put active guidance before minimal reference-only entries. Availability and settings alone enable no rules. Keep explicit settings beside their family.
-- Explain once: apply selected, task-relevant project or memory rules; explicit memory rule/setting overrides win; within one scope higher family priority wins. Read details only for selected rules or an explicit request.
+- Explain once, leading with an affirmative directive: instruct agents to follow the selected, task-relevant project or memory rules as working instructions for planning, execution, and replies, on par with the file's other rules; explicit memory rule/setting overrides win; within one scope higher family priority wins. Frame restriction clauses ("apply only selected rules") as secondary scope boundaries, never as the headline. Emphasize the directive and the authority clause with bolding so the obligation is unmistakable. Read details only for selected rules or an explicit request.
 - If all families are inactive, shorten shared prose to availability and selective reading. Remove obsolete application text, disabled-ID inventories, history, and repeated boilerplate. Never publish an agent's effective or remembered selection.
 - Retain the known next-priority counter once through [Storage](priorities.md#storage), including after all rules are removed. A fresh never-enabled scope needs no counter.
 

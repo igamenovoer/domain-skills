@@ -34,7 +34,7 @@ Request: enable Brooks `r1` and `r5` in project scope. Replace the previous pros
 ```markdown
 ## Mentality
 
-Apply the selected rules when relevant to the task. Explicit chat-memory rule and setting overrides take precedence over project selections. Within either scope, higher family priority wins conflicts. Read catalog details only for selected rules or when requested.
+**Follow the mentality rules selected below whenever they are relevant to the task** — they are **working instructions** for how you plan, execute, and reply, **on par with the other rules in this file**. Rules explicitly enabled in your chat memory also apply, and explicit chat-memory rule and setting overrides take precedence over project selections. Within either scope, higher family priority wins conflicts. **Apply only selected, task-relevant rules**; read catalog details only for selected rules or when requested.
 
 **Brooks, priority 0:** apply `r1` (comprehension) and `r5` (dependency-direction). Consult their [definitions and examples](.imsight-arts/mentality/brooks-principles.md).
 ```
