@@ -244,9 +244,9 @@ codex_home="${CODEX_HOME:-$HOME/.codex}"
 mkdir -p "$codex_home"
 
 # The large-ctx profile is layered from $CODEX_HOME/<profile>.config.toml.
-# Ensure it exists in whichever Codex home is active. Never overwrite an
-# existing same-name file silently: identical content is left alone, and
-# differing content requires interactive confirmation.
+# Ensure it exists in whichever Codex home is active using the shared Codex
+# Profile Bootstrap contract: leave identical content alone, ask before
+# creating a missing file, and stop on a divergent file.
 profile_file="$codex_home/large-ctx.config.toml"
 profile_content='model_context_window = 372000
 model = "gpt-5.6-sol"
@@ -256,24 +256,40 @@ service_tier = "default"
 
 if [[ -f "$profile_file" ]]; then
   if ! printf '%s' "$profile_content" | cmp -s - "$profile_file"; then
-    if [[ ! -t 0 ]]; then
-      echo "codex-skip-all-large-ctx: $profile_file exists with different content; cannot prompt without a terminal, leaving it untouched" >&2
+    echo "codex-skip-all-large-ctx: existing profile differs: $profile_file" >&2
+    exit 2
+  fi
+elif [[ -e "$profile_file" ]]; then
+  echo "codex-skip-all-large-ctx: profile path is not a regular file: $profile_file" >&2
+  exit 2
+elif [[ ! -t 0 ]]; then
+  echo "codex-skip-all-large-ctx: missing profile; run interactively to approve creation: $profile_file" >&2
+  exit 2
+else
+  read -r -p "codex-skip-all-large-ctx: create $profile_file and continue? [y/N] " answer
+  case "$answer" in
+    y|Y|yes|YES) ;;
+    *) exit 2 ;;
+  esac
+  mkdir -p "$codex_home"
+  if [[ -e "$profile_file" ]]; then
+    if [[ -f "$profile_file" ]] && printf '%s' "$profile_content" | cmp -s - "$profile_file"; then
+      :
+    else
+      echo "codex-skip-all-large-ctx: profile appeared or changed after confirmation: $profile_file" >&2
       exit 2
     fi
-    echo "codex-skip-all-large-ctx: $profile_file already exists with different content (- default, + existing):" >&2
-    diff -u <(printf '%s' "$profile_content") "$profile_file" >&2 || true
-    read -r -p "Overwrite with the default large-ctx profile? [y/N] " answer
-    case "$answer" in
-      y|Y|yes|YES)
-        printf '%s' "$profile_content" > "$profile_file"
-        ;;
-      *)
-        echo "codex-skip-all-large-ctx: keeping existing $profile_file" >&2
-        ;;
-    esac
+  else
+    tmp_profile="$(mktemp "$codex_home/.large-ctx.config.toml.XXXXXX")"
+    chmod 600 "$tmp_profile"
+    printf '%s' "$profile_content" > "$tmp_profile"
+    if ! ln "$tmp_profile" "$profile_file" 2>/dev/null; then
+      rm -f "$tmp_profile"
+      echo "codex-skip-all-large-ctx: profile appeared after confirmation: $profile_file" >&2
+      exit 2
+    fi
+    rm -f "$tmp_profile"
   fi
-else
-  printf '%s' "$profile_content" > "$profile_file"
 fi
 
 # Runtime args belong to Codex; the launcher only injects its fixed defaults.
@@ -282,15 +298,17 @@ exec "$codex_bin" --profile large-ctx --dangerously-bypass-approvals-and-sandbox
 
 The `large-ctx` variant activates the `large-ctx` profile, which Codex CLI
 0.134.0 or later layers from `<codex-home>/large-ctx.config.toml` on top of
-the base configuration. The launcher ensures the profile file exists in the
-active Codex home, whether that is `~/.codex` or a redirected `CODEX_HOME`:
+the base configuration. The launcher bootstraps the profile in the active
+Codex home, whether that is `~/.codex` or a redirected `CODEX_HOME`:
 
-- A missing profile file is created with the default large-context settings.
+- A missing profile file is described and created only after interactive confirmation.
 - An identical existing file is left untouched.
-- An existing file with different content is never overwritten silently; the
-  launcher shows a diff and prompts before overwriting. Answering no keeps
-  the existing file and continues the launch. Without an interactive
-  terminal, the launcher exits with status 2 instead of choosing.
+- An existing file with different content is never overwritten or merged during
+  an ordinary launch. The launcher reports the conflict and exits with status 2.
+- Without an interactive terminal, a missing profile also causes status 2 rather
+  than silent state creation.
+- The launcher does not copy `config.toml`, `auth.json`, sessions, skills, logs,
+  or package metadata into a redirected home.
 
 The embedded profile defaults are dated values captured on 2026-09-03; see
 `configure-context-window` for how to re-derive `model_context_window` from

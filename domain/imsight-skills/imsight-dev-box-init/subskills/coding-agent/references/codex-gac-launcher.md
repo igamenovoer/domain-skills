@@ -25,8 +25,9 @@ Terminal invocation of `imsight-dev-box-init->coding-agent->codex-gac-launcher()
 3. Resolve the current endpoint, authentication lane, and a model candidate from the user's request plus current Codex and GAC documentation. Do not call GAC APIs directly as a preflight.
 4. Resolve the optional suffix and launcher/profile names, then complete **Phase A: Shared-Home Codex Test** using a uniquely named temporary profile in the normal Codex home when the installed CLI requires a file. Let Codex itself validate the request path and coexistence with cached OAuth state.
 5. Only after the target-CLI test succeeds, select the installed Codex version's profile layout and implement every invariant in **Codex-GAC Contract** as **Phase B: Persistent Setup**. Treat **Reference Implementations** as worked examples rather than mandatory machinery.
-6. Run **Verification**, including profile loading, background model-catalog behavior, scoped environment restoration, argument forwarding, permission mode, GAC completion, and the unchanged plain Codex route.
-7. Report the profile and launcher locations, Codex version, client-verified model, permission mode, validation results, and whether the normal shared home was retained without printing the key.
+6. Make the launcher use **Codex Profile Bootstrap for Redirected Homes** from `SKILL-MAIN.md`: embed the verified profile content without its key, resolve the active `CODEX_HOME` at runtime, ask before creating a missing profile, and refuse to overwrite a divergent one.
+7. Run **Verification**, including profile loading in the default and redirected homes, background model-catalog behavior, scoped environment restoration, argument forwarding, permission mode, GAC completion, and the unchanged plain Codex route.
+8. Report the profile and launcher locations, Codex version, client-verified model, permission mode, validation results, and whether the normal shared home was retained without printing the key.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's GAC-only contract, version evidence, platform examples, and user constraints, then execute the plan without changing the base Codex configuration or borrowing another provider's authentication conventions.
 
@@ -43,7 +44,7 @@ Every generated setup must satisfy these invariants:
 | Concern | Required behavior |
 | --- | --- |
 | Ordinary Codex | Leave plain `codex` on its existing official OpenAI provider, base config, authentication, and normal `CODEX_HOME`. |
-| Provider profile | Put GAC settings only in `$CODEX_HOME/<profile-name>.config.toml`; do not select GAC in the base `config.toml`. |
+| Provider profile | Put GAC settings only in `$CODEX_HOME/<profile-name>.config.toml`; do not select GAC in the base `config.toml`. The launcher may materialize the verified profile from embedded non-secret content when the active home does not contain it. |
 | OAuth coexistence | Do not modify, remove, copy, or suppress `auth.json` or the configured credential store. Use `env_key` with `requires_openai_auth = false` so the selected custom profile uses the scoped GAC key while plain `codex` keeps OAuth. |
 | Endpoint | Put the literal GAC Codex base URL `https://gaccode.com/codex/v1` in the provider profile. |
 | Protocol | Use the Responses wire API unless current GAC and Codex evidence establishes a replacement. |
@@ -121,7 +122,11 @@ requires_openai_auth = false
 
 The placeholder must be replaced with the exact model verified by the target Codex client during the current shared-home Compatibility Gate; a profile that still contains it is incomplete and must not be installed. Keep the model explicit when the installed client requires it because a provider catalog can remain incompatible with Codex's own model-catalog decoder.
 
-The profile contains no credential. Its purpose is provider selection, endpoint, wire protocol, authentication variable name, and model defaults. The launcher supplies the secret and activates the profile.
+The profile contains no credential. Its purpose is provider selection, endpoint, wire protocol, authentication variable name, and model defaults. The launcher supplies the secret, activates the profile, and may create the profile on demand in a redirected `CODEX_HOME` after asking the user.
+
+### Runtime profile bootstrap
+
+The launcher must resolve the active home at runtime rather than baking the normal home into its path. If `<profile-name>.config.toml` is absent there, prompt before creating it from the verified profile template above, then continue with the same `--profile` invocation. Leave an identical file untouched. If the file differs, or if the shell is noninteractive and the file is absent, stop without overwriting or silently creating state. Never copy the base config or `auth.json` into the redirected home.
 
 ## Platform Lanes
 
@@ -138,7 +143,7 @@ These examples implement the contract for the verified Codex version. Re-check e
 
 ### Linux or macOS
 
-Resolve `<launcher-name>` and `<profile-name>` first, then create `~/.local/bin/<launcher-name>` with the real key substituted only in the local file:
+Resolve `<launcher-name>` and `<profile-name>` first, then create `~/.local/bin/<launcher-name>` with the real key and the verified, non-secret profile template substituted only in the local file. Before `exec`, apply **Runtime profile bootstrap** for the active `CODEX_HOME` and ask before creating a missing profile:
 
 ```bash
 #!/usr/bin/env bash

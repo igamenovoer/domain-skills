@@ -26,8 +26,9 @@ Terminal invocation of `imsight-dev-box-init->coding-agent->codex-openlux-launch
 4. Resolve the optional suffix and launcher/profile names under **Launcher Name and Suffix Contract**.
 5. Run **Phase A: Shared-Home Codex Test**.
 6. Only after Phase A succeeds, run **Phase B: Persistent Setup** and create the launcher from **Reference Implementations**.
-7. Run **Verification**, including one end-to-end completion and a non-billable check that plain `codex` remains unchanged.
-8. Report the profile and launcher locations, Codex version, verified model, permission mode, validation results, and any model-metadata warning without printing the key.
+7. Make the launcher use **Codex Profile Bootstrap for Redirected Homes** from `SKILL-MAIN.md`: embed the verified profile content without its key, resolve the active `CODEX_HOME` at runtime, ask before creating a missing profile, and refuse to overwrite a divergent one.
+8. Run **Verification**, including one end-to-end completion in the default and redirected homes, the profile bootstrap decision paths, and a non-billable check that plain `codex` remains unchanged.
+9. Report the profile and launcher locations, Codex version, verified model, permission mode, validation results, and any model-metadata warning without printing the key.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's contract, compatibility evidence, platform examples, and user constraints, then execute the plan without changing the base Codex configuration or borrowing another OpenLux product's authentication conventions.
 
@@ -42,7 +43,7 @@ The suffix is a user-facing label only; it does not select an endpoint, account,
 | Concern | Required behavior |
 | --- | --- |
 | Ordinary Codex | Leave plain `codex` on its existing provider, base config, authentication route, and normal `CODEX_HOME`. |
-| Provider profile | Put OpenLux settings only in `$CODEX_HOME/<profile-name>.config.toml`; never select OpenLux in the base `config.toml`. |
+| Provider profile | Put OpenLux settings only in `$CODEX_HOME/<profile-name>.config.toml`; never select OpenLux in the base `config.toml`. The launcher may materialize the verified profile from embedded non-secret content when the active home does not contain it. |
 | OAuth coexistence | Do not modify, remove, copy, or suppress `auth.json` or the configured credential store. Plain `codex` keeps OAuth; the profile uses the scoped OpenLux key. |
 | Endpoint | Put OpenLux's current Codex base URL in the provider profile; the verified example is `https://api.openlux.ai/v1`. |
 | Protocol | Use the Responses wire API unless current OpenLux and Codex evidence establishes a replacement. |
@@ -117,6 +118,10 @@ stream_idle_timeout_ms = 120000
 
 The profile carries no credential. The gate turn used the candidate's lowest supported reasoning effort; the persistent profile defaults to `high` — adjust to the user's needs, choosing from the model's `supported_reasoning_levels`. Omit `request_max_retries` and `stream_max_retries` so Codex defaults apply; override them only from current provider and client evidence, never below defaults. Re-check the endpoint and timeout against current guidance.
 
+### Runtime profile bootstrap
+
+The launcher must resolve the active home at runtime rather than baking the normal home into its path. If `<profile-name>.config.toml` is absent there, prompt before creating it from the verified profile template above, then continue with the same `--profile` invocation. Leave an identical file untouched. If the file differs, or if the shell is noninteractive and the file is absent, stop without overwriting or silently creating state. Never copy the base config or `auth.json` into the redirected home.
+
 ## Platform Lanes
 
 | Host | Launcher | Secret scope | Profile |
@@ -143,6 +148,10 @@ fi
 export OPENLUX_AUTHORIZATION="Bearer ${OPENLUX_API_KEY}"
 launcher_name='<launcher-name>'
 profile_name='<profile-name>'
+
+# Before exec, apply the shared Codex Profile Bootstrap contract: resolve
+# ${CODEX_HOME:-$HOME/.codex}, compare the embedded non-secret profile content,
+# ask before creating a missing profile, and stop on a mismatch.
 
 codex_bin="$(command -v codex || true)"
 if [[ -z "$codex_bin" ]]; then
