@@ -49,6 +49,7 @@ Every generated setup must satisfy these invariants:
 | Protocol | Use the Responses wire API unless current OpenLux and Codex evidence establishes a replacement. |
 | Authentication | Configure normal provider auth from `OPENLUX_API_KEY`, background model-discovery auth from the full `Authorization` value in `OPENLUX_AUTHORIZATION`, and `requires_openai_auth = false`. |
 | Credential placement | Embed the user-provided key directly in the local launcher or managed PowerShell profile block; never put it in the tracked skill or Codex TOML. |
+| Credential integrity | Require the actual launcher value to be non-empty visible ASCII on one physical line. Reject whitespace or control characters instead of trimming them, validate without printing the key, and derive `OPENLUX_AUTHORIZATION` only after validation. |
 | Suffix | Use it only as the optional launcher/profile namespace defined above. Do not derive runtime behavior from its text. |
 | Environment scope | Expose `OPENLUX_API_KEY` and `OPENLUX_AUTHORIZATION` only to the launched Codex process. Do not set `CODEX_HOME` in the normal launcher. A PowerShell function must restore both credential variables. |
 | Model | Pin `<verified-openlux-model>`, selected from the user's choice or current provider guidance and confirmed by a shared-home Codex turn. Prefer Codex's own model/status discovery when available; never seed selection solely from historical notes or examples. |
@@ -61,7 +62,7 @@ The provider endpoint, token entitlement, and model route come from OpenLux. The
 
 ## Required Input
 
-The setup requires an OpenLux API key that is entitled to the provider's Codex-compatible Responses route. Keep it in memory while generating the launcher and represent it as `<OPENLUX_API_KEY>` in documentation, diffs, logs, commands, and examples.
+The setup requires an OpenLux API key that is entitled to the provider's Codex-compatible Responses route. Keep it in memory while generating the launcher and represent it as `<OPENLUX_API_KEY>` in documentation, diffs, logs, commands, and examples. Before testing or writing it, require every character to be visible ASCII (`33..126`) and reject empty, multiline, whitespace-padded, or control-character-bearing input instead of trimming it.
 
 The generated Unix launcher or Windows PowerShell profile block contains the key in plaintext by design. Do not commit the generated launcher. Restrict a Unix launcher to mode `0700`; on Windows, write only to the user's own PowerShell profile and never display the managed block after inserting the key.
 
@@ -79,7 +80,7 @@ codex exec --help
 
 The official Codex configuration reference currently places profile files beside the base config as `$CODEX_HOME/<profile-name>.config.toml` and selects them with `--profile <profile-name>`: `https://developers.openai.com/codex/config-reference/`. It documents custom-provider `base_url`, `env_key`, `env_http_headers`, `requires_openai_auth`, and the Responses-only `wire_api` value. Values in `env_http_headers` are environment-variable names whose runtime values become the complete header values; they are not literal secrets and Codex does not add `Bearer ` to them.
 
-This procedure was investigated on 2026-09-17 with `codex-cli 0.154.0`. That version loaded `openlux.config.toml` from `CODEX_HOME` with `--profile openlux`; it did not require or use a legacy `[profiles.openlux]` table in `config.toml`. One setup reported unauthenticated background `/models` requests in a normal home and success in a clean home, but that comparison also changed other Codex state and followed an earlier incomplete header configuration. Treat it as a troubleshooting observation, not proof that `auth.json` and provider profiles cannot coexist. Reproduce the failure through the current target client before offering separate-home fallback.
+This procedure was investigated on 2026-09-17 with `codex-cli 0.154.0`. That version loaded `openlux.config.toml` from `CODEX_HOME` with `--profile openlux`; it did not require or use a legacy `[profiles.openlux]` table in `config.toml`. A later 2026-09-18 investigation found that an apparently home-dependent failure was caused by a generated launcher embedding the key with leading and trailing newlines: clean manual tests did not reproduce the launcher's bytes, and header construction omitted authentication. This is not evidence that `auth.json` and provider profiles cannot coexist. Validate the persistent launcher's actual credential path before offering separate-home fallback.
 
 Treat installed help, current official Codex documentation, and the target CLI's shared-home profile-loading test as the compatibility authority. OpenLux documentation is provider evidence, not authority for Codex's profile syntax. Do not silently migrate or delete legacy profile tables; preserve unrelated configuration and report conflicts.
 
@@ -153,6 +154,11 @@ Resolve `<launcher-name>` and `<profile-name>` first, then create `~/.local/bin/
 set -euo pipefail
 
 export OPENLUX_API_KEY='<OPENLUX_API_KEY>'
+credential_pattern='^[!-~]+$'
+if ! (LC_ALL=C; [[ $OPENLUX_API_KEY =~ $credential_pattern ]]); then
+  echo '<launcher-name>: OPENLUX_API_KEY must be one line of visible ASCII' >&2
+  exit 2
+fi
 export OPENLUX_AUTHORIZATION="Bearer ${OPENLUX_API_KEY}"
 launcher_name='<launcher-name>'
 profile_name='<profile-name>'
@@ -189,6 +195,9 @@ function <launcher-name> {
 
     try {
         $env:OPENLUX_API_KEY = '<OPENLUX_API_KEY>'
+        if ([string]::IsNullOrEmpty($env:OPENLUX_API_KEY) -or $env:OPENLUX_API_KEY -notmatch '\A[!-~]+\z') {
+            throw '<launcher-name>: OPENLUX_API_KEY must be one line of visible ASCII'
+        }
         $env:OPENLUX_AUTHORIZATION = "Bearer $env:OPENLUX_API_KEY"
 
         $codexCommand = Get-Command codex -CommandType Application,ExternalScript -ErrorAction Stop | Select-Object -First 1
@@ -247,7 +256,8 @@ test "$(stat -c '%a' "$HOME/.local/bin/<launcher-name>")" = 700
 test -d "$codex_home"
 test "$(stat -c '%a' "$codex_home/<profile-name>.config.toml")" = 600
 rg -n 'model_provider|model =|base_url|wire_api|env_key|env_http_headers|requires_openai_auth' "$codex_home/<profile-name>.config.toml"
-rg -q 'OPENLUX_API_KEY=' "$HOME/.local/bin/<launcher-name>"
+test "$(rg -c '^export OPENLUX_API_KEY=' "$HOME/.local/bin/<launcher-name>")" = 1
+LC_ALL=C rg -q "^export OPENLUX_API_KEY='[!-&(-~]+'$" "$HOME/.local/bin/<launcher-name>"
 rg -q 'OPENLUX_AUTHORIZATION=' "$HOME/.local/bin/<launcher-name>"
 ! rg -q 'CODEX_HOME=' "$HOME/.local/bin/<launcher-name>"
 rg -q -F "profile_name='<profile-name>'" "$HOME/.local/bin/<launcher-name>"
@@ -265,11 +275,12 @@ $profilePath = $PROFILE.CurrentUserCurrentHost
 $profileText = Get-Content -Raw -LiteralPath $profilePath
 $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME '.codex' }
 $providerProfile = Join-Path $codexHome '<profile-name>.config.toml'
+$keyAssignmentPattern = '(?m)^[ \t]*\$env:OPENLUX_API_KEY = ''[!-&(-~]+''[ \t]*$'
 ([regex]::Matches($profileText, [regex]::Escape('# >>> <launcher-name> launcher >>>'))).Count -eq 1
 ([regex]::Matches($profileText, [regex]::Escape('# <<< <launcher-name> launcher <<<'))).Count -eq 1
 $profileText.Contains("--profile '<profile-name>'")
 $profileText.Contains('--dangerously-bypass-approvals-and-sandbox')
-$profileText.Contains('OPENLUX_API_KEY')
+([regex]::Matches($profileText, $keyAssignmentPattern)).Count -eq 1
 $profileText.Contains('OPENLUX_AUTHORIZATION')
 !$profileText.Contains('CODEX_HOME')
 Test-Path -LiteralPath $codexHome -PathType Container
@@ -277,7 +288,7 @@ Get-Command <launcher-name> -CommandType Function
 Select-String -LiteralPath $providerProfile -Pattern 'model_provider|model =|base_url|wire_api|env_key|env_http_headers|requires_openai_auth'
 ```
 
-Do not output `$profileText`, the function definition, or matching key-assignment lines after the real key has been inserted. For an explicit permission opt-out, the permission-flag check must confirm absence instead.
+The exact assignment checks above reject multiline values and non-visible bytes without displaying the key. Do not output `$profileText`, the function definition, or matching key-assignment lines after the real key has been inserted. For an explicit permission opt-out, the permission-flag check must confirm absence instead.
 
 ### End-to-End Route Checks
 
@@ -321,7 +332,7 @@ Fallback metadata can still degrade model-specific defaults, context sizing, or 
 - If `--profile <profile-name>` reports legacy profile configuration, move only the OpenLux layer out of `[profiles.<profile-name>]` and into the installed version's separate profile file after preserving unrelated settings.
 - If plain `codex` uses OpenLux, remove accidental top-level OpenLux provider selection from the base config; the selection belongs only in the provider profile layer.
 - If Codex asks for official login through the custom launcher, verify `requires_openai_auth = false`, `env_key = "OPENLUX_API_KEY"`, and the launcher's scoped key assignment.
-- If the background model manager reports `401 Token not provided`, verify the profile's `env_http_headers` maps `Authorization` to `OPENLUX_AUTHORIZATION`, that the latter contains the complete `Bearer <key>` value in the child process, and that `requires_openai_auth = false`. Do not blame or modify `auth.json` without a controlled target-CLI comparison; if the shared-home failure is reproducible, follow **Optional Separate-Home Fallback**.
+- If the background model manager reports `401 Token not provided`, or OpenLux returns `429` while provider-side key activity remains empty, validate the launcher's actual `OPENLUX_API_KEY` shape first without printing it. A CR/LF-contaminated value can prevent Authorization header construction; clean manual exports do not clear the generated launcher. Then verify that `env_http_headers` maps `Authorization` to `OPENLUX_AUTHORIZATION`, that the latter is derived after validation as the complete `Bearer <key>` value, and that `requires_openai_auth = false`. Do not blame or modify `auth.json` without a controlled target-CLI comparison; if the shared-home failure is reproducible, follow **Optional Separate-Home Fallback**.
 - If OpenLux reports that invalid tokens require a cooldown, stop all probes for the full stated interval. Check for an unset or malformed auth variable without printing it; an empty extraction result is an authentication attempt, not a harmless diagnostic.
 - If a paced Codex turn intermittently returns `429` or drops streams after a previous end-to-end success, preserve the known-good configuration and report provider/upstream throttling separately. Do not churn profiles, rotate models, run raw API comparisons, or create a burst of retries as a configuration fix.
 - If Codex rejects the provider route, diagnose its reported authentication, model, streaming, tool, reasoning, and storage behavior through the target CLI. A standalone HTTP success must not override the Codex failure.
@@ -336,6 +347,7 @@ Fallback metadata can still degrade model-specific defaults, context sizing, or 
 - DO NOT require, recommend, or use direct OpenLux `/models` or `/responses` calls as a launcher compatibility gate.
 - DO NOT choose or test a model merely because it appeared in this guide, a historical note, a previous launcher, or another user's setup.
 - DO NOT create the real profile or launcher until the shared-home Codex test succeeds with the exact client-verified model.
+- DO NOT serialize the OpenLux key across lines, accept whitespace or control characters, silently trim it, derive `OPENLUX_AUTHORIZATION` before validation, or verify only that the variable name appears in the launcher.
 - DO NOT set or replace `CODEX_HOME` in the normal launcher, modify `auth.json`, or select OpenLux in the base `config.toml`.
 - DO NOT create a separate Codex home solely because cached OAuth credentials exist; require the controlled failure evidence and user choice defined in **Optional Separate-Home Fallback**.
 - DO NOT omit the environment-backed Authorization header when the installed Codex version otherwise sends unauthenticated background model discovery.

@@ -49,6 +49,7 @@ Every generated setup must satisfy these invariants:
 | Protocol | Use the Responses wire API unless current GAC and Codex evidence establishes a replacement. |
 | Authentication | Configure the provider to read `GAC_API_KEY` and not require OpenAI authentication. |
 | Credential placement | Embed the user-provided GAC key directly in the local launcher or managed PowerShell profile block; never put it in the tracked skill or Codex TOML. |
+| Credential integrity | Require the actual launcher value to be non-empty visible ASCII on one physical line. Reject whitespace or control characters instead of trimming them, and validate without printing the key. |
 | Suffix | Use it only as the optional launcher/profile namespace defined above. Do not derive runtime behavior from its text. |
 | Environment scope | Expose `GAC_API_KEY` only to the launched Codex process. Do not set `CODEX_HOME` in the normal launcher. A PowerShell function must restore the caller's key variable. |
 | Model | Pin `<verified-gac-model>`, selected from the user's request, current documentation, or Codex's own discovery surface and confirmed by a shared-home Codex turn. Never seed selection from this guide's historical notes. |
@@ -60,7 +61,7 @@ The provider-specific endpoint and authentication lane come from GAC. The permis
 
 ## Required Input
 
-The setup requires a GAC API key from the GAC site's API-key field. Keep it in memory while generating the launcher and represent it as `<GAC_API_KEY>` in documentation, diffs, logs, and examples.
+The setup requires a GAC API key from the GAC site's API-key field. Keep it in memory while generating the launcher and represent it as `<GAC_API_KEY>` in documentation, diffs, logs, and examples. Before testing or writing it, require every character to be visible ASCII (`33..126`) and reject empty, multiline, whitespace-padded, or control-character-bearing input instead of trimming it.
 
 Do not commit the generated launcher. It contains a live credential by design. Restrict a Unix launcher to mode `0700`; on Windows, write only to the user's own PowerShell profile and avoid displaying the managed block after inserting the key.
 
@@ -144,6 +145,11 @@ Resolve `<launcher-name>` and `<profile-name>` first, then create `~/.local/bin/
 set -euo pipefail
 
 export GAC_API_KEY='<GAC_API_KEY>'
+credential_pattern='^[!-~]+$'
+if ! (LC_ALL=C; [[ $GAC_API_KEY =~ $credential_pattern ]]); then
+  echo '<launcher-name>: GAC_API_KEY must be one line of visible ASCII' >&2
+  exit 2
+fi
 launcher_name='<launcher-name>'
 profile_name='<profile-name>'
 
@@ -177,6 +183,9 @@ function <launcher-name> {
 
     try {
         $env:GAC_API_KEY = '<GAC_API_KEY>'
+        if ([string]::IsNullOrEmpty($env:GAC_API_KEY) -or $env:GAC_API_KEY -notmatch '\A[!-~]+\z') {
+            throw '<launcher-name>: GAC_API_KEY must be one line of visible ASCII'
+        }
 
         $codexCommand = Get-Command codex -ErrorAction Stop | Select-Object -First 1
         & $codexCommand --profile '<profile-name>' --dangerously-bypass-approvals-and-sandbox @args
@@ -227,7 +236,8 @@ test "$(stat -c '%a' "$HOME/.local/bin/<launcher-name>")" = 700
 test -d "$codex_home"
 test "$(stat -c '%a' "$codex_home/<profile-name>.config.toml")" = 600
 rg -n 'model_provider|model =|base_url|wire_api|env_key|requires_openai_auth' "$codex_home/<profile-name>.config.toml"
-rg -q 'GAC_API_KEY=' "$HOME/.local/bin/<launcher-name>"
+test "$(rg -c '^export GAC_API_KEY=' "$HOME/.local/bin/<launcher-name>")" = 1
+LC_ALL=C rg -q "^export GAC_API_KEY='[!-&(-~]+'$" "$HOME/.local/bin/<launcher-name>"
 ! rg -q 'CODEX_HOME=' "$HOME/.local/bin/<launcher-name>"
 rg -q -F "profile_name='<profile-name>'" "$HOME/.local/bin/<launcher-name>"
 rg -q -F -- '--profile "$profile_name"' "$HOME/.local/bin/<launcher-name>"
@@ -244,18 +254,19 @@ $profilePath = $PROFILE.CurrentUserCurrentHost
 $profileText = Get-Content -Raw -LiteralPath $profilePath
 $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME '.codex' }
 $providerProfile = Join-Path $codexHome '<profile-name>.config.toml'
+$keyAssignmentPattern = '(?m)^[ \t]*\$env:GAC_API_KEY = ''[!-&(-~]+''[ \t]*$'
 ([regex]::Matches($profileText, [regex]::Escape('# >>> <launcher-name> launcher >>>'))).Count -eq 1
 ([regex]::Matches($profileText, [regex]::Escape('# <<< <launcher-name> launcher <<<'))).Count -eq 1
 $profileText.Contains("--profile '<profile-name>'")
 $profileText.Contains("--dangerously-bypass-approvals-and-sandbox")
-$profileText.Contains("GAC_API_KEY")
+([regex]::Matches($profileText, $keyAssignmentPattern)).Count -eq 1
 !$profileText.Contains("CODEX_HOME")
 Test-Path -LiteralPath $codexHome -PathType Container
 Get-Command <launcher-name> -CommandType Function
 Select-String -LiteralPath $providerProfile -Pattern 'model_provider|model =|base_url|wire_api|env_key|requires_openai_auth'
 ```
 
-Do not output `$profileText`, the function definition, or matching key-assignment lines after the real key has been inserted. For an explicit permission opt-out, the permission-flag check must confirm absence instead.
+The exact assignment checks above reject multiline values and non-visible bytes without displaying the key. Do not output `$profileText`, the function definition, or matching key-assignment lines after the real key has been inserted. For an explicit permission opt-out, the permission-flag check must confirm absence instead.
 
 ### End-to-End Route Checks
 
@@ -288,7 +299,7 @@ Treat that warning as an endpoint catalog-schema compatibility issue when the pi
 - If `--profile <profile-name>` reports legacy profile configuration, move the GAC keys out of `[profiles.<profile-name>]` and into the version-appropriate separate profile file without changing unrelated base settings.
 - If plain `codex` uses GAC, remove accidental top-level `model_provider = "gac"` or provider selection from the base config; the selection belongs only in the GAC profile layer.
 - If Codex asks for official login during `<launcher-name>`, verify `requires_openai_auth = false`, `env_key = "GAC_API_KEY"`, and the launcher's scoped key assignment.
-- If background model discovery returns `401` or `403`, verify `requires_openai_auth = false`, the scoped key, and whether the installed Codex version requires a provider-documented `env_http_headers` mapping. Do not blame or modify `auth.json` without a controlled target-CLI comparison; follow **Optional Separate-Home Fallback** only when its evidence threshold is met.
+- If GAC reports `401`, `403`, or throttling while the request is absent from provider-side key activity, validate the launcher's actual `GAC_API_KEY` shape first without printing it. A CR/LF-contaminated `env_key` value can prevent Authorization header construction. Then verify `requires_openai_auth = false` and whether the installed Codex version requires a provider-documented `env_http_headers` mapping. Do not blame or modify `auth.json` without a controlled target-CLI comparison; follow **Optional Separate-Home Fallback** only when its evidence threshold is met.
 - If model refresh warns about `missing field models` but the explicit completion succeeds, report the catalog-schema mismatch and keep the pinned model.
 - If Linux cannot find `<launcher-name>`, confirm mode `0700` and that `~/.local/bin` is on `PATH`.
 - If Windows cannot find `<launcher-name>`, reload the same PowerShell profile that was edited and compare its path with `$PROFILE.CurrentUserCurrentHost`.
@@ -299,6 +310,7 @@ Treat that warning as an endpoint catalog-schema compatibility issue when the pi
 - DO NOT require, recommend, or use direct GAC `/models` or `/responses` calls as launcher compatibility evidence.
 - DO NOT choose a model from a historical note, vendor example, generator default, or previous launcher without a current target-CLI verification.
 - DO NOT create the real profile or launcher until the shared-home Codex turn succeeds with the exact client-verified model.
+- DO NOT serialize the GAC key across lines, accept whitespace or control characters, silently trim it, or verify only that the variable name appears in the launcher.
 - DO NOT set or replace `CODEX_HOME` in the normal launcher, modify `auth.json`, or select GAC in the base `config.toml`.
 - DO NOT create a separate Codex home solely because cached OAuth credentials exist; require the controlled failure evidence and user choice defined in **Optional Separate-Home Fallback**.
 - DO NOT modify the base Codex `config.toml` or `auth.json` for the GAC profile route.
