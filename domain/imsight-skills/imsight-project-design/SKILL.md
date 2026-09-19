@@ -18,7 +18,7 @@ metadata:
 
 ## Overview
 
-Use this skill as an Imsight project-design umbrella for designing staged aspects of a development project. The current supported scope is feature planning, so the available subcommands create or revise feature-design planning artifacts.
+Use this skill as an Imsight project-design umbrella for designing staged aspects of a development project. The current supported scopes are feature planning and debug campaign design, so the available subcommands create or revise feature-design planning artifacts and systematic debug investigation campaigns.
 
 The skill behaves like a main command with subcommands: complete the requested project-design stage within the supported scope, report what changed, then pause unless the user explicitly asks for another stage.
 
@@ -58,6 +58,7 @@ If the task does not map cleanly to the currently supported feature-planning wor
 | `design-gates` | Create or update optional verification gates under `<feature-dir>/gates/` | `commands/design-gates.md` |
 | `plan-feature` | Create or update `<feature-dir>/feature-milestones.md` as a high-level milestone plan | `commands/plan-feature.md` |
 | `design-agent-task` | Create or update `<feature-dir>/agent-task.md` as an implementation handoff | `commands/design-agent-task.md` |
+| `design-debug-campaign` | Create a systematic debug investigation campaign directory with intent, key questions, iterations, evidences, and reports | `commands/design-debug-campaign.md` |
 
 ### Helper Subcommands
 
