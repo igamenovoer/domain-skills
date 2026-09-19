@@ -245,8 +245,9 @@ mkdir -p "$codex_home"
 
 # The large-ctx profile is layered from $CODEX_HOME/<profile>.config.toml.
 # Ensure it exists in whichever Codex home is active using the shared Codex
-# Profile Bootstrap contract: leave identical content alone, ask before
-# creating a missing file, and stop on a divergent file.
+# Profile Bootstrap contract: use an existing file as-is with a warning,
+# overwrite only under --refresh-profile, and ask before creating a missing
+# file.
 profile_file="$codex_home/large-ctx.config.toml"
 profile_content='model_context_window = 372000
 model = "gpt-5.6-sol"
@@ -254,11 +255,35 @@ model_reasoning_effort = "max"
 service_tier = "default"
 '
 
-if [[ -f "$profile_file" ]]; then
-  if ! printf '%s' "$profile_content" | cmp -s - "$profile_file"; then
-    echo "codex-skip-all-large-ctx: existing profile differs: $profile_file" >&2
+refresh_profile=0
+args=()
+for arg in "$@"; do
+  if [[ "$arg" == '--refresh-profile' ]]; then
+    refresh_profile=1
+  else
+    args+=("$arg")
+  fi
+done
+set -- "${args[@]}"
+
+write_profile() {
+  mkdir -p -- "$codex_home"
+  local tmp_profile
+  tmp_profile="$(mktemp "$codex_home/.large-ctx.config.toml.XXXXXX")"
+  chmod 600 "$tmp_profile"
+  printf '%s' "$profile_content" > "$tmp_profile"
+  mv -f -- "$tmp_profile" "$profile_file"
+}
+
+if [[ "$refresh_profile" -eq 1 ]]; then
+  if [[ -e "$profile_file" && ! -f "$profile_file" ]]; then
+    echo "codex-skip-all-large-ctx: profile path is not a regular file: $profile_file" >&2
     exit 2
   fi
+  write_profile
+  echo "codex-skip-all-large-ctx: profile refreshed: $profile_file" >&2
+elif [[ -f "$profile_file" ]]; then
+  echo "codex-skip-all-large-ctx: warning: using existing profile as-is: $profile_file (use --refresh-profile to overwrite with the embedded template)" >&2
 elif [[ -e "$profile_file" ]]; then
   echo "codex-skip-all-large-ctx: profile path is not a regular file: $profile_file" >&2
   exit 2
@@ -271,24 +296,10 @@ else
     y|Y|yes|YES) ;;
     *) exit 2 ;;
   esac
-  mkdir -p "$codex_home"
   if [[ -e "$profile_file" ]]; then
-    if [[ -f "$profile_file" ]] && printf '%s' "$profile_content" | cmp -s - "$profile_file"; then
-      :
-    else
-      echo "codex-skip-all-large-ctx: profile appeared or changed after confirmation: $profile_file" >&2
-      exit 2
-    fi
+    echo "codex-skip-all-large-ctx: profile appeared after confirmation: $profile_file; using it as-is" >&2
   else
-    tmp_profile="$(mktemp "$codex_home/.large-ctx.config.toml.XXXXXX")"
-    chmod 600 "$tmp_profile"
-    printf '%s' "$profile_content" > "$tmp_profile"
-    if ! ln "$tmp_profile" "$profile_file" 2>/dev/null; then
-      rm -f "$tmp_profile"
-      echo "codex-skip-all-large-ctx: profile appeared after confirmation: $profile_file" >&2
-      exit 2
-    fi
-    rm -f "$tmp_profile"
+    write_profile
   fi
 fi
 
@@ -302,11 +313,14 @@ the base configuration. The launcher bootstraps the profile in the active
 Codex home, whether that is `~/.codex` or a redirected `CODEX_HOME`:
 
 - A missing profile file is described and created only after interactive confirmation.
-- An identical existing file is left untouched.
-- An existing file with different content is never overwritten or merged during
-  an ordinary launch. The launcher reports the conflict and exits with status 2.
+- An existing file is used as-is with a stderr warning naming the file and the
+  `--refresh-profile` flag; Codex appends its own state to profile files, so
+  byte-exact comparison rejection breaks ordinary use.
+- `--refresh-profile` overwrites or creates the profile from the embedded
+  template without asking and is never forwarded to Codex.
 - Without an interactive terminal, a missing profile also causes status 2 rather
-  than silent state creation.
+  than silent state creation; `--refresh-profile` is the explicit noninteractive
+  creation path.
 - The launcher does not copy `config.toml`, `auth.json`, sessions, skills, logs,
   or package metadata into a redirected home.
 
@@ -345,8 +359,11 @@ Validate the profile bootstrap with a temporary Codex home:
 
 ```bash
 tmp_home="$(mktemp -d)"
-CODEX_HOME="$tmp_home" codex-skip-all-large-ctx --version
+CODEX_HOME="$tmp_home" codex-skip-all-large-ctx --refresh-profile --version
 test -f "$tmp_home/large-ctx.config.toml"
+printf 'x = 1\n' > "$tmp_home/large-ctx.config.toml"
+CODEX_HOME="$tmp_home" codex-skip-all-large-ctx --version 2>&1 | grep -q 'using existing profile as-is'
+test "$(cat "$tmp_home/large-ctx.config.toml")" = 'x = 1'
 rm -rf "$tmp_home"
 ```
 
@@ -357,7 +374,9 @@ Expected results:
 - The launchers print the installed Codex CLI version without requesting
   approval.
 - The `large-ctx` launcher creates `large-ctx.config.toml` in a fresh
-  `CODEX_HOME` before starting Codex.
+  `CODEX_HOME` before starting Codex when `--refresh-profile` is given, and an
+  existing divergent profile is used as-is with a warning instead of being
+  overwritten or rejected.
 
 ## Skip-All Guardrails
 
@@ -366,8 +385,9 @@ Expected results:
 - DO NOT use the launchers in an untrusted repository or with untrusted hooks.
 - DO NOT describe these launchers as sandboxed; they disable command approvals
   and Codex sandboxing by design.
-- DO NOT overwrite an existing divergent `large-ctx.config.toml`
-  non-interactively; the launcher must prompt first or exit.
+- DO NOT overwrite an existing divergent `large-ctx.config.toml` during an
+  ordinary launch; use it as-is with a warning and reserve overwrites for the
+  explicit `--refresh-profile` flag.
 - DO NOT commit a project-local `.codex/` directory; it holds credentials.
 
 ## Subcommand: disable-codex-apps

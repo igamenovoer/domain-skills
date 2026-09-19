@@ -22,12 +22,12 @@ Terminal invocation of `imsight-dev-box-init->coding-agent->codex-gac-launcher()
 
 1. Inspect the installed Codex version and help, the host OS and shell, GAC's current Codex endpoint guidance, and whether the initial request explicitly opted out of permissive mode. These are read-only checks.
 2. Obtain the GAC API key under **Required Input**; stop without changing any file when the key is unavailable.
-3. Resolve the current endpoint, authentication lane, and a model candidate from the user's request plus current Codex and GAC documentation. Do not call GAC APIs directly as a preflight.
+3. Resolve the current endpoint and authentication lane from the user's request plus current Codex and GAC documentation. Do not call GAC APIs directly as a preflight. Resolve a model candidate only as a fallback for the case where the endpoint rejects Codex's default model; the persistent profile does not pin a model by default.
 4. Resolve the optional suffix and launcher/profile names, then complete **Phase A: Shared-Home Codex Test** using a uniquely named temporary profile in the normal Codex home when the installed CLI requires a file. Let Codex itself validate the request path and coexistence with cached OAuth state.
 5. Only after the target-CLI test succeeds, select the installed Codex version's profile layout and implement every invariant in **Codex-GAC Contract** as **Phase B: Persistent Setup**. Treat **Reference Implementations** as worked examples rather than mandatory machinery.
-6. Make the launcher use **Codex Profile Bootstrap for Redirected Homes** from `SKILL-MAIN.md`: embed the verified profile content without its key, resolve the active `CODEX_HOME` at runtime, ask before creating a missing profile, and refuse to overwrite a divergent one.
+6. Make the launcher use **Codex Profile Bootstrap for Redirected Homes** from `SKILL-MAIN.md`: embed the verified profile content without its key, resolve the active `CODEX_HOME` at runtime, use an existing profile as-is with a warning, overwrite it only through an explicit `--refresh-profile` flag, and ask before creating a missing profile.
 7. Run **Verification**, including profile loading in the default and redirected homes, background model-catalog behavior, scoped environment restoration, argument forwarding, permission mode, GAC completion, and the unchanged plain Codex route.
-8. Report the profile and launcher locations, Codex version, client-verified model, permission mode, validation results, and whether the normal shared home was retained without printing the key.
+8. Report the profile and launcher locations, Codex version, the model the verification turn reported, permission mode, validation results, and whether the normal shared home was retained without printing the key.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's GAC-only contract, version evidence, platform examples, and user constraints, then execute the plan without changing the base Codex configuration or borrowing another provider's authentication conventions.
 
@@ -53,7 +53,7 @@ Every generated setup must satisfy these invariants:
 | Credential integrity | Require the actual launcher value to be non-empty visible ASCII on one physical line. Reject whitespace or control characters instead of trimming them, and validate without printing the key. |
 | Suffix | Use it only as the optional launcher/profile namespace defined above. Do not derive runtime behavior from its text. |
 | Environment scope | Expose `GAC_API_KEY` only to the launched Codex process. Do not set `CODEX_HOME` in the normal launcher. A PowerShell function must restore the caller's key variable. |
-| Model | Pin `<verified-gac-model>`, selected from the user's request, current documentation, or Codex's own discovery surface and confirmed by a shared-home Codex turn. Never seed selection from this guide's historical notes. |
+| Model | Leave `model` and `model_reasoning_effort` out of the profile so the endpoint default and Codex's own defaults apply; pinned values silently go stale as Codex and the provider evolve. Record the model the Phase A turn reports. Pin `model` only when the endpoint rejects the default model in Phase A or the installed client requires an explicit one; add `model_reasoning_effort` only at the user's explicit request. Never seed a selection from this guide's historical notes. |
 | Arguments | Forward every caller argument to Codex unchanged after the fixed profile and permission defaults. |
 | Permissions | Inject Codex's strongest approval-free, sandbox-bypass mode by default. Omit it only when the user's initial request explicitly asks to retain approvals or sandboxing. |
 | Exit status | Preserve Codex's exit status. |
@@ -90,13 +90,13 @@ The gate has two ordered phases. Do not use standalone `/models` or `/responses`
 ### Phase A: Shared-Home Codex Test
 
 1. Inspect `codex --version`, current help, and the current profile/provider documentation without changing persistent state.
-2. Choose a candidate from the user's explicit request, current GAC guidance, or Codex's own model/status surface. When no documented provider default exists and several materially different candidates remain, ask the user instead of guessing from model names.
-3. Resolve the user's normal `CODEX_HOME` without changing it. Write a uniquely named temporary provider profile beside the normal config, or use current CLI-only overrides when they can express the full provider shape. Never overwrite an existing profile or modify `config.toml` or `auth.json`; keep the key process-scoped.
-4. Run one minimal `codex --profile <profile-name> exec --skip-git-repo-check ...` turn. If the user requested a model, pass that exact id through Codex and require the real turn to succeed; otherwise use the documented/default candidate and record the model Codex reports.
+2. Plan to probe with Codex's default model first. Resolve an explicit candidate from the user's explicit request, current GAC guidance, or Codex's own model/status surface only as a fallback; when the default-model turn fails and several materially different candidates remain, ask the user instead of guessing from model names.
+3. Resolve the user's normal `CODEX_HOME` without changing it. Write a uniquely named temporary provider profile beside the normal config, or use current CLI-only overrides when they can express the full provider shape. Never overwrite an existing profile or modify `config.toml` or `auth.json`; keep the key process-scoped. Do not add `model` or `model_reasoning_effort` to the probe profile; the goal is proving the endpoint works with defaults.
+4. Run one minimal `codex --profile <profile-name> exec --skip-git-repo-check ...` turn and record the model Codex reports. If the endpoint rejects the default model, retry once with an explicit candidate pinned in the temporary profile; only when that fallback succeeds does the persistent profile pin that model. If the user explicitly requested a model, pin that exact id from the start and require the real turn to succeed with it.
 5. Inspect combined client output in memory. A catalog-schema warning may be reported separately, but an authentication `401` or `403` from any client request fails the gate.
 6. Remove the temporary profile afterward and confirm the base config and OAuth credential store are unchanged. If the Codex turn or background authentication fails, stop without modifying the persistent profile or shell profile; do not substitute a handcrafted API probe.
 
-Set `<verified-gac-model>` to the exact id proven by that shared-home Codex turn. Temporary configuration is allowed only to exercise the target CLI safely; it must not become the persistent profile until the complete turn succeeds.
+Record the model id the successful turn reports as `<verified-gac-model>`; it enters the persistent profile only when the explicit-model fallback was needed. Temporary configuration is allowed only to exercise the target CLI safely; it must not become the persistent profile until the complete turn succeeds.
 
 ### Phase B: Persistent Setup
 
@@ -108,8 +108,6 @@ Resolve `<codex-home>` to the user's normal active `CODEX_HOME` (normally `$HOME
 
 ```toml
 model_provider = "gac"
-model = "<verified-gac-model>"
-model_reasoning_effort = "high"
 disable_response_storage = true
 
 [model_providers.gac]
@@ -120,13 +118,15 @@ env_key = "GAC_API_KEY"
 requires_openai_auth = false
 ```
 
-The placeholder must be replaced with the exact model verified by the target Codex client during the current shared-home Compatibility Gate; a profile that still contains it is incomplete and must not be installed. Keep the model explicit when the installed client requires it because a provider catalog can remain incompatible with Codex's own model-catalog decoder.
+The profile deliberately omits `model` and `model_reasoning_effort`: the endpoint resolves its default model and Codex applies its own defaults, so the profile survives Codex and provider upgrades without going stale. Add `model = "<verified-gac-model>"` only when Phase A needed the explicit-model fallback or the installed client requires an explicit model because a provider catalog remains incompatible with Codex's own model-catalog decoder. Add `model_reasoning_effort` only at the user's explicit request. Never add `forced_login_method`: with `requires_openai_auth = false` the session already skips OpenAI auth and shows no associated account, and a forced-method run can migrate or delete the shared home's stored OAuth file.
 
-The profile contains no credential. Its purpose is provider selection, endpoint, wire protocol, authentication variable name, and model defaults. The launcher supplies the secret, activates the profile, and may create the profile on demand in a redirected `CODEX_HOME` after asking the user.
+Codex may append its own state (such as `tui.model_availability_nux`) to this file after runs; that is expected and must not be treated as corruption. A profile that has lost `model_provider` or the provider table is broken and selects the default OpenAI provider with OAuth instead — refresh it from this template.
+
+The profile contains no credential. Its purpose is provider selection, endpoint, wire protocol, and the authentication variable name. The launcher supplies the secret, activates the profile, and may create the profile on demand in a redirected `CODEX_HOME` after asking the user.
 
 ### Runtime profile bootstrap
 
-The launcher must resolve the active home at runtime rather than baking the normal home into its path. If `<profile-name>.config.toml` is absent there, prompt before creating it from the verified profile template above, then continue with the same `--profile` invocation. Leave an identical file untouched. If the file differs, or if the shell is noninteractive and the file is absent, stop without overwriting or silently creating state. Never copy the base config or `auth.json` into the redirected home.
+The launcher must resolve the active home at runtime rather than baking the normal home into its path, following **Codex Profile Bootstrap for Redirected Homes** in `SKILL-MAIN.md`: use an existing `<profile-name>.config.toml` as-is with a stderr warning, overwrite or create it without asking only under an explicit `--refresh-profile` flag, prompt before creating a missing profile interactively, and stop with status 2 when the file is missing and the shell is noninteractive. Never copy the base config or `auth.json` into a redirected home.
 
 ## Platform Lanes
 
@@ -143,7 +143,7 @@ These examples implement the contract for the verified Codex version. Re-check e
 
 ### Linux or macOS
 
-Resolve `<launcher-name>` and `<profile-name>` first, then create `~/.local/bin/<launcher-name>` with the real key and the verified, non-secret profile template substituted only in the local file. Before `exec`, apply **Runtime profile bootstrap** for the active `CODEX_HOME` and ask before creating a missing profile:
+Resolve `<launcher-name>` and `<profile-name>` first, then create `~/.local/bin/<launcher-name>` with the real key and the verified, non-secret profile template substituted only in the local file. Before `exec`, apply the **Codex Profile Bootstrap for Redirected Homes** state machine from `SKILL-MAIN.md`: use an existing profile as-is with a warning, overwrite only under `--refresh-profile`, and ask before creating a missing profile:
 
 ```bash
 #!/usr/bin/env bash
@@ -223,7 +223,7 @@ For an explicit opt-out, remove only `--dangerously-bypass-approvals-and-sandbox
 
 ## Runtime Argument Contract
 
-The launcher's fixed arguments select the GAC profile and default permission mode. Every runtime argument belongs to Codex and must follow those defaults without being parsed, renamed, reordered, or consumed by the launcher.
+The launcher's fixed arguments select the GAC profile and default permission mode. Every runtime argument belongs to Codex and must follow those defaults without being parsed, renamed, reordered, or consumed by the launcher. The single exception is the launcher's own `--refresh-profile` flag, which the launcher consumes and never forwards.
 
 Examples that must continue to work include `<launcher-name>`, `<launcher-name> exec "Reply with exactly: GAC_OK"`, `<launcher-name> --version`, and any current Codex subcommand or option supported by the installed version. The optional suffix is resolved at setup time and is never forwarded to Codex.
 
@@ -240,13 +240,16 @@ test -x "$HOME/.local/bin/<launcher-name>"
 test "$(stat -c '%a' "$HOME/.local/bin/<launcher-name>")" = 700
 test -d "$codex_home"
 test "$(stat -c '%a' "$codex_home/<profile-name>.config.toml")" = 600
-rg -n 'model_provider|model =|base_url|wire_api|env_key|requires_openai_auth' "$codex_home/<profile-name>.config.toml"
+rg -n 'model_provider|base_url|wire_api|env_key|requires_openai_auth' "$codex_home/<profile-name>.config.toml"
+! rg -q 'forced_login_method' "$codex_home/<profile-name>.config.toml"
 test "$(rg -c '^export GAC_API_KEY=' "$HOME/.local/bin/<launcher-name>")" = 1
 LC_ALL=C rg -q "^export GAC_API_KEY='[!-&(-~]+'$" "$HOME/.local/bin/<launcher-name>"
 ! rg -q 'CODEX_HOME=' "$HOME/.local/bin/<launcher-name>"
 rg -q -F "profile_name='<profile-name>'" "$HOME/.local/bin/<launcher-name>"
 rg -q -F -- '--profile "$profile_name"' "$HOME/.local/bin/<launcher-name>"
 rg -q -- '--dangerously-bypass-approvals-and-sandbox' "$HOME/.local/bin/<launcher-name>"
+rg -q -- '--refresh-profile' "$HOME/.local/bin/<launcher-name>"
+rg -q 'using existing profile as-is' "$HOME/.local/bin/<launcher-name>"
 command -v <launcher-name>
 ```
 
@@ -268,14 +271,14 @@ $profileText.Contains("--dangerously-bypass-approvals-and-sandbox")
 !$profileText.Contains("CODEX_HOME")
 Test-Path -LiteralPath $codexHome -PathType Container
 Get-Command <launcher-name> -CommandType Function
-Select-String -LiteralPath $providerProfile -Pattern 'model_provider|model =|base_url|wire_api|env_key|requires_openai_auth'
+Select-String -LiteralPath $providerProfile -Pattern 'model_provider|base_url|wire_api|env_key|requires_openai_auth'
 ```
 
 The exact assignment checks above reject multiline values and non-visible bytes without displaying the key. Do not output `$profileText`, the function definition, or matching key-assignment lines after the real key has been inserted. For an explicit permission opt-out, the permission-flag check must confirm absence instead.
 
 ### End-to-End Route Checks
 
-Before launching, confirm the persistent profile contains the exact `<verified-gac-model>` proven by the shared-home Codex turn and contains no unresolved placeholder.
+Before launching, confirm the persistent profile contains no unresolved placeholder and no `forced_login_method`; when Phase A needed the explicit-model fallback, confirm it contains the exact `<verified-gac-model>`.
 
 Run one small request through the custom launcher:
 
@@ -283,7 +286,7 @@ Run one small request through the custom launcher:
 <launcher-name> exec "Reply with exactly: GAC_OK"
 ```
 
-The GAC run must report provider `gac`, the selected GAC model, approval mode `never`, and full host access for the default launcher, then return `GAC_OK`. Inspect plain `codex` resolution, its normal home, base config, and auth state to confirm they remain unchanged; do not issue a billable official-provider completion solely for this coexistence check unless the user requests it.
+The GAC run must report provider `gac`, approval mode `never`, and full host access for the default launcher, then return `GAC_OK`; record the model the run reports. In an interactive run, confirm `/status` shows no ChatGPT account for the launcher session while plain `codex login status` still reports the stored OAuth login. Inspect plain `codex` resolution, its normal home, base config, and auth state to confirm they remain unchanged; do not issue a billable official-provider completion solely for this coexistence check unless the user requests it.
 
 If a Windows function previously had `GAC_API_KEY` set in the caller, verify that the same value is restored after the command. If it was absent, verify that it remains absent. Also confirm the base config and OAuth credential store retain their pre-run fingerprints or modification times.
 
@@ -301,11 +304,13 @@ Treat that warning as an endpoint catalog-schema compatibility issue when the pi
 
 ## Troubleshooting
 
+- If a launcher session shows a ChatGPT account in `/status` or talks to the official route, the active profile has lost `model_provider` or the provider table — Codex appends its own state such as `tui.model_availability_nux` to the profile file, and a profile reduced to such state silently selects the default OpenAI provider with cached OAuth. Repair with `<launcher-name> --refresh-profile`, not with auth overrides.
+- Never add `forced_login_method` to make a session key-only: with `requires_openai_auth = false` the session already skips OpenAI auth, and a forced-method run can migrate or delete the shared home's stored OAuth file (observed on Codex CLI 0.155.0), breaking plain `codex`.
 - If `--profile <profile-name>` reports legacy profile configuration, move the GAC keys out of `[profiles.<profile-name>]` and into the version-appropriate separate profile file without changing unrelated base settings.
 - If plain `codex` uses GAC, remove accidental top-level `model_provider = "gac"` or provider selection from the base config; the selection belongs only in the GAC profile layer.
 - If Codex asks for official login during `<launcher-name>`, verify `requires_openai_auth = false`, `env_key = "GAC_API_KEY"`, and the launcher's scoped key assignment.
 - If GAC reports `401`, `403`, or throttling while the request is absent from provider-side key activity, validate the launcher's actual `GAC_API_KEY` shape first without printing it. A CR/LF-contaminated `env_key` value can prevent Authorization header construction. Then verify `requires_openai_auth = false` and whether the installed Codex version requires a provider-documented `env_http_headers` mapping. Do not blame or modify `auth.json` without a controlled target-CLI comparison; follow **Optional Separate-Home Fallback** only when its evidence threshold is met.
-- If model refresh warns about `missing field models` but the explicit completion succeeds, report the catalog-schema mismatch and keep the pinned model.
+- If model refresh warns about `missing field models` but the completion succeeds, report the catalog-schema mismatch and keep the tested configuration.
 - If Linux cannot find `<launcher-name>`, confirm mode `0700` and that `~/.local/bin` is on `PATH`.
 - If Windows cannot find `<launcher-name>`, reload the same PowerShell profile that was edited and compare its path with `$PROFILE.CurrentUserCurrentHost`.
 
@@ -313,8 +318,10 @@ Treat that warning as an endpoint catalog-schema compatibility issue when the pi
 
 - DO NOT put the GAC API key in this skill, the Codex TOML profile, a git-tracked file, command history, logs, or validation output.
 - DO NOT require, recommend, or use direct GAC `/models` or `/responses` calls as launcher compatibility evidence.
-- DO NOT choose a model from a historical note, vendor example, generator default, or previous launcher without a current target-CLI verification.
-- DO NOT create the real profile or launcher until the shared-home Codex turn succeeds with the exact client-verified model.
+- DO NOT choose a model from a historical note, vendor example, generator default, or previous launcher; omit `model` from the profile by default and pin one only from a current target-CLI fallback verification or an explicit user request.
+- DO NOT add `forced_login_method` or other auth-forcing overrides to a shared-home profile or launcher; they can destroy the stored OAuth credentials that plain `codex` needs.
+- DO NOT reject, merge, or rewrite an existing divergent profile during an ordinary launch; use it as-is with a warning and reserve overwrites for the explicit `--refresh-profile` flag.
+- DO NOT create the real profile or launcher until the shared-home Codex turn succeeds with the profile content intended for persistence.
 - DO NOT serialize the GAC key across lines, accept whitespace or control characters, silently trim it, or verify only that the variable name appears in the launcher.
 - DO NOT set or replace `CODEX_HOME` in the normal launcher, modify `auth.json`, or select GAC in the base `config.toml`.
 - DO NOT create a separate Codex home solely because cached OAuth credentials exist; require the controlled failure evidence and user choice defined in **Optional Separate-Home Fallback**.
@@ -323,5 +330,5 @@ Treat that warning as an endpoint catalog-schema compatibility issue when the pi
 - DO NOT replace, alias, or wrap the plain `codex` command with GAC behavior.
 - DO NOT assign endpoint, account, model, routing, pricing, credential, or permission semantics to the optional suffix.
 - DO NOT omit the default `--dangerously-bypass-approvals-and-sandbox` mode unless the initial request explicitly opts out.
-- DO NOT treat a model-catalog decoding warning as a failed provider route when the explicit pinned-model completion succeeds.
+- DO NOT treat a model-catalog decoding warning as a failed provider route when the completion succeeds.
 - DO NOT print, commit, or expose the embedded key while creating, inspecting, or testing the launcher.

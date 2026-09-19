@@ -77,68 +77,80 @@ Apply these additional invariants whenever a custom Codex launcher must preserve
 - Test the target Codex client through the same shared-home profile topology intended for persistence. A uniquely named temporary profile may be created and removed for the test when the installed CLI requires a file. Confirm the custom turn, background requests, plain-Codex configuration, and cached OAuth state remain correct.
 - Use a separate `CODEX_HOME` only as an explicit compatibility fallback after the installed target client reproducibly fails with the shared profile because of a state or authentication collision and succeeds with a clean home. Report that `CODEX_HOME` also isolates config, sessions, logs, skills, and package metadata, and obtain the user's choice before adopting that broader isolation.
 - When the installed Codex version needs an explicit header for background provider discovery, use the documented `env_http_headers` mapping with a separate process-scoped environment variable containing the complete header value. Keep `env_key` for ordinary provider authentication and never put the credential in TOML.
+- Never set `forced_login_method` in a shared-home profile or CLI override to force API-key auth. With `requires_openai_auth = false` the session already skips OpenAI auth and shows no account; a forced-method run can instead migrate or delete the stored OAuth file (observed on Codex CLI 0.155.0: `auth.json` removed), breaking plain `codex`.
+- If a launcher session shows a ChatGPT account or uses OAuth, suspect a stale or broken profile that lost `model_provider` (Codex writes state such as `tui.model_availability_nux` back into the profile file). Refresh the profile from the embedded template instead of adding auth overrides.
 - Treat values consumed by `env_key` or `env_http_headers` as exact HTTP credential material. Before the temporary Codex test and again through the generated launcher, require the provider key to be non-empty, on one physical line, and free of whitespace or control characters; for the currently covered bearer keys, require visible ASCII bytes `33..126`. Reject malformed input instead of trimming or normalizing it, derive any complete Authorization value only after this check, and never print the value while validating it. A successful test with a separately exported clean value does not validate how the persistent launcher serialized or loaded that value.
 - Preserve Codex's documented retry defaults unless current provider evidence justifies an override. Do not lower retries merely to make an example shorter, and do not respond to throttling with repeated launcher invocations that create another request burst.
-- Treat every provider-key replacement as a new compatibility run: repeat the shared-home target-Codex test before updating the persistent launcher or its pinned model.
+- Treat every provider-key replacement as a new compatibility run: repeat the shared-home target-Codex test before updating the persistent launcher.
 
 ## Codex Profile Bootstrap for Redirected Homes
 
-Apply this pattern whenever a custom Codex launcher selects `--profile <profile-name>` and must also work when the caller redirects `CODEX_HOME`. The launcher may embed the already-verified, non-secret TOML profile as a string and materialize it in the active Codex home at runtime. This keeps provider settings portable across homes without copying the user's base configuration or credentials.
+Apply this pattern whenever a custom Codex launcher selects `--profile <profile-name>` and must also work when the caller redirects `CODEX_HOME`. The launcher embeds the already-verified, non-secret TOML profile as a string and manages it in the active Codex home at runtime. This keeps provider settings portable across homes without copying the user's base configuration or credentials.
 
 - Resolve the destination at invocation time as `${CODEX_HOME:-$HOME/.codex}` on Unix or the equivalent `$env:CODEX_HOME` fallback on PowerShell. Do not assign or replace `CODEX_HOME` in the launcher.
 - Derive the profile path from that destination and the resolved profile name. The embedded content must contain only the tested provider configuration; never put an API key or other credential in it.
-- If the profile exists and exactly matches the embedded content, continue without rewriting it.
-- If the profile is missing, explain the path and ask the user whether to create it and continue. On confirmation, create the destination directory and profile with restrictive permissions, preferably by writing a temporary file in the same directory and renaming it into place. Recheck the path after the prompt so a concurrent creator is never overwritten.
-- If the profile is missing and the launcher has no interactive input, exit with a clear status-2 message instead of silently creating persistent state. Do not add an automatic creation escape hatch unless the user explicitly requests one and the launcher documents it.
-- If an existing profile differs from the embedded content, stop and report the conflict. Do not overwrite or merge it during an ordinary launch; use an explicit repair/setup workflow after inspecting the user's file and re-running the compatibility checks if the provider or model changes.
+- If the profile exists as a regular file, use it as-is: print a stderr warning that names the file and the refresh flag, then continue with the same `--profile` invocation. Codex writes its own state (such as `tui.model_availability_nux`) back into the profile file, so byte-exact comparison rejection breaks ordinary use; never reject, merge, or rewrite a divergent existing profile during a normal launch.
+- Support a `--refresh-profile` launcher flag: strip it from the arguments forwarded to Codex, then overwrite or create the profile from the embedded template without asking. This is the documented repair path for a stale or divergent profile.
+- If the profile is missing and the flag is absent, explain the path and ask the user whether to create it and continue. On confirmation, create the destination directory and profile with restrictive permissions, preferably by writing a temporary file in the same directory and renaming it into place. Recheck the path after the prompt and use a file that appeared meanwhile as-is.
+- If the profile is missing and the launcher has no interactive input, exit with a clear status-2 message instead of silently creating persistent state. `--refresh-profile` is the explicit noninteractive creation path.
 - Do not copy `config.toml`, `auth.json`, sessions, skills, logs, or package metadata into a redirected home. The selected profile is the only file this bootstrap owns.
-- Run the same target-Codex verification once with the default home and once with a disposable redirected home when this behavior is implemented or changed. Verify the prompt/decline path, creation path, exact-content path, mismatch path, argument forwarding, and exit-code preservation without printing credentials.
+- Run the same target-Codex verification once with the default home and once with a disposable redirected home when this behavior is implemented or changed. Verify the prompt/decline path, creation path, existing-profile warning path, refresh-flag path, argument forwarding, and exit-code preservation without printing credentials.
 
-This bootstrap is a runtime convenience, not a compatibility gate. The profile content and pinned model must first be proven with the target Codex client under the current installed version; runtime materialization only reproduces that known-good content in the selected home.
+This bootstrap is a runtime convenience, not a compatibility gate. The embedded profile content must first be proven with the target Codex client under the current installed version; runtime materialization only reproduces that known-good content in the selected home.
 
-The Unix implementation should follow this shape: assign the verified TOML to a shell variable, resolve `codex_home` and `profile_file`, compare an existing regular file with `cmp`, and reject non-regular or divergent paths. For a missing file, require an interactive confirmation, create the home, write through a restrictive temporary file in that directory, and install it without clobbering a file that appeared after the prompt. A compact reference state machine is:
+The Unix implementation should follow this shape: assign the verified TOML to a shell variable, resolve `codex_home` and `profile_file`, handle `--refresh-profile`, warn-and-continue on an existing regular file, reject non-regular paths, and prompt before creating a missing file. A compact reference state machine is:
 
 ```bash
+refresh_profile=0
+args=()
+for arg in "$@"; do
+  if [[ "$arg" == '--refresh-profile' ]]; then
+    refresh_profile=1
+  else
+    args+=("$arg")
+  fi
+done
+set -- "${args[@]}"
+
+write_profile() {
+  local target="$1"
+  mkdir -p -- "$(dirname -- "$target")"
+  local tmp_profile
+  tmp_profile="$(mktemp "$(dirname -- "$target")/.${profile_name}.config.toml.XXXXXX")"
+  chmod 600 "$tmp_profile"
+  printf '%s' "$profile_content" >"$tmp_profile"
+  mv -f -- "$tmp_profile" "$target"
+}
+
 codex_home="${CODEX_HOME:-$HOME/.codex}"
 profile_file="$codex_home/$profile_name.config.toml"
-profile_content='...verified non-secret TOML...'
-if [[ -e "$profile_file" && ! -f "$profile_file" ]]; then
+if [[ "$refresh_profile" -eq 1 ]]; then
+  if [[ -e "$profile_file" && ! -f "$profile_file" ]]; then
+    echo "$launcher_name: profile path is not a regular file: $profile_file" >&2
+    exit 2
+  fi
+  write_profile "$profile_file"
+  echo "$launcher_name: profile refreshed: $profile_file" >&2
+elif [[ -e "$profile_file" && ! -f "$profile_file" ]]; then
   echo "$launcher_name: profile path is not a regular file: $profile_file" >&2
   exit 2
 elif [[ -f "$profile_file" ]]; then
-  if ! printf '%s' "$profile_content" | cmp -s - "$profile_file"; then
-    echo "$launcher_name: existing profile differs: $profile_file" >&2
-    exit 2
-  fi
+  echo "$launcher_name: warning: using existing profile as-is: $profile_file (use --refresh-profile to overwrite with the embedded template)" >&2
 elif [[ ! -t 0 ]]; then
   echo "$launcher_name: missing profile; run interactively to approve creation: $profile_file" >&2
   exit 2
 else
   read -r -p "$launcher_name: create $profile_file and continue? [y/N] " answer
   case "$answer" in y|Y|yes|YES) ;; *) exit 2 ;; esac
-  mkdir -p -- "$codex_home"
   if [[ -e "$profile_file" ]]; then
-    if [[ -f "$profile_file" ]] && printf '%s' "$profile_content" | cmp -s - "$profile_file"; then
-      :
-    else
-      echo "$launcher_name: profile appeared or changed after confirmation: $profile_file" >&2
-      exit 2
-    fi
+    echo "$launcher_name: profile appeared after confirmation: $profile_file; using it as-is" >&2
   else
-    tmp_profile="$(mktemp "$codex_home/.${profile_name}.config.toml.XXXXXX")"
-    chmod 600 "$tmp_profile"
-    printf '%s' "$profile_content" >"$tmp_profile"
-    if ! ln "$tmp_profile" "$profile_file" 2>/dev/null; then
-      rm -f -- "$tmp_profile"
-      echo "$launcher_name: profile appeared after confirmation: $profile_file" >&2
-      exit 2
-    fi
-    rm -f -- "$tmp_profile"
+    write_profile "$profile_file"
   fi
 fi
 ```
 
-The hard-link install above reserves the destination without overwriting a file that appeared after confirmation; adapt the atomic-install details to the host shell while preserving the same state transitions and restrictive mode. PowerShell launchers should use the same state machine, an array or here-string for the non-secret template, `Test-Path`/`Get-Content -Raw` for comparison, and `finally` only for restoring caller environment variables. The bootstrap must run before the Codex child process starts and must not print credentials or the embedded template.
+The temporary-file-plus-rename write above keeps profile creation atomic at restrictive mode; adapt the details to the host shell while preserving the same state transitions. PowerShell launchers should use the same state machine, an array or here-string for the non-secret template, argument filtering for `--refresh-profile`, and `finally` only for restoring caller environment variables. The bootstrap must run before the Codex child process starts and must not print credentials or the embedded template.
 
 ## Custom Launcher Permission Policy
 

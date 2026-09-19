@@ -22,13 +22,13 @@ Terminal invocation of `imsight-dev-box-init->coding-agent->codex-openlux-launch
 
 1. Inspect the installed Codex version and help, the host OS and shell, and whether the initial request explicitly opted out of permissive mode. These are read-only checks.
 2. Obtain an OpenLux key entitled for the Codex-compatible Responses route and validate its shape under **Credential Requirements**. Stop without changing any file when the key is unavailable or malformed.
-3. Resolve the model candidate under **Model Selection**.
+3. Note the model candidate under **Model Selection** only as a fallback for the case where the endpoint rejects Codex's default model; the persistent profile does not pin a model by default.
 4. Resolve the optional suffix and launcher/profile names under **Launcher Name and Suffix Contract**.
 5. Run **Phase A: Shared-Home Codex Test**.
 6. Only after Phase A succeeds, run **Phase B: Persistent Setup** and create the launcher from **Reference Implementations**.
-7. Make the launcher use **Codex Profile Bootstrap for Redirected Homes** from `SKILL-MAIN.md`: embed the verified profile content without its key, resolve the active `CODEX_HOME` at runtime, ask before creating a missing profile, and refuse to overwrite a divergent one.
-8. Run **Verification**, including one end-to-end completion in the default and redirected homes, the profile bootstrap decision paths, and a non-billable check that plain `codex` remains unchanged.
-9. Report the profile and launcher locations, Codex version, verified model, permission mode, validation results, and any model-metadata warning without printing the key.
+7. Make the launcher use **Codex Profile Bootstrap for Redirected Homes** from `SKILL-MAIN.md`: embed the verified profile content without its key, resolve the active `CODEX_HOME` at runtime, use an existing profile as-is with a warning, overwrite it only through an explicit `--refresh-profile` flag, and ask before creating a missing profile.
+8. Run **Verification**, including one end-to-end completion in the default and redirected homes, the profile bootstrap decision paths (existing-profile warning, `--refresh-profile`, create prompt, noninteractive refusal), and a non-billable check that plain `codex` remains unchanged.
+9. Report the profile and launcher locations, Codex version, the model the verification turn reported, permission mode, validation results, and any model-metadata warning without printing the key.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's contract, compatibility evidence, platform examples, and user constraints, then execute the plan without changing the base Codex configuration or borrowing another OpenLux product's authentication conventions.
 
@@ -44,14 +44,14 @@ The suffix is a user-facing label only; it does not select an endpoint, account,
 | --- | --- |
 | Ordinary Codex | Leave plain `codex` on its existing provider, base config, authentication route, and normal `CODEX_HOME`. |
 | Provider profile | Put OpenLux settings only in `$CODEX_HOME/<profile-name>.config.toml`; never select OpenLux in the base `config.toml`. The launcher may materialize the verified profile from embedded non-secret content when the active home does not contain it. |
-| OAuth coexistence | Do not modify, remove, copy, or suppress `auth.json` or the configured credential store. Plain `codex` keeps OAuth; the profile uses the scoped OpenLux key. |
+| OAuth coexistence | Do not modify, remove, copy, or suppress `auth.json` or the configured credential store. Plain `codex` keeps OAuth; the profile uses the scoped OpenLux key. Never set `forced_login_method` to force API-key auth: a run under it can migrate or delete the stored OAuth file, and `requires_openai_auth = false` already gives the session no-account API-key behavior. |
 | Endpoint | Put OpenLux's current Codex base URL in the provider profile; the verified example is `https://api.openlux.ai/v1`. |
 | Protocol | Use the Responses wire API unless current OpenLux and Codex evidence establishes a replacement. |
 | Authentication | Normal provider auth from `OPENLUX_API_KEY`; background model-discovery auth from the complete `Authorization` value in `OPENLUX_AUTHORIZATION`; `requires_openai_auth = false`. |
 | Credential placement | Embed the key only in the local launcher or managed PowerShell block; never in the tracked skill or Codex TOML. |
 | Credential integrity | The embedded value must be one line of visible ASCII; reject malformed input instead of trimming; derive `OPENLUX_AUTHORIZATION` only after validation. |
 | Environment scope | Expose `OPENLUX_API_KEY` and `OPENLUX_AUTHORIZATION` only to the launched Codex process. Never set `CODEX_HOME` in the launcher. A PowerShell function must restore both credential variables. |
-| Model | Pin `<verified-openlux-model>` from **Model Selection**, confirmed by a shared-home Codex turn. |
+| Model | Leave `model` and `model_reasoning_effort` out of the profile so the endpoint default and Codex's own defaults apply; pinned values silently go stale as Codex and the provider evolve. Record the model the Phase A turn reports. Pin `model` only when the endpoint rejects the default model in Phase A; add `model_reasoning_effort` only at the user's explicit request, choosing from the catalog's `supported_reasoning_levels`. |
 | Arguments | Forward every caller argument to Codex unchanged after the fixed profile and permission defaults. |
 | Permissions | Inject Codex's strongest current approval-free, sandbox-bypass mode by default. Omit it only when the initial request explicitly opts out. |
 | Executable | Resolve the real installed Codex command without replacing or recursing into plain `codex`. |
@@ -65,10 +65,12 @@ The generated Unix launcher or Windows PowerShell block contains the key in plai
 
 ## Model Selection
 
-Get the model list from Codex itself, not from the provider API:
+The default posture is no pinned model: Phase A probes the endpoint with whatever model Codex selects by default, and the persistent profile omits `model`. Resolve an explicit candidate only when the user asks for a specific model or the default-model turn fails.
+
+When a candidate is needed, get the model list from Codex itself, not from the provider API:
 
 - `codex debug models` renders the effective model catalog as JSON; `codex debug models --bundled` lists the catalog compiled into the binary, offline. `--profile` does not apply to `debug models`; inspect a custom provider with `-c` overrides or through the gate turn.
-- Each catalog entry exposes `supported_reasoning_levels` and `default_reasoning_level`. Reasoning-effort names are per-model and can change between Codex releases, so never hardcode one: read the candidate's levels from the catalog and use the lowest supported effort for probes.
+- Each catalog entry exposes `supported_reasoning_levels` and `default_reasoning_level`. Reasoning-effort names are per-model and can change between Codex releases, so never hardcode one: read the candidate's levels from the catalog when a reasoning override is genuinely needed.
 - Third-party providers may implement `/models` incorrectly or not at all. When the response does not match Codex's catalog schema, Codex keeps its bundled catalog without an error. Never call provider `/models` or `/responses` endpoints directly for discovery or preflight.
 
 Choose the candidate in this order: an explicit user choice, then current provider guidance (account UI or docs), then the latest model in Codex's catalog that fits the Codex coding route. A model appearing in any catalog or listing is not proof the provider accepts Codex's request shape; the shared-home turn in **Phase A** is decisive.
@@ -87,23 +89,21 @@ Version-sensitive details on this page can drift. When anything about configurat
 
 1. Confirm the installed Codex supports `--profile` and its strongest approval/sandbox bypass flag.
 2. Resolve the user's normal `CODEX_HOME` without changing it. Record non-secret fingerprints (modification timestamp or hash) of the base config and credential store. Do not log out, move, rewrite, or copy `auth.json`.
-3. Write a uniquely named temporary profile beside the normal config — never overwrite an existing profile — using the model candidate, `model_reasoning_effort` set to the candidate's lowest `supported_reasoning_levels` entry (queried from the catalog, not assumed) to keep the probe fast and cheap, `env_key = "OPENLUX_API_KEY"`, `env_http_headers = { "Authorization" = "OPENLUX_AUTHORIZATION" }`, and `requires_openai_auth = false`.
+3. Write a uniquely named temporary profile beside the normal config — never overwrite an existing profile — with the same minimal content intended for persistence: `model_provider`, the provider block with `env_key = "OPENLUX_API_KEY"`, `env_http_headers = { "Authorization" = "OPENLUX_AUTHORIZATION" }`, and `requires_openai_auth = false`. Do not add `model` or `model_reasoning_effort` to the probe; the goal is proving the endpoint works with defaults.
 4. Scope `OPENLUX_API_KEY` to the raw key and `OPENLUX_AUTHORIZATION` to the complete `Bearer <key>` value in the test process, then run one minimal `codex --profile <profile-name> exec --skip-git-repo-check ...` turn.
-5. Fail the gate if any background model request returns `401` or `403`, even when the turn succeeds. If Codex rejects the model and reports an actionable replacement, retry once with that model; otherwise stop and ask the user for a model choice or updated provider guidance.
+5. Fail the gate if any background model request returns `401` or `403`, even when the turn succeeds. If the endpoint rejects Codex's default model, retry once with an explicit candidate from **Model Selection** pinned in the temporary profile; only when that fallback succeeds does the persistent profile pin that model. If no candidate works, stop and ask the user for a model choice or updated provider guidance.
 6. Remove the temporary profile and confirm the base config and credential store fingerprints are unchanged. Pace any retries, because gateways may penalize repeated attempts.
 
-Set `<verified-openlux-model>` to the exact id that completed this turn.
+Record the model id the successful turn reports as `<verified-openlux-model>` for reporting; it enters the persistent profile only when the default-model probe needed the explicit-model fallback.
 
 ### Phase B: Persistent Setup
 
-Only after Phase A succeeds, write the persistent provider profile beside the normal config (mode `0600`, refusing to overwrite an unrelated existing profile) with `<verified-openlux-model>` and the production reasoning effort, then create the launcher (mode `0700`) from **Reference Implementations** with the real key substituted only in the user's local credential-bearing file.
+Only after Phase A succeeds, write the persistent provider profile beside the normal config (mode `0600`, refusing to overwrite an unrelated existing profile) with the minimal content below, then create the launcher (mode `0700`) from **Reference Implementations** with the real key substituted only in the user's local credential-bearing file.
 
 ## Provider Profile
 
 ```toml
 model_provider = "openlux"
-model = "<verified-openlux-model>"
-model_reasoning_effort = "high"
 disable_response_storage = true
 
 [model_providers.openlux]
@@ -116,11 +116,13 @@ requires_openai_auth = false
 stream_idle_timeout_ms = 120000
 ```
 
-The profile carries no credential. The gate turn used the candidate's lowest supported reasoning effort; the persistent profile defaults to `high` — adjust to the user's needs, choosing from the model's `supported_reasoning_levels`. Omit `request_max_retries` and `stream_max_retries` so Codex defaults apply; override them only from current provider and client evidence, never below defaults. Re-check the endpoint and timeout against current guidance.
+The profile carries no credential and deliberately omits `model` and `model_reasoning_effort`: the endpoint resolves its default model and Codex applies its own defaults, so the profile survives Codex and provider upgrades without going stale. Add `model = "<verified-openlux-model>"` only when Phase A needed the explicit-model fallback; add `model_reasoning_effort` only at the user's explicit request, choosing from the catalog's `supported_reasoning_levels`. Never add `forced_login_method`: with `requires_openai_auth = false` the session already skips OpenAI auth and shows no associated account, and a forced-method run can migrate or delete the shared home's stored OAuth file. Omit `request_max_retries` and `stream_max_retries` so Codex defaults apply; override them only from current provider and client evidence, never below defaults. Re-check the endpoint and timeout against current guidance.
+
+Codex may append its own state (such as `tui.model_availability_nux`) to this file after runs; that is expected and must not be treated as corruption. A profile that has lost `model_provider` or the provider table is broken and selects the default OpenAI provider with OAuth instead — refresh it from this template.
 
 ### Runtime profile bootstrap
 
-The launcher must resolve the active home at runtime rather than baking the normal home into its path. If `<profile-name>.config.toml` is absent there, prompt before creating it from the verified profile template above, then continue with the same `--profile` invocation. Leave an identical file untouched. If the file differs, or if the shell is noninteractive and the file is absent, stop without overwriting or silently creating state. Never copy the base config or `auth.json` into the redirected home.
+The launcher must resolve the active home at runtime rather than baking the normal home into its path, following **Codex Profile Bootstrap for Redirected Homes** in `SKILL-MAIN.md`: use an existing `<profile-name>.config.toml` as-is with a stderr warning, overwrite or create it without asking only under an explicit `--refresh-profile` flag, prompt before creating a missing profile interactively, and stop with status 2 when the file is missing and the shell is noninteractive. Never copy the base config or `auth.json` into a redirected home.
 
 ## Platform Lanes
 
@@ -148,10 +150,66 @@ fi
 export OPENLUX_AUTHORIZATION="Bearer ${OPENLUX_API_KEY}"
 launcher_name='<launcher-name>'
 profile_name='<profile-name>'
+profile_content='model_provider = "openlux"
+disable_response_storage = true
 
-# Before exec, apply the shared Codex Profile Bootstrap contract: resolve
-# ${CODEX_HOME:-$HOME/.codex}, compare the embedded non-secret profile content,
-# ask before creating a missing profile, and stop on a mismatch.
+[model_providers.openlux]
+name = "OpenLux"
+base_url = "https://api.openlux.ai/v1"
+env_key = "OPENLUX_API_KEY"
+env_http_headers = { "Authorization" = "OPENLUX_AUTHORIZATION" }
+wire_api = "responses"
+requires_openai_auth = false
+stream_idle_timeout_ms = 120000
+'
+
+refresh_profile=0
+args=()
+for arg in "$@"; do
+  if [[ "$arg" == '--refresh-profile' ]]; then
+    refresh_profile=1
+  else
+    args+=("$arg")
+  fi
+done
+set -- "${args[@]}"
+
+write_profile() {
+  local target="$1"
+  mkdir -p -- "$(dirname -- "$target")"
+  local tmp_profile
+  tmp_profile="$(mktemp "$(dirname -- "$target")/.${profile_name}.config.toml.XXXXXX")"
+  chmod 600 "$tmp_profile"
+  printf '%s' "$profile_content" >"$tmp_profile"
+  mv -f -- "$tmp_profile" "$target"
+}
+
+codex_home="${CODEX_HOME:-$HOME/.codex}"
+profile_file="$codex_home/$profile_name.config.toml"
+if [[ "$refresh_profile" -eq 1 ]]; then
+  if [[ -e "$profile_file" && ! -f "$profile_file" ]]; then
+    echo "$launcher_name: profile path is not a regular file: $profile_file" >&2
+    exit 2
+  fi
+  write_profile "$profile_file"
+  echo "$launcher_name: profile refreshed: $profile_file" >&2
+elif [[ -e "$profile_file" && ! -f "$profile_file" ]]; then
+  echo "$launcher_name: profile path is not a regular file: $profile_file" >&2
+  exit 2
+elif [[ -f "$profile_file" ]]; then
+  echo "$launcher_name: warning: using existing profile as-is: $profile_file (use --refresh-profile to overwrite with the embedded template)" >&2
+elif [[ ! -t 0 ]]; then
+  echo "$launcher_name: missing profile; run interactively to approve creation: $profile_file" >&2
+  exit 2
+else
+  read -r -p "$launcher_name: create $profile_file and continue? [y/N] " answer
+  case "$answer" in y|Y|yes|YES) ;; *) exit 2 ;; esac
+  if [[ -e "$profile_file" ]]; then
+    echo "$launcher_name: profile appeared after confirmation: $profile_file; using it as-is" >&2
+  else
+    write_profile "$profile_file"
+  fi
+fi
 
 codex_bin="$(command -v codex || true)"
 if [[ -z "$codex_bin" ]]; then
@@ -213,7 +271,7 @@ Create the Codex profile first, preserve unrelated profile content, replace an e
 
 ## Runtime Argument Contract
 
-The launcher's fixed arguments select the OpenLux profile and default permission mode. Every runtime argument belongs to Codex and must follow those defaults without being parsed, renamed, reordered, or consumed by the launcher. The suffix is resolved at setup time and is never forwarded to Codex.
+The launcher's fixed arguments select the OpenLux profile and default permission mode. Every runtime argument belongs to Codex and must follow those defaults without being parsed, renamed, reordered, or consumed by the launcher. The single exception is the launcher's own `--refresh-profile` flag, which the launcher consumes and never forwards. The suffix is resolved at setup time and is never forwarded to Codex.
 
 ## Verification
 
@@ -227,7 +285,8 @@ bash -n "$HOME/.local/bin/<launcher-name>"
 test -x "$HOME/.local/bin/<launcher-name>"
 test "$(stat -c '%a' "$HOME/.local/bin/<launcher-name>")" = 700
 test "$(stat -c '%a' "$codex_home/<profile-name>.config.toml")" = 600
-rg -n 'model_provider|model =|base_url|wire_api|env_key|env_http_headers|requires_openai_auth' "$codex_home/<profile-name>.config.toml"
+rg -n 'model_provider|base_url|wire_api|env_key|env_http_headers|requires_openai_auth' "$codex_home/<profile-name>.config.toml"
+! rg -q 'forced_login_method' "$codex_home/<profile-name>.config.toml"
 test "$(rg -c '^export OPENLUX_API_KEY=' "$HOME/.local/bin/<launcher-name>")" = 1
 LC_ALL=C rg -q "^export OPENLUX_API_KEY='[!-&(-~]+'$" "$HOME/.local/bin/<launcher-name>"
 rg -q 'OPENLUX_AUTHORIZATION=' "$HOME/.local/bin/<launcher-name>"
@@ -235,6 +294,8 @@ rg -q 'OPENLUX_AUTHORIZATION=' "$HOME/.local/bin/<launcher-name>"
 rg -q -F "profile_name='<profile-name>'" "$HOME/.local/bin/<launcher-name>"
 rg -q -F -- '--profile "$profile_name"' "$HOME/.local/bin/<launcher-name>"
 rg -q -- '--dangerously-bypass-approvals-and-sandbox' "$HOME/.local/bin/<launcher-name>"
+rg -q -- '--refresh-profile' "$HOME/.local/bin/<launcher-name>"
+rg -q 'using existing profile as-is' "$HOME/.local/bin/<launcher-name>"
 command -v <launcher-name>
 ```
 
@@ -256,7 +317,7 @@ $profileText.Contains('--dangerously-bypass-approvals-and-sandbox')
 $profileText.Contains('OPENLUX_AUTHORIZATION')
 !$profileText.Contains('CODEX_HOME')
 Get-Command <launcher-name> -CommandType Function
-Select-String -LiteralPath $providerProfile -Pattern 'model_provider|model =|base_url|wire_api|env_key|env_http_headers|requires_openai_auth'
+Select-String -LiteralPath $providerProfile -Pattern 'model_provider|base_url|wire_api|env_key|env_http_headers|requires_openai_auth'
 ```
 
 Do not output `$profileText`, the function definition, or matching key-assignment lines after the real key is inserted.
@@ -264,13 +325,14 @@ Do not output `$profileText`, the function definition, or matching key-assignmen
 ### End-to-End Route Checks
 
 1. Record whether `OPENLUX_API_KEY` and `OPENLUX_AUTHORIZATION` exist in the caller, and a non-secret fingerprint of the OAuth credential store.
-2. Confirm the persistent profile contains the exact `<verified-openlux-model>` and no unresolved placeholder.
-3. Allow a quiet interval after the gate turn, then make one end-to-end request: `<launcher-name> exec --skip-git-repo-check "Reply with exactly: OPENLUX_OK"`. Require provider `openlux`, the verified model, approval mode `never`, full host access, `OPENLUX_OK`, exit code 0, and zero `401`/`403` background model-request errors.
-4. Confirm the caller's credential variables are unchanged and the base config, credential store, and plain `codex` resolution are untouched. Do not issue a billable official-provider completion solely for this check.
+2. Confirm the persistent profile contains no unresolved placeholder and no `forced_login_method`; when Phase A needed the explicit-model fallback, confirm it contains the exact `<verified-openlux-model>`.
+3. Allow a quiet interval after the gate turn, then make one end-to-end request: `<launcher-name> exec --skip-git-repo-check "Reply with exactly: OPENLUX_OK"`. Require provider `openlux`, approval mode `never`, full host access, `OPENLUX_OK`, exit code 0, and zero `401`/`403` background model-request errors. Record the model the run reports.
+4. In an interactive run, confirm `/status` shows no ChatGPT account for the launcher session while plain `codex login status` still reports the stored OAuth login. Note that Codex may self-update on TUI launch; let the update settle before judging the status screen.
+5. Confirm the caller's credential variables are unchanged and the base config, credential store, and plain `codex` resolution are untouched. Do not issue a billable official-provider completion solely for this check.
 
 ## Key Replacement
 
-Treat a replacement key as a new compatibility run, not a text substitution: keep the existing launcher untouched, repeat **Phase A** with both credential variables, and only then update the embedded key and the pinned model together when needed. Verify in memory that the old key is absent from the launcher and that neither key appears in output, then perform one paced end-to-end request and the plain-Codex coexistence check.
+Treat a replacement key as a new compatibility run, not a text substitution: keep the existing launcher untouched, repeat **Phase A** with both credential variables, and only then update the embedded key. Verify in memory that the old key is absent from the launcher and that neither key appears in output, then perform one paced end-to-end request and the plain-Codex coexistence check.
 
 ## Optional Separate-Home Fallback
 
@@ -284,10 +346,12 @@ When selected, create a launcher-owned home, copy nothing from the ordinary home
 
 ## Model Metadata and Catalog Compatibility
 
-Codex warns when the pinned model is absent from its bundled catalog (`codex debug models --bundled`) and falls back to default model metadata. The completion still succeeds; report the warning separately from provider connectivity, keep the tested model, and do not silence it by inventing a local model catalog unless the user explicitly asks for and validates one.
+Codex warns when the active model is absent from its bundled catalog (`codex debug models --bundled`) and falls back to default model metadata. The completion still succeeds; report the warning separately from provider connectivity, keep the tested configuration, and do not silence it by inventing a local model catalog unless the user explicitly asks for and validates one. With the default unpinned profile, the endpoint selects the model, so a catalog warning reflects Codex's bundled metadata lag, not a profile defect.
 
 ## Troubleshooting
 
+- If a launcher session shows a ChatGPT account in `/status` or talks to the official route, the active profile has lost `model_provider` or the provider table — Codex appends its own state such as `tui.model_availability_nux` to the profile file, and a profile reduced to such state silently selects the default OpenAI provider with cached OAuth. Repair with `<launcher-name> --refresh-profile`, not with auth overrides.
+- Never add `forced_login_method` to make a session key-only: with `requires_openai_auth = false` the session already skips OpenAI auth, and a forced-method run can migrate or delete the shared home's stored OAuth file (observed on Codex CLI 0.155.0), breaking plain `codex`.
 - If `--profile <profile-name>` reports legacy profile configuration, move only the OpenLux layer into the separate profile file after preserving unrelated settings.
 - If plain `codex` uses OpenLux, remove accidental top-level OpenLux selection from the base config; selection belongs only in the profile layer.
 - If Codex asks for official login through the launcher, verify `requires_openai_auth = false`, `env_key = "OPENLUX_API_KEY"`, and the launcher's scoped key assignment.
@@ -311,8 +375,10 @@ Treat these as the authority over this guide when they disagree; this page's ver
 - DO NOT put the OpenLux key in this skill, the Codex TOML profile, a git-tracked file, command history, logs, or validation output.
 - DO NOT serialize the key across lines, accept whitespace or control characters, silently trim it, derive `OPENLUX_AUTHORIZATION` before validation, or verify only that the variable name appears in the launcher.
 - DO NOT call provider `/models` or `/responses` endpoints directly for discovery, preflight, or gating; use Codex's own surfaces and turns.
-- DO NOT select a model from this guide, notes, or other launchers; follow **Model Selection**.
-- DO NOT create persistent setup before the shared-home Codex turn succeeds with the exact client-verified model.
+- DO NOT pin `model` or `model_reasoning_effort` in the profile by default; omit them so endpoint and Codex defaults apply, and follow **Model Selection** only when the default-model turn fails or the user asks.
+- DO NOT add `forced_login_method` or other auth-forcing overrides to a shared-home profile or launcher; they can destroy the stored OAuth credentials that plain `codex` needs.
+- DO NOT reject, merge, or rewrite an existing divergent profile during an ordinary launch; use it as-is with a warning and reserve overwrites for the explicit `--refresh-profile` flag.
+- DO NOT create persistent setup before the shared-home Codex turn succeeds with the profile content intended for persistence.
 - DO NOT set `CODEX_HOME` in the launcher, modify `auth.json` or the base `config.toml`, or select OpenLux in the base config.
 - DO NOT create a separate Codex home outside the conditions in **Optional Separate-Home Fallback**.
 - DO NOT omit the environment-backed Authorization header.
@@ -322,4 +388,4 @@ Treat these as the authority over this guide when they disagree; this page's ver
 - DO NOT replace, alias, or wrap the plain `codex` command with OpenLux behavior.
 - DO NOT omit the default `--dangerously-bypass-approvals-and-sandbox` mode unless the initial request explicitly opts out.
 - DO NOT treat a catalog listing or standalone API success as proof that the provider accepts Codex's request shape.
-- DO NOT treat a local model-metadata warning as provider failure when the pinned-model completion succeeds.
+- DO NOT treat a local model-metadata warning as provider failure when the completion succeeds.

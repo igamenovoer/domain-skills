@@ -43,7 +43,7 @@ When this workflow creates a custom Codex launcher, prepend `--dangerously-bypas
 - Establish the installed Codex version, host OS, documented provider protocol, endpoint shape, authentication source, and a candidate model before writing a persistent launcher.
 - Keep protocol translation separate from launcher concerns. A Responses-compatible provider can be called directly; a Chat-Completions-only provider needs a translator whose lifecycle and health checks the launcher owns.
 - When creating a custom launcher that must preserve plain `codex`, put the custom provider in a separate profile inside the user's normal `CODEX_HOME` and select it only with `--profile`. Leave the base config and cached OAuth state unchanged, do not set `CODEX_HOME` in the launcher, and keep credentials outside tracked files.
-- Make the launcher profile portable across an invocation-time `CODEX_HOME` redirect: embed the verified non-secret profile TOML, resolve the active home at runtime, leave an exact existing profile untouched, ask before creating a missing profile, and stop in noninteractive or divergent-file cases. Do not copy `config.toml`, `auth.json`, or other Codex state into the redirected home. Follow **Codex Profile Bootstrap for Redirected Homes** in `SKILL-MAIN.md`.
+- Make the launcher profile portable across an invocation-time `CODEX_HOME` redirect: embed the verified non-secret profile TOML, resolve the active home at runtime, use an existing profile as-is with a warning, overwrite it only through an explicit `--refresh-profile` flag, and ask before creating a missing profile; a missing profile in a noninteractive shell fails closed. Do not copy `config.toml`, `auth.json`, or other Codex state into the redirected home. Follow **Codex Profile Bootstrap for Redirected Homes** in `SKILL-MAIN.md`.
 - Preserve provider credentials exactly as single-line HTTP values. Validate the value before a temporary Codex test and validate the generated launcher's actual load/assignment path before its end-to-end run; a clean manually exported value does not prove that a file-backed or embedded launcher serialized the same bytes.
 - Use native process control for the host OS, forward all Codex arguments unchanged, clean up any child relay, preserve Codex's exit code, and apply the shared permissive default unless explicitly rejected at the beginning.
 - Treat provider and bundled scripts as examples tied to observed versions. Re-check installed Codex help plus current Codex and provider documentation, then verify the actual routed request through Codex rather than assuming a template or a raw API probe is still correct.
@@ -110,10 +110,8 @@ These endpoints already implement `/v1/responses`. Configure Codex to call them 
 Current Codex profile files live beside the base config as `$CODEX_HOME/<profile-name>.config.toml` and are selected with `--profile <profile-name>`. Use the user's normal `CODEX_HOME`; the separate profile can coexist with `auth.json` because `env_key` plus `requires_openai_auth = false` selects provider-specific authentication for that profile. Do not add provider selection or a legacy `[profiles.<name>]` table to the base `config.toml` when the installed Codex version uses profile files.
 
 ```toml
-model = "<model-name>"
 model_provider = "<provider-id>"
 disable_response_storage = true
-model_reasoning_effort = "high"
 
 [model_providers.<provider-id>]
 name = "<display-name>"
@@ -123,25 +121,22 @@ wire_api = "responses"
 requires_openai_auth = false
 ```
 
-`disable_response_storage = true` turns off Codex's default server-side response storage, which third-party relays commonly reject or mishandle. `env_key` selects the scoped environment variable and `requires_openai_auth = false` prevents the custom provider from depending on the official OpenAI login. Omit retry settings to inherit the installed Codex defaults unless current provider evidence justifies an override.
+`disable_response_storage = true` turns off Codex's default server-side response storage, which third-party relays commonly reject or mishandle. `env_key` selects the scoped environment variable and `requires_openai_auth = false` prevents the custom provider from depending on the official OpenAI login; the session then skips OpenAI auth and shows no associated account, so never add `forced_login_method` — a forced-method run can migrate or delete the shared home's stored OAuth file. The template deliberately omits `model` and `model_reasoning_effort` so the endpoint default and Codex's own defaults apply; pinned values silently go stale as Codex and the provider evolve. Add `model` only when the endpoint rejects Codex's default model during the compatibility gate, and `model_reasoning_effort` only at the user's explicit request. Omit retry settings to inherit the installed Codex defaults unless current provider evidence justifies an override.
 
 ```bash
 export <API_KEY_ENV_VAR>='<set locally, do not commit>'
 codex --profile <profile-name> exec --skip-git-repo-check "Reply with exactly: ok"
 ```
 
-When this profile is selected by a custom launcher, embed the TOML above without the credential and apply the shared runtime bootstrap before this command. A launcher invoked with `CODEX_HOME=/some/other/home` must check `/some/other/home/<profile-name>.config.toml`, ask before creating a missing file, and continue only after the user accepts. Matching content is reused; divergent content and noninteractive missing-profile cases fail closed.
+When this profile is selected by a custom launcher, embed the TOML above without the credential and apply the shared runtime bootstrap before this command. A launcher invoked with `CODEX_HOME=/some/other/home` must check `/some/other/home/<profile-name>.config.toml`, use an existing file as-is with a warning, overwrite it only under an explicit `--refresh-profile` flag, and ask before creating a missing file; a missing profile in a noninteractive shell fails closed.
 
 ### Example: OpenRouter
 
 OpenRouter supports `/v1/responses` and can proxy many Chat-only providers.
 
-Put this provider layer in `$CODEX_HOME/openrouter.config.toml` when plain `codex` must remain unchanged:
-
-Replace `<verified-openrouter-model>` only with the exact id that completed the current shared-home Codex check through OpenRouter.
+Put this provider layer in `$CODEX_HOME/openrouter.config.toml` when plain `codex` must remain unchanged. Omit `model` so the endpoint default applies; add `model = "<verified-openrouter-model>"` only when the shared-home Codex check shows the default model failing, using the exact id that completed that check.
 
 ```toml
-model = "<verified-openrouter-model>"
 model_provider = "openrouter"
 
 [model_providers.openrouter]
