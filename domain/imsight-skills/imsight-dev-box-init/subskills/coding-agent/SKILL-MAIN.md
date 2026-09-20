@@ -48,7 +48,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | `claude-openlux-launcher` | Create or repair `claude-openlux` or `claude-openlux-<suffix>`, replacing the retired Yunwu relay. | `references/claude-openlux-launcher.md` |
 | `agy-openlux-launcher` | Create or repair a Windows, Linux, or macOS Antigravity launcher named `agy-openlux` or `agy-openlux-<suffix>` that uses OpenLux without changing plain `agy`. | `references/agy-openlux-launcher.md` |
 | `kimi-multi-credential` | Create Kimi Code CLI launchers named `kimi-<suffix>`, each with an isolated OAuth credential home and `--auto` startup default unless no-auto mode is explicitly requested. | `references/kimi-multi-credential.md` |
-| `create-kimi-manager` | Deploy or repair the `kimi-project.sh` Kimi Code account manager: plant account state from isolated homes into project-scope homes, manage account aliases and private slots, detect re-login drift, audit credential freshness, and back up or restore a home's account state. | `references/create-kimi-manager.md` |
+| `create-kimi-manager` | Deploy or repair the `kimi-project.sh` Kimi Code account manager: plant account state from isolated homes into project-scope homes, manage account aliases and private slots, detect re-login drift, audit credential freshness, rescue fresher credentials back to canonical slot homes, and back up or restore a home's account state. | `references/create-kimi-manager.md` |
 | `help` | Explain this subskill and list its commands. | This entrypoint |
 
 ## Resource Ownership

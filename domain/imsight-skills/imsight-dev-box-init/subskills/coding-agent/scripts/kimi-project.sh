@@ -4,10 +4,15 @@
 #
 # Account "slots" are the long-lived Kimi data homes: ~/.kimi-code (slot
 # "default") plus every directory under ~/kimi-homes/ (one per kimi-<suffix>
-# launcher). This tool copies a slot's account state (config.toml +
+# launcher); a slot registered to an account is that account's canonical
+# home. This tool copies a slot's account state (config.toml +
 # credentials/) into a project's .kimi-code/ home, tracks which account each
 # slot is expected to hold, detects slots re-logged into a different account,
 # and logs every deployment so later audits know where credentials live.
+# Before a deploy overwrites a home, and whenever the freshest known
+# credential lives outside its canonical home, the newer credential is first
+# rescued into every registered canonical home that is older (logged as
+# "rescue"), so canonical homes converge on the freshest known auth.
 #
 # Runtime state: ~/kimi-homes/manifest.json (all configurable state: account
 # aliases and per-slot expected account + exclusion flag),
@@ -781,6 +786,33 @@ last_deploy_entry() { # TARGET_HOME -> newest deploy log line for it, empty when
     done < "$LOG_FILE" | tail -n 1
 }
 
+log_entry_home() { # LINE -> deploy-target home path (handles legacy project= entries)
+    local line=$1 home proj
+    home=$(printf '%s' "$line" | ajq - home -s 2>/dev/null || true)
+    if [ -n "$home" ] && [ "$home" != "null" ]; then
+        printf '%s\n' "$home"
+        return 0
+    fi
+    proj=$(printf '%s' "$line" | ajq - project -s 2>/dev/null || true)
+    if [ -n "$proj" ] && [ "$proj" != "null" ]; then
+        printf '%s/.kimi-code\n' "$proj"
+    fi
+}
+
+last_deploy_for_uid() { # UID -> newest deploy log line for the account, empty when none
+    [ -f "$LOG_FILE" ] || return 0
+    local line action uid
+    while IFS= read -r line; do
+        [ -n "$line" ] || continue
+        action=$(printf '%s' "$line" | ajq - action -s 2>/dev/null || true)
+        [ "$action" = "deploy" ] || continue
+        uid=$(printf '%s' "$line" | ajq - user_id -s 2>/dev/null || true)
+        if [ "$uid" = "$1" ]; then
+            printf '%s\n' "$line"
+        fi
+    done < "$LOG_FILE" | tail -n 1
+}
+
 aliases_for_uid() { # USER_ID -> comma-joined alias names
     man_aliases | awk -F'\t' -v uid="$1" '$2 == uid { print $1 }' | sort | paste -sd, -
 }
@@ -836,9 +868,38 @@ append_log() { # ACTION key=value ...  (ts/cred_iat values written as numbers)
 # ---------------------------------------------------------------------------
 # Read-only commands
 
+slot_whereabouts() { # COPIES_FILE NOW HOME UID SLOT_IAT — per-slot last-deploy + freshest-auth line
+    local copies=$1 now=$2 home=$3 uid=$4 slot_iat=$5 last lhome lts best bhome biat
+    last=$(last_deploy_for_uid "$uid" || true)
+    printf '      '
+    if [ -n "$last" ]; then
+        lhome=$(log_entry_home "$last" || true)
+        lts=$(printf '%s' "$last" | ajq - ts 2>/dev/null || true)
+        case $lts in '' | *[!0-9]*) lts=0 ;; esac
+        printf 'last deployed: %s (%s ago)' "${lhome:-unknown}" "$(fmt_age $((now - lts)))"
+    else
+        printf 'last deployed: never'
+    fi
+    best=$(freshest_for_uid "$copies" "$uid" || true)
+    if [ -n "$best" ]; then
+        bhome=$(dirname "$(dirname "$(printf '%s' "$best" | cut -f4)")")
+        biat=$(printf '%s' "$best" | cut -f2)
+        if [ "$bhome" = "$home" ] || { [ -n "$slot_iat" ] && [ "$biat" = "$slot_iat" ]; }; then
+            printf '; freshest auth: this slot\n'
+        else
+            printf '; freshest auth: %s (%s ago)\n' "$bhome" "$(fmt_age $((now - biat)))"
+        fi
+    else
+        printf '; freshest auth: none found\n'
+    fi
+}
+
 cmd_list() {
     local now name home current uid aliases refreshed ttl state
     now=$(date +%s)
+    local copies
+    copies=$(mktemp)
+    collect_copies > "$copies"
     printf 'slots:\n'
     printf '  %-14s %-10s %-10s %-10s %-7s state\n' name alias account refreshed TTL
     discover_slots | while IFS=$'\t' read -r name home; do
@@ -854,17 +915,18 @@ cmd_list() {
             refreshed="$(fmt_age $((now - $(printf '%s' "$current" | cut -f2)))) ago"
             ttl=$(fmt_age $(( $(printf '%s' "$current" | cut -f3) - now )))
         else
-            uid=-; aliases=-; refreshed=-; ttl=-
+            uid=$(slot_expected "$name"); aliases=-; refreshed=-; ttl=-
         fi
         state=$(slot_state "$name" "$current")
         printf '  %-14s %-10s %-10s %-10s %-7s %s\n' \
-            "$name" "$aliases" "$(short_uid "$uid")" "$refreshed" "$ttl" "$state"
+            "$name" "$aliases" "$(short_uid "${uid:--}")" "$refreshed" "$ttl" "$state"
+        if [ -n "$uid" ]; then
+            slot_whereabouts "$copies" "$now" "$home" "$uid" "$(printf '%s' "$current" | cut -f2)"
+        fi
     done
 
-    [ -f "$MANIFEST" ] || return 0
-    local copies uid_prefix
-    copies=$(mktemp)
-    collect_copies > "$copies"
+    [ -f "$MANIFEST" ] || { rm -f "$copies"; return 0; }
+    local uid_prefix
     printf '\naliases:\n'
     man_aliases | while IFS=$'\t' read -r name uid; do
         [ -n "$name" ] || continue
@@ -900,7 +962,7 @@ cmd_status() { # [--project DIR]
     now=$(date +%s)
 
     if ! project_has_home "$home"; then
-        printf '%s: no project home (deploy or new to create one)\n' "$project"
+        printf '%s: no project home (deploy to create one)\n' "$project"
         return 0
     fi
     printf 'project: %s\n' "$project"
@@ -1169,7 +1231,7 @@ holds_freshest_copy() { # HOME -> rc 0 when HOME holds the freshest known copy o
     current=$(slot_current "$home" || true)
     [ -n "$current" ] || return 1
     uid=$(printf '%s' "$current" | cut -f1)
-    copies=$(mktemp); collect_copies > "$copies"
+    copies=$(mktemp); { collect_copies; home_creds "$home"; } > "$copies"
     best=$(freshest_for_uid "$copies" "$uid" || true)
     rm -f "$copies"
     [ -n "$best" ] && [ "$(printf '%s' "$best" | cut -f4)" = "$(printf '%s' "$current" | cut -f4)" ]
@@ -1202,15 +1264,58 @@ backup_home() { # HOME — copy a home's auth into <home>/.backup/ (single entry
     fi
 }
 
-require_clear_or_forced() { # HOME — occupied-home gate for deploy/new
+copy_auth() { # SRC_HOME DST_HOME — copy config.toml + credentials/ with home perms
+    local src=$1 dst=$2
+    mkdir -p "$dst"
+    if [ -e "$src/config.toml" ]; then
+        cp -p "$src/config.toml" "$dst/config.toml"
+        chmod 600 "$dst/config.toml"
+    fi
+    if [ -d "$src/credentials" ]; then
+        mkdir -p "$dst/credentials"
+        chmod 700 "$dst/credentials"
+        cp -a "$src/credentials/." "$dst/credentials/"
+        find "$dst/credentials" -type f -exec chmod 600 {} +
+    fi
+}
+
+rescue_to_seats() { # HOME — copy HOME's auth into every registered canonical home that is older
+    RESCUED_TO_SEAT=0
+    local home=$1 current uid iat
+    current=$(slot_current "$home" || true)
+    [ -n "$current" ] || return 0
+    uid=$(printf '%s' "$current" | cut -f1)
+    iat=$(printf '%s' "$current" | cut -f2)
+    local line name path s_current s_iat
+    while IFS= read -r line; do
+        [ -n "$line" ] || continue
+        name=$(printf '%s' "$line" | cut -f1)
+        path=$(printf '%s' "$line" | cut -f2)
+        if [ "$path" = "$home" ]; then continue; fi
+        s_current=$(slot_current "$path" || true)
+        s_iat=$(printf '%s' "$s_current" | cut -f2)
+        if [ -z "$s_iat" ] || [ "$iat" -gt "$s_iat" ]; then
+            rm -f "$path/config.toml"
+            rm -rf "$path/credentials"
+            copy_auth "$home" "$path"
+            printf 'note: rescued newer copy of %s into canonical home %s (slot %s)\n' \
+                "$(short_uid "$uid")" "$path" "$name"
+            append_log rescue "user_id=$uid" "source_home=$home" "home=$path" "cred_iat=$iat"
+            RESCUED_TO_SEAT=1
+        fi
+    done < <(man_slots | awk -F'\t' -v uid="$uid" '$3 == uid && $4 != "excluded"')
+}
+
+require_clear_or_forced() { # HOME — occupied-home gate for deploy
     project_has_home "$1" || return 0
     [ "$OPT_FORCE" = 1 ] || die "$1 already holds an account.
 Use --force to overwrite it (no backup), or --force-with-backup to back it up to .backup/ first."
 }
 
-replace_home_auth() { # HOME — forced replace: warn, back up when asked, then clear auth
+replace_home_auth() { # HOME — forced replace: rescue newer auth to canonical homes, back up when asked, then clear
     local home=$1 current uid
-    if holds_freshest_copy "$home"; then
+    rescue_to_seats "$home"
+    if [ "$RESCUED_TO_SEAT" = 0 ] && holds_freshest_copy "$home"; then
         if [ "$OPT_FORCE_BACKUP" = 1 ]; then
             printf 'note: %s holds the freshest known copy of its account; it is preserved in .backup/\n' \
                 "$home"
@@ -1304,17 +1409,13 @@ Log it into a slot first (e.g. kimi-<suffix> login), then retry."
     [ "$source_home" = "$home" ] \
         && die "source and target are the same home ($home); nothing to deploy"
 
+    rescue_to_seats "$source_home"
+
     if project_has_home "$home"; then
         replace_home_auth "$home"
     fi
 
-    mkdir -p "$home"
-    cp -p "$source_home/config.toml" "$home/config.toml"
-    chmod 600 "$home/config.toml"
-    mkdir -p "$home/credentials"
-    chmod 700 "$home/credentials"
-    cp -a "$source_home/credentials/." "$home/credentials/"
-    find "$home/credentials" -type f -exec chmod 600 {} +
+    copy_auth "$source_home" "$home"
 
     append_log deploy "selector=$sel" "user_id=$uid" "source_home=$source_home" \
         "home=$home" "cred_iat=$iat"
@@ -1492,7 +1593,8 @@ usage() {
 Usage: kimi-project.sh <command> [args]
 
 Read-only:
-  list                          show slots, aliases, and drift state
+  list                          show slots (with last-deploy target and freshest-auth
+                                location per account), aliases, and drift state
   status [--project DIR]        show a project's account state (default: cwd)
   log [COUNT]                   show deployment log (default 20 entries)
   scan [PATH ...]               freshness + drift audit over slots and logged projects;
@@ -1503,6 +1605,11 @@ Mutating:
                                 selector: alias, slot name, or account-id prefix
                                 target: --project DIR, else $KIMI_CODE_HOME, else cwd's .kimi-code;
                                 missing or empty targets are created/filled without flags
+                                canonical convergence: a newer credential is always rescued
+                                into the canonical slot home(s) registered to its account —
+                                both when the freshest source copy lives outside them and,
+                                on overwrite, when the target's own auth is newer (logged
+                                as rescue); an unrescatable freshest copy only warns
                                 opts: --from SLOT  --project DIR
                                       --force              overwrite an occupied home (no backup)
                                       --force-with-backup  back the home up to .backup/ first
@@ -1526,6 +1633,7 @@ EOF
 }
 
 OPT_PROJECT=; OPT_FROM=; OPT_FORCE=0; OPT_FORCE_BACKUP=0; OPT_DEAD=0
+RESCUED_TO_SEAT=0
 cmd=${1:-}
 [ $# -gt 0 ] && shift || { usage; exit 2; }
 
