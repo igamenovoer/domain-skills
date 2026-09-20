@@ -41,7 +41,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 
 | Subskill | When to Route Here | Load |
 | --- | --- | --- |
-| `coding-agent` | Choose this branch for Codex CLI, Claude Code launchers, Antigravity/OpenLux launchers, or isolated-home Kimi Code CLI launchers. | `subskills/coding-agent/SKILL-MAIN.md` |
+| `coding-agent` | Choose this branch for Codex CLI, Claude Code launchers, Antigravity/OpenLux launchers, isolated-home Kimi Code CLI launchers, or the Kimi Code project account manager. | `subskills/coding-agent/SKILL-MAIN.md` |
 | `houmao-system` | Choose this branch whenever Houmao owns the installed system skills, project overlay, credentials, or specialist. | `subskills/houmao-system/SKILL-MAIN.md` |
 | `hermes-mgr` | Choose this branch for Hermes model routing, Feishu gateway integration and approval callbacks, a Kimi-backed local Hindsight server, persistent memory integration, or memory lifecycle operations. | `subskills/hermes-mgr/SKILL-MAIN.md` |
 | `misc` | Choose this branch for standalone agent skills, search, documentation, and cloud storage utilities, currently Ponytail, Tavily, Context7, and BaiduPCS-Go. | `subskills/misc/SKILL-MAIN.md` |
