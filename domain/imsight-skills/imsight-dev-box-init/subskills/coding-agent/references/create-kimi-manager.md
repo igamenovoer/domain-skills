@@ -26,6 +26,7 @@ Apply these durable principles regardless of script version:
 - Each home carries a single-entry backup at `<home>/.backup/`: `backup` copies the home's `config.toml`/`credentials/` there (overwriting any previous entry), `restore` writes them back over the live auth (the backup is kept, so restores are repeatable), and `deploy --force-with-backup` writes it before overwriting. `backup`/`restore` target `--project DIR`, else `$KIMI_CODE_HOME`, else `~/.kimi-code`. Backup contents are never freshness-ranked or scanned.
 - `deploy` refuses an occupied home (one holding `config.toml` or `credentials/`) by default. `--force` overwrites the live auth with no backup; `--force-with-backup` backs the home up to `.backup/` first, and implies `--force` everywhere (including drift and staleness overrides). An overwrite clears `config.toml`/`credentials/` before copying — it never merges — and warns when the doomed copy is the freshest known of its account.
 - Runtime state lives only under `~/kimi-homes/` (`manifest.json`, `deployments.jsonl`) and in per-home `.backup/` directories; the manifest and log never live inside a repository, a slot home, or the skill tree. No token material is ever written to state files or printed.
+- The deployment log is caller-managed: `forget PATH ...` drops entries matching a home or its project directory, and `forget --dead` drops every entry whose home no longer exists. `forget` rewrites the log atomically and never touches deployed homes — removing files is the caller's concern.
 
 ## Required Input
 
@@ -63,7 +64,7 @@ Run these read-only checks before installing anything:
 ## State Layout
 
 - `~/kimi-homes/manifest.json` (mode 600): all configurable state — account aliases and each slot's expected account, exclusion flag, and path. Regenerated atomically on every mutation.
-- `~/kimi-homes/deployments.jsonl` (mode 600): append-only deployment log (`deploy`, `backup`, `restore` events with account id, source, target home, and credential issue time). This is what later tells `scan` where credentials were planted.
+- `~/kimi-homes/deployments.jsonl` (mode 600): append-only deployment log (`deploy`, `backup`, `restore` events with account id, source, target home, and credential issue time). This is what later tells `scan` where credentials were planted. Prune it with `forget`; entries are only ever dropped, never edited.
 - `<home>/.backup/`: single-entry backup of a home's `config.toml`/`credentials/`, written by `backup` and by `deploy --force-with-backup`, read by `restore`; a new backup run replaces the previous entry.
 - Slot homes themselves stay where they are; the manager never moves or rewrites them.
 
@@ -84,7 +85,7 @@ After installing, declare each slot's expected account explicitly — the accoun
 
 Read-only: `list` (slots, aliases, drift), `status [--project DIR]` (one project's account, deployment record, staleness), `log [COUNT]` (deployment history), `scan [PATH ...]` (account freshness ranking plus drift audit over slots, logged projects, and optional extra roots).
 
-Mutating: `deploy <selector> [--from SLOT] [--force|--force-with-backup] [--project DIR]`, `backup`, `restore`, `register`, `alias`, `unalias`, `exclude`, `include`. `deploy` targets `--project DIR`, else `$KIMI_CODE_HOME`, else the current directory's `.kimi-code/`; `backup`/`restore` target `--project DIR`, else `$KIMI_CODE_HOME`, else `~/.kimi-code`. Typical flows:
+Mutating: `deploy <selector> [--from SLOT] [--force|--force-with-backup] [--project DIR]`, `backup`, `restore`, `register`, `alias`, `unalias`, `exclude`, `include`, `forget [--dead | PATH ...]`. `deploy` targets `--project DIR`, else `$KIMI_CODE_HOME`, else the current directory's `.kimi-code/`; `backup`/`restore` target `--project DIR`, else `$KIMI_CODE_HOME`, else `~/.kimi-code`. Typical flows:
 
 ```bash
 cd <project> && ~/kimi-project.sh deploy work   # plant account "work" in this project

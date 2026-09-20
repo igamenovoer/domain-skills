@@ -946,27 +946,31 @@ cmd_status() { # [--project DIR]
     rm -f "$copies"
 }
 
+fmt_log_line() { # LINE -> compact rendering of a deployment-log entry
+    local line=$1 time_s action uid project source backup home out
+    time_s=$(printf '%s' "$line" | ajq - time -s)
+    action=$(printf '%s' "$line" | ajq - action -s)
+    uid=$(printf '%s' "$line" | ajq - user_id -s 2>/dev/null || true)
+    project=$(printf '%s' "$line" | ajq - project -s 2>/dev/null || true)
+    source=$(printf '%s' "$line" | ajq - source_home -s 2>/dev/null || true)
+    backup=$(printf '%s' "$line" | ajq - backup -s 2>/dev/null || true)
+    home=$(printf '%s' "$line" | ajq - home -s 2>/dev/null || true)
+    [ "$uid" = "null" ] && uid=
+    out="$time_s  $(printf '%-7s' "$action")"
+    [ -n "$uid" ] && out="$out  $(short_uid "$uid")"
+    [ -n "$project" ] && [ "$project" != "null" ] && out="$out  $project"
+    [ -n "$home" ] && [ "$home" != "null" ] && out="$out  $home"
+    [ -n "$source" ] && [ "$source" != "null" ] && out="$out  from $source"
+    [ -n "$backup" ] && [ "$backup" != "null" ] && out="$out  backup $backup"
+    printf '%s\n' "$out"
+}
+
 cmd_log() { # [COUNT]
     local count=${1:-20} line
     [ -f "$LOG_FILE" ] || { printf 'deployment log is empty\n'; return 0; }
     tail -n "$count" "$LOG_FILE" | while IFS= read -r line; do
         [ -n "$line" ] || continue
-        local time_s action uid project source backup home
-        time_s=$(printf '%s' "$line" | ajq - time -s)
-        action=$(printf '%s' "$line" | ajq - action -s)
-        uid=$(printf '%s' "$line" | ajq - user_id -s 2>/dev/null || true)
-        project=$(printf '%s' "$line" | ajq - project -s 2>/dev/null || true)
-        source=$(printf '%s' "$line" | ajq - source_home -s 2>/dev/null || true)
-        backup=$(printf '%s' "$line" | ajq - backup -s 2>/dev/null || true)
-        home=$(printf '%s' "$line" | ajq - home -s 2>/dev/null || true)
-        [ "$uid" = "null" ] && uid=
-        out="$time_s  $(printf '%-7s' "$action")"
-        [ -n "$uid" ] && out="$out  $(short_uid "$uid")"
-        [ -n "$project" ] && [ "$project" != "null" ] && out="$out  $project"
-        [ -n "$home" ] && [ "$home" != "null" ] && out="$out  $home"
-        [ -n "$source" ] && [ "$source" != "null" ] && out="$out  from $source"
-        [ -n "$backup" ] && [ "$backup" != "null" ] && out="$out  backup $backup"
-        printf '%s\n' "$out"
+        fmt_log_line "$line"
     done
 }
 
@@ -1394,6 +1398,92 @@ cmd_restore() { # [--project DIR] — overwrite the target home's auth with its 
     printf '  backup kept at %s (restores are repeatable)\n' "$home/.backup"
 }
 
+cmd_forget() { # [--dead | PATH ...] — drop deployment-record entries; homes are the caller's concern
+    [ -f "$LOG_FILE" ] || { printf 'deployment log is empty\n'; return 0; }
+    local tmp removed=0 line h p hh keep x cand
+    local -a cand_home=() cand_proj=()
+    if [ "$OPT_DEAD" != 1 ]; then
+        [ $# -ge 1 ] || die "forget needs at least one PATH, or --dead"
+        for x in "$@"; do
+            x=${x%/}
+            if [ -d "$x" ]; then
+                x=$(cd "$x" && pwd -P)
+            fi
+            cand_home+=("$x" "$x/.kimi-code")
+            cand_proj+=("$x")
+            case $x in
+                */.kimi-code) cand_proj+=("$(dirname "$x")") ;;
+            esac
+        done
+    fi
+    tmp=$(mktemp)
+    while IFS= read -r line; do
+        [ -n "$line" ] || continue
+        h=$(printf '%s' "$line" | ajq - home -s 2>/dev/null || true)
+        [ "$h" = "null" ] && h=
+        p=$(printf '%s' "$line" | ajq - project -s 2>/dev/null || true)
+        [ "$p" = "null" ] && p=
+        keep=1
+        if [ "$OPT_DEAD" = 1 ]; then
+            hh=$h
+            if [ -z "$hh" ] && [ -n "$p" ]; then hh="$p/.kimi-code"; fi
+            if [ -n "$hh" ] && [ ! -e "$hh" ]; then
+                keep=0
+            fi
+        else
+            for cand in "${cand_home[@]}"; do
+                if [ -n "$h" ] && [ "$h" = "$cand" ]; then
+                    keep=0
+                    break
+                fi
+            done
+            if [ "$keep" = 1 ]; then
+                for cand in "${cand_proj[@]}"; do
+                    if [ -n "$p" ] && [ "$p" = "$cand" ]; then
+                        keep=0
+                        break
+                    fi
+                done
+            fi
+        fi
+        if [ "$keep" = 0 ]; then
+            removed=$((removed + 1))
+            printf '  dropping: %s\n' "$(fmt_log_line "$line")"
+        else
+            printf '%s\n' "$line" >> "$tmp"
+        fi
+    done < "$LOG_FILE"
+    if [ "$removed" -eq 0 ]; then
+        rm -f "$tmp"
+        printf 'no matching log entries\n'
+        return 0
+    fi
+    chmod 600 "$tmp"
+    mv "$tmp" "$LOG_FILE"
+    if [ "$removed" -eq 1 ]; then
+        printf 'forgot 1 log entry\n'
+    else
+        printf 'forgot %d log entries\n' "$removed"
+    fi
+    if [ "$OPT_DEAD" != 1 ]; then
+        for x in "$@"; do
+            x=${x%/}
+            if [ -d "$x" ]; then
+                x=$(cd "$x" && pwd -P)
+            fi
+            hh=
+            if [ -e "$x/.kimi-code" ]; then
+                hh="$x/.kimi-code"
+            elif [ "${x##*/}" = .kimi-code ]; then
+                hh="$x"
+            fi
+            if [ -n "$hh" ] && project_has_home "$hh"; then
+                printf 'note: %s still holds credentials; scan no longer tracks it\n' "$hh"
+            fi
+        done
+    fi
+}
+
 # ---------------------------------------------------------------------------
 # Entrypoint
 
@@ -1421,6 +1511,10 @@ Mutating:
                                 --project DIR, else $KIMI_CODE_HOME, else ~/.kimi-code
   restore [--project DIR]       overwrite the target home's config+credentials with the
                                 contents of its .backup/ (same target resolution as backup)
+  forget [--dead | PATH ...]    drop deployment-record entries: entries matching PATHs
+                                (a home or its project dir), or with --dead every entry
+                                whose home no longer exists. Homes themselves are the
+                                caller's concern — forget never removes files
   register <slot> <auth.json>   declare the account a slot is expected to hold; the
                                 account id is read from the given credential file,
                                 never inferred from the slot's current contents
@@ -1431,7 +1525,7 @@ Mutating:
 EOF
 }
 
-OPT_PROJECT=; OPT_FROM=; OPT_FORCE=0; OPT_FORCE_BACKUP=0
+OPT_PROJECT=; OPT_FROM=; OPT_FORCE=0; OPT_FORCE_BACKUP=0; OPT_DEAD=0
 cmd=${1:-}
 [ $# -gt 0 ] && shift || { usage; exit 2; }
 
@@ -1442,6 +1536,7 @@ while [ $# -gt 0 ]; do
         --from) OPT_FROM=${2:?--from requires a value}; shift 2 ;;
         --force) OPT_FORCE=1; shift ;;
         --force-with-backup) OPT_FORCE_BACKUP=1; OPT_FORCE=1; shift ;;
+        --dead) OPT_DEAD=1; shift ;;
         -h | --help) usage; exit 0 ;;
         --) shift; while [ $# -gt 0 ]; do pos+=("$1"); shift; done ;;
         *) pos+=("$1"); shift ;;
@@ -1462,6 +1557,7 @@ case $cmd in
     deploy) [ $# -ge 1 ] || { usage; exit 2; }; cmd_deploy "$1" ;;
     backup) cmd_backup ;;
     restore) cmd_restore ;;
+    forget) cmd_forget "$@" ;;
     -h | --help | help) usage ;;
     *) usage; exit 2 ;;
 esac
