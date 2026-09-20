@@ -540,7 +540,7 @@ manifest_write() { # ALIASES_FILE SLOTS_FILE — atomically regenerate manifest.
     tmp=$(mktemp)
     awk -F'\t' '
         function jesc(s) { gsub(/\\/, "\\\\", s); gsub(/"/, "\\\"", s); return s }
-        NR == FNR {
+        FILENAME == ARGV[1] {
             if ($1 != "") { na++; an[na] = $1; av[na] = $2 }
             next
         }
