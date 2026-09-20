@@ -28,7 +28,7 @@ Terminal invocation of `imsight-dev-box-init->coding-agent->codex-openlux-launch
 6. Only after Phase A succeeds, run **Phase B: Persistent Setup** and create the launcher from **Reference Implementations**.
 7. Make the launcher use **Codex Profile Bootstrap for Redirected Homes** from `SKILL-MAIN.md`: embed the verified profile content without its key, resolve the active `CODEX_HOME` at runtime, use an existing profile as-is with a warning, overwrite it only through an explicit `--refresh-profile` flag, and ask before creating a missing profile.
 8. Run **Verification**, including one end-to-end completion in the default and redirected homes, the profile bootstrap decision paths (existing-profile warning, `--refresh-profile`, create prompt, noninteractive refusal), and a non-billable check that plain `codex` remains unchanged.
-9. Report the profile and launcher locations, Codex version, the model the verification turn reported, permission mode, validation results, and any model-metadata warning without printing the key.
+9. Report the profile and launcher locations, Codex version, the model the verification turn reported, permission mode, validation results, and any model-metadata warning without printing the key. Include the **Session Continuation Note** so the user knows how to carry an existing conversation over to the launcher.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's contract, compatibility evidence, platform examples, and user constraints, then execute the plan without changing the base Codex configuration or borrowing another OpenLux product's authentication conventions.
 
@@ -141,6 +141,15 @@ Use the shell the user actually launches. PowerShell 7 and Windows PowerShell ca
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Session note: Codex's resume picker lists only sessions recorded under this
+# launcher's provider, so sessions started by plain `codex` (OAuth) or another
+# launcher stay hidden from `<launcher-name> resume`. To continue such a
+# session under this launcher, fork it by id — `<launcher-name> fork <session-id>`.
+# Fork is non-destructive: the original stays in its own provider's list and
+# the history is shared by reference, not copied. This is version-dependent
+# (verified on codex-cli 0.155.0); if forking does not work on the installed
+# version, start a new session instead.
+
 export OPENLUX_API_KEY='<OPENLUX_API_KEY>'
 credential_pattern='^[!-~]+$'
 if ! (LC_ALL=C; [[ $OPENLUX_API_KEY =~ $credential_pattern ]]); then
@@ -226,6 +235,11 @@ Restrict the file with `chmod 0700` and ensure `~/.local/bin` is on `PATH`. For 
 
 ```powershell
 # >>> <launcher-name> launcher >>>
+# Session note: Codex's resume picker lists only sessions recorded under this
+# launcher's provider; to continue a session started by plain `codex` (OAuth)
+# or another launcher, fork it by id — `<launcher-name> fork <session-id>`.
+# Fork is non-destructive. Version-dependent (verified on codex-cli 0.155.0);
+# if forking does not work, start a new session instead.
 function <launcher-name> {
     $previousKeyExists = Test-Path Env:OPENLUX_API_KEY
     $previousKey = $env:OPENLUX_API_KEY
@@ -272,6 +286,14 @@ Create the Codex profile first, preserve unrelated profile content, replace an e
 ## Runtime Argument Contract
 
 The launcher's fixed arguments select the OpenLux profile and default permission mode. Every runtime argument belongs to Codex and must follow those defaults without being parsed, renamed, reordered, or consumed by the launcher. The single exception is the launcher's own `--refresh-profile` flag, which the launcher consumes and never forwards. The suffix is resolved at setup time and is never forwarded to Codex.
+
+## Session Continuation Note
+
+When reporting a finished launcher, tell the user in the chat session how to carry an existing conversation over to it. Keep the note short and do not present the behavior as guaranteed:
+
+- Codex's resume picker lists only sessions recorded under the same provider as the running session, so conversations started by plain `codex` (OAuth) or by another launcher do not appear in `<launcher-name> resume`.
+- To continue such a conversation under the launcher, fork it by id: `<launcher-name> fork <session-id>`. Forking is non-destructive: the original session stays in its own provider's list, and the fork shares the original history by reference instead of copying it.
+- This behavior is version-dependent (verified on codex-cli 0.155.0). If forking does not work with the installed version, the user simply starts a new session under the launcher.
 
 ## Verification
 
