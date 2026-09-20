@@ -11,10 +11,12 @@
 #
 # Runtime state: ~/kimi-homes/manifest.json (all configurable state: account
 # aliases and per-slot expected account + exclusion flag),
-# ~/kimi-homes/deployments.jsonl (append-only deployment log),
-# ~/kimi-homes/.backups/. No token material is ever written to state files or
-# printed. A slot whose "flags" is "excluded" is private: its credentials are
-# never read, scanned, or deployed by any subcommand.
+# ~/kimi-homes/deployments.jsonl (append-only deployment log), and per-home
+# .backup/ directories: single-entry auth backups written by backup or by
+# deploy --force-with-backup, read by restore. No token material is ever
+# written to state files or printed. A slot whose "flags" is "excluded" is
+# private: its credentials are never read, scanned, or deployed by any
+# subcommand.
 #
 # Dependencies: bash, awk (any POSIX implementation), sed, GNU coreutils
 # (base64, date, sort). No python, no jq binary. JSON reading uses the
@@ -26,7 +28,6 @@ set -euo pipefail
 HOMES_ROOT="$HOME/kimi-homes"
 MANIFEST="$HOMES_ROOT/manifest.json"
 LOG_FILE="$HOMES_ROOT/deployments.jsonl"
-BACKUPS_ROOT="$HOMES_ROOT/.backups"
 DEFAULT_HOME="$HOME/.kimi-code"
 
 die() { printf 'kimi-project: %s\n' "$1" >&2; exit 2; }
@@ -662,6 +663,42 @@ slot_home() { # SLOT -> home path, empty when unknown (never early-closes the pi
     discover_slots | awk -F'\t' -v k="$1" '$1 == k && found == 0 { print $2; found = 1 }'
 }
 
+project_dir() { # resolved project dir for project-scoped commands
+    local d
+    d=$(cd "${OPT_PROJECT:-.}" 2>/dev/null && pwd -P) \
+        || die "project directory not found: ${OPT_PROJECT:-.}"
+    printf '%s\n' "$d"
+}
+
+resolve_home() { # FALLBACK(default|cwd) — --project DIR > $KIMI_CODE_HOME > fallback
+    local fb=$1
+    if [ -n "$OPT_PROJECT" ]; then
+        local d
+        d=$(project_dir) || return 2
+        printf '%s/.kimi-code\n' "$d"
+    elif [ -n "${KIMI_CODE_HOME:-}" ]; then
+        if [ -d "$KIMI_CODE_HOME" ]; then
+            (cd "$KIMI_CODE_HOME" && pwd -P)
+        else
+            printf '%s\n' "$KIMI_CODE_HOME"
+        fi
+    elif [ "$fb" = default ]; then
+        printf '%s\n' "$DEFAULT_HOME"
+    else
+        local d
+        d=$(project_dir) || return 2
+        printf '%s/.kimi-code\n' "$d"
+    fi
+}
+
+target_home() { # backup/restore target: --project DIR > $KIMI_CODE_HOME > ~/.kimi-code
+    resolve_home default
+}
+
+deploy_home() { # deploy target: --project DIR > $KIMI_CODE_HOME > cwd/.kimi-code
+    resolve_home cwd
+}
+
 discover_slots() { # prints "name\thome" lines
     printf 'default\t%s\n' "$DEFAULT_HOME"
     local d
@@ -673,26 +710,33 @@ discover_slots() { # prints "name\thome" lines
     done
 }
 
-logged_projects() { # unique project dirs from deployment log
+logged_deploy_homes() { # unique deploy-target homes from the log (new: home=, legacy: project=)
     [ -f "$LOG_FILE" ] || return 0
-    local line action project
+    local line action project home
     while IFS= read -r line; do
         [ -n "$line" ] || continue
         action=$(printf '%s' "$line" | ajq - action -s 2>/dev/null || true)
         [ "$action" = "deploy" ] || continue
+        home=$(printf '%s' "$line" | ajq - home -s 2>/dev/null || true)
+        if [ -n "$home" ] && [ "$home" != "null" ]; then
+            printf '%s\n' "$home"
+            continue
+        fi
         project=$(printf '%s' "$line" | ajq - project -s 2>/dev/null || true)
-        [ -n "$project" ] && [ "$project" != "null" ] && printf '%s\n' "$project"
+        if [ -n "$project" ] && [ "$project" != "null" ]; then
+            printf '%s/.kimi-code\n' "$project"
+        fi
     done < "$LOG_FILE" | sort -u
 }
 
-collect_copies() { # all cred copies: slots (minus excluded) + logged projects
-    local name home proj
+collect_copies() { # all cred copies: slots (minus excluded) + logged deploy homes
+    local name home dhome
     discover_slots | while IFS=$'\t' read -r name home; do
         is_excluded "$name" && continue
         home_creds "$home"
     done
-    logged_projects | while IFS= read -r proj; do
-        home_creds "$proj/.kimi-code"
+    logged_deploy_homes | while IFS= read -r dhome; do
+        home_creds "$dhome"
     done
 }
 
@@ -715,15 +759,25 @@ path_creds() { # ROOT -> cred copies under a home, a project, or a parent of pro
     done
 }
 
-last_deploy_entry() { # PROJECT -> newest deploy log line for it, empty when none
+last_deploy_entry() { # TARGET_HOME -> newest deploy log line for it, empty when none
     [ -f "$LOG_FILE" ] || return 0
-    local line action proj
+    local line action proj home
     while IFS= read -r line; do
         [ -n "$line" ] || continue
         action=$(printf '%s' "$line" | ajq - action -s 2>/dev/null || true)
         [ "$action" = "deploy" ] || continue
-        proj=$(printf '%s' "$line" | ajq - project -s 2>/dev/null || true)
-        [ "$proj" = "$1" ] && printf '%s\n' "$line"
+        home=$(printf '%s' "$line" | ajq - home -s 2>/dev/null || true)
+        if [ -z "$home" ] || [ "$home" = "null" ]; then
+            proj=$(printf '%s' "$line" | ajq - project -s 2>/dev/null || true)
+            if [ -n "$proj" ] && [ "$proj" != "null" ]; then
+                home="$proj/.kimi-code"
+            else
+                home=
+            fi
+        fi
+        if [ "$home" = "$1" ]; then
+            printf '%s\n' "$line"
+        fi
     done < "$LOG_FILE" | tail -n 1
 }
 
@@ -737,7 +791,7 @@ slot_state() { # SLOT CURRENT_LINE -> state text
     [ -n "$current" ] || { printf 'empty'; return 0; }
     expected=$(slot_expected "$slot")
     if [ -z "$expected" ]; then
-        printf 'untracked (adopt with: adopt %s)' "$slot"
+        printf 'untracked (register with: register %s AUTH_JSON)' "$slot"
         return 0
     fi
     local uid
@@ -841,7 +895,7 @@ cmd_list() {
 
 cmd_status() { # [--project DIR]
     local project home now current uid iat exp aliases
-    project=$(cd "$OPT_PROJECT" && pwd -P)
+    project=$(project_dir)
     home="$project/.kimi-code"
     now=$(date +%s)
 
@@ -864,7 +918,7 @@ cmd_status() { # [--project DIR]
     printf '  refreshed: %s ago; refresh token TTL %s\n' "$(fmt_age $((now - iat)))" "$(fmt_age $((exp - now)))"
 
     local last deployed_uid
-    last=$(last_deploy_entry "$project")
+    last=$(last_deploy_entry "$home")
     if [ -n "$last" ]; then
         printf '  last deployed: %s from %s\n' \
             "$(printf '%s' "$last" | ajq - time -s)" "$(printf '%s' "$last" | ajq - source_home -s)"
@@ -897,17 +951,19 @@ cmd_log() { # [COUNT]
     [ -f "$LOG_FILE" ] || { printf 'deployment log is empty\n'; return 0; }
     tail -n "$count" "$LOG_FILE" | while IFS= read -r line; do
         [ -n "$line" ] || continue
-        local time_s action uid project source backup
+        local time_s action uid project source backup home
         time_s=$(printf '%s' "$line" | ajq - time -s)
         action=$(printf '%s' "$line" | ajq - action -s)
         uid=$(printf '%s' "$line" | ajq - user_id -s 2>/dev/null || true)
         project=$(printf '%s' "$line" | ajq - project -s 2>/dev/null || true)
         source=$(printf '%s' "$line" | ajq - source_home -s 2>/dev/null || true)
         backup=$(printf '%s' "$line" | ajq - backup -s 2>/dev/null || true)
+        home=$(printf '%s' "$line" | ajq - home -s 2>/dev/null || true)
         [ "$uid" = "null" ] && uid=
         out="$time_s  $(printf '%-7s' "$action")"
         [ -n "$uid" ] && out="$out  $(short_uid "$uid")"
         [ -n "$project" ] && [ "$project" != "null" ] && out="$out  $project"
+        [ -n "$home" ] && [ "$home" != "null" ] && out="$out  $home"
         [ -n "$source" ] && [ "$source" != "null" ] && out="$out  from $source"
         [ -n "$backup" ] && [ "$backup" != "null" ] && out="$out  backup $backup"
         printf '%s\n' "$out"
@@ -957,7 +1013,7 @@ cmd_scan() { # [PATH ...] — extra roots: a home, a project, or a parent of pro
     fi
 
     printf '\n== drift check\n'
-    local name home current state proj deployed_uid last uid aline drift_out
+    local name home current state dhome deployed_uid last uid aline drift_out
     drift_out=$(
         discover_slots | while IFS=$'\t' read -r name home; do
             is_excluded "$name" && continue
@@ -965,17 +1021,17 @@ cmd_scan() { # [PATH ...] — extra roots: a home, a project, or a parent of pro
             state=$(slot_state "$name" "$current")
             case $state in ok | empty) ;; *) printf '  slot %s: %s\n' "$name" "$state" ;; esac
         done
-        logged_projects | while IFS= read -r proj; do
-            project_has_home "$proj/.kimi-code" || continue
-            current=$(slot_current "$proj/.kimi-code" || true)
+        logged_deploy_homes | while IFS= read -r dhome; do
+            project_has_home "$dhome" || continue
+            current=$(slot_current "$dhome" || true)
             [ -n "$current" ] || continue
-            last=$(last_deploy_entry "$proj")
+            last=$(last_deploy_entry "$dhome")
             [ -n "$last" ] || continue
             deployed_uid=$(printf '%s' "$last" | ajq - user_id -s)
             uid=$(printf '%s' "$current" | cut -f1)
             if [ -n "$deployed_uid" ] && [ "$deployed_uid" != "$uid" ]; then
-                printf '  project %s: DRIFTED — deployed as %s, now holds %s\n' \
-                    "$proj" "$(short_uid "$deployed_uid")" "$(short_uid "$uid")"
+                printf '  home %s: DRIFTED — deployed as %s, now holds %s\n' \
+                    "$dhome" "$(short_uid "$deployed_uid")" "$(short_uid "$uid")"
             fi
         done
         man_aliases | while IFS=$'\t' read -r aline uid; do
@@ -996,20 +1052,37 @@ cmd_scan() { # [PATH ...] — extra roots: a home, a project, or a parent of pro
 # ---------------------------------------------------------------------------
 # Mutating commands
 
-cmd_adopt() { # SLOT
-    local slot=$1 home current uid old
+cmd_register() { # SLOT AUTH_JSON — declare the account a slot is expected to hold
+    local slot=$1 cred=$2 home uid old current cred_home
     home=$(slot_home "$slot")
     [ -n "$home" ] || die "unknown slot '$slot'. Known: $(discover_slots | cut -f1 | paste -sd' ' -)"
-    is_excluded "$slot" && die "slot '$slot' is excluded (private); run 'include $slot' before adopting it"
-    current=$(slot_current "$home" || true)
-    [ -n "$current" ] || die "slot '$slot' has no readable credentials at $home"
-    uid=$(printf '%s' "$current" | cut -f1)
+    is_excluded "$slot" && die "slot '$slot' is excluded (private); run 'include $slot' before registering it"
+    [ -f "$cred" ] || die "credential file not found: $cred"
+    cred=$(cd "$(dirname "$cred")" && pwd -P)/$(basename "$cred")
+    cred_home=$(dirname "$(dirname "$cred")")
+    if is_excluded_home "$cred_home"; then
+        local xslot
+        xslot=$(man_slots | awk -F'\t' -v p="$cred_home" '$4 == "excluded" && $2 == p && !f { print $1; f = 1 }')
+        die "$cred belongs to excluded slot '$xslot' (private); its credentials are never read. Run 'include $xslot' to lift this."
+    fi
+    local info
+    info=$(cred_info "$cred") || die "unreadable credential: $cred"
+    uid=$(printf '%s' "$info" | cut -f1)
     old=$(slot_expected "$slot")
     man_slot_set "$slot" "$home" "$uid" "$(slot_flags "$slot")"
     if [ -n "$old" ] && [ "$old" != "$uid" ]; then
-        printf 're-bound %s: was %s, now %s\n' "$slot" "$(short_uid "$old")" "$uid"
+        printf 're-registered %s: expected account was %s, now %s\n' "$slot" "$(short_uid "$old")" "$(short_uid "$uid")"
     else
-        printf 'adopted %s: expected account %s\n' "$slot" "$uid"
+        printf 'registered %s: expected account %s\n' "$slot" "$uid"
+    fi
+    current=$(slot_current "$home" || true)
+    if [ -n "$current" ]; then
+        if [ "$(printf '%s' "$current" | cut -f1)" != "$uid" ]; then
+            printf 'note: %s currently holds %s — it will show DRIFTED until re-logged into %s\n' \
+                "$slot" "$(short_uid "$(printf '%s' "$current" | cut -f1)")" "$(short_uid "$uid")"
+        fi
+    else
+        printf 'note: %s currently has no readable credentials; it will show empty until logged in\n' "$slot"
     fi
 }
 
@@ -1028,7 +1101,9 @@ cmd_exclude() { # SLOT — never read, scan, or deploy from this slot's home
     printf '  undo with: kimi-project.sh include %s\n' "$slot"
     if [ -n "$expected" ]; then
         aliases=$(aliases_for_uid "$expected")
-        [ -n "$aliases" ] && printf '  note: alias(es) %s point to this account; deploys by alias will fail while it exists only here\n' "$aliases"
+        if [ -n "$aliases" ]; then
+            printf '  note: alias(es) %s point to this account; deploys by alias will fail while it exists only here\n' "$aliases"
+        fi
     fi
 }
 
@@ -1085,14 +1160,89 @@ resolve_selector() { # SELECTOR COPIES_FILE -> "account\tUID" or "slot\tNAME"
     esac
 }
 
-cmd_deploy() { # SELECTOR [--from SLOT] [--force] [--project DIR]
-    local sel=$1 project home now copies
-    project=$(cd "$OPT_PROJECT" && pwd -P)
-    home="$project/.kimi-code"
-    if project_has_home "$home"; then
-        die "$project already has a Kimi home ($home).
-Remove it first with: kimi-project.sh reset   (moves config/credentials to a timestamped backup)"
+holds_freshest_copy() { # HOME -> rc 0 when HOME holds the freshest known copy of its account
+    local home=$1 current uid copies best
+    current=$(slot_current "$home" || true)
+    [ -n "$current" ] || return 1
+    uid=$(printf '%s' "$current" | cut -f1)
+    copies=$(mktemp); collect_copies > "$copies"
+    best=$(freshest_for_uid "$copies" "$uid" || true)
+    rm -f "$copies"
+    [ -n "$best" ] && [ "$(printf '%s' "$best" | cut -f4)" = "$(printf '%s' "$current" | cut -f4)" ]
+}
+
+backup_home() { # HOME — copy a home's auth into <home>/.backup/ (single entry, overwrite)
+    local home=$1 tmp replaced
+    tmp="$home/.backup.tmp.$$"
+    rm -rf "$tmp"
+    mkdir -p "$tmp"
+    if [ -e "$home/config.toml" ]; then
+        cp -p "$home/config.toml" "$tmp/config.toml"
+        chmod 600 "$tmp/config.toml"
     fi
+    if [ -d "$home/credentials" ]; then
+        mkdir -p "$tmp/credentials"
+        chmod 700 "$tmp/credentials"
+        cp -a "$home/credentials/." "$tmp/credentials/"
+        find "$tmp/credentials" -type f -exec chmod 600 {} +
+    fi
+    replaced=
+    if [ -e "$home/.backup" ]; then
+        replaced=1
+        rm -rf "$home/.backup"
+    fi
+    mv "$tmp" "$home/.backup"
+    if [ -n "$replaced" ]; then
+        printf 'note: replaced the previous backup at %s (single backup entry per home)\n' \
+            "$home/.backup"
+    fi
+}
+
+require_clear_or_forced() { # HOME — occupied-home gate for deploy/new
+    project_has_home "$1" || return 0
+    [ "$OPT_FORCE" = 1 ] || die "$1 already holds an account.
+Use --force to overwrite it (no backup), or --force-with-backup to back it up to .backup/ first."
+}
+
+replace_home_auth() { # HOME — forced replace: warn, back up when asked, then clear auth
+    local home=$1 current uid
+    if holds_freshest_copy "$home"; then
+        if [ "$OPT_FORCE_BACKUP" = 1 ]; then
+            printf 'note: %s holds the freshest known copy of its account; it is preserved in .backup/\n' \
+                "$home"
+        else
+            printf 'warning: %s holds the freshest known copy of its account; overwriting with no backup\n' \
+                "$home"
+        fi
+    fi
+    if [ "$OPT_FORCE_BACKUP" = 1 ]; then
+        current=$(slot_current "$home" || true)
+        uid=
+        if [ -n "$current" ]; then
+            uid=$(printf '%s' "$current" | cut -f1)
+        fi
+        backup_home "$home"
+        append_log backup "user_id=$uid" "home=$home"
+        printf 'previous auth backed up to %s\n' "$home/.backup"
+    fi
+    rm -f "$home/config.toml"
+    rm -rf "$home/credentials"
+}
+
+cmd_deploy() { # SELECTOR [--from SLOT] [--force|--force-with-backup] [--project DIR]
+    local sel=$1 home now copies via_env
+    if [ -z "$OPT_PROJECT" ] && [ -n "${KIMI_CODE_HOME:-}" ]; then
+        via_env=1
+    else
+        via_env=
+    fi
+    home=$(deploy_home)
+    if is_excluded_home "$home"; then
+        local xslot
+        xslot=$(man_slots | awk -F'\t' -v p="$home" '$4 == "excluded" && $2 == p && !f { print $1; f = 1 }')
+        die "$home is excluded (private); deploy would touch its credentials. Run 'include $xslot' to lift this."
+    fi
+    require_clear_or_forced "$home"
     now=$(date +%s)
     copies=$(mktemp)
     collect_copies > "$copies"
@@ -1147,6 +1297,12 @@ Log it into a slot first (e.g. kimi-<suffix> login), then retry."
     exp=$(printf '%s' "$source" | cut -f3)
     cred_file=$(printf '%s' "$source" | cut -f4)
     source_home=$(dirname "$(dirname "$cred_file")")
+    [ "$source_home" = "$home" ] \
+        && die "source and target are the same home ($home); nothing to deploy"
+
+    if project_has_home "$home"; then
+        replace_home_auth "$home"
+    fi
 
     mkdir -p "$home"
     cp -p "$source_home/config.toml" "$home/config.toml"
@@ -1157,7 +1313,7 @@ Log it into a slot first (e.g. kimi-<suffix> login), then retry."
     find "$home/credentials" -type f -exec chmod 600 {} +
 
     append_log deploy "selector=$sel" "user_id=$uid" "source_home=$source_home" \
-        "project=$project" "cred_iat=$iat"
+        "home=$home" "cred_iat=$iat"
     rm -f "$copies"
 
     local aliases
@@ -1166,55 +1322,76 @@ Log it into a slot first (e.g. kimi-<suffix> login), then retry."
     printf 'deployed %s%s from %s\n' "$(short_uid "$uid")" "$aliases" "$source_home"
     printf '  credential refreshed %s ago; refresh TTL %s\n' "$(fmt_age $((now - iat)))" "$(fmt_age $((exp - now)))"
     printf '  into %s\n' "$home"
-    printf 'next: source ~/set-kimi-home-as-pwd.sh   # or export KIMI_CODE_HOME=$PWD/.kimi-code\n'
+    if [ -z "$via_env" ]; then
+        printf 'next: export KIMI_CODE_HOME=%s\n' "$home"
+        printf '      (or from its project dir: source ~/set-kimi-home-as-pwd.sh)\n'
+    fi
 }
 
-cmd_new() { # [--project DIR]
-    local project home
-    project=$(cd "$OPT_PROJECT" && pwd -P)
-    home="$project/.kimi-code"
-    project_has_home "$home" && die "$project already has a Kimi home ($home); reset it first"
-    mkdir -p "$home"
-    append_log new "project=$project"
-    printf 'created empty project home at %s\n' "$home"
-    printf 'log in with a fresh account via:\n'
-    printf '  cd %s && source ~/set-kimi-home-as-pwd.sh && kimi login\n' "$project"
-}
-
-cmd_reset() { # [--project DIR]
-    local project home current uid copies best stamp slug backup moved item
-    project=$(cd "$OPT_PROJECT" && pwd -P)
-    home="$project/.kimi-code"
-    project_has_home "$home" || die "$project has no project home to reset"
+cmd_backup() { # [--project DIR] — copy the target home's auth into <home>/.backup/
+    local home current uid
+    home=$(target_home)
+    is_excluded_home "$home" \
+        && die "$home is excluded (private); backup would read its credentials. Run 'include <slot>' to lift this."
+    project_has_home "$home" || die "$home has no config.toml or credentials/ — nothing to back up"
 
     current=$(slot_current "$home" || true)
     uid=
     if [ -n "$current" ]; then
         uid=$(printf '%s' "$current" | cut -f1)
-        copies=$(mktemp); collect_copies > "$copies"
-        best=$(freshest_for_uid "$copies" "$uid" || true)
-        rm -f "$copies"
-        if [ -n "$best" ] && [ "$(printf '%s' "$best" | cut -f4)" = "$(printf '%s' "$current" | cut -f4)" ]; then
-            printf 'note: this is the freshest known copy of %s; it is preserved in the backup, other copies may now be dead server-side\n' \
-                "$(short_uid "$uid")"
-        fi
     fi
 
-    stamp=$(date +%Y%m%d-%H%M%S)
-    slug=$(printf '%s' "$(basename "$project")" | sed 's/[^A-Za-z0-9._-]\+/-/g')
-    [ -n "$slug" ] || slug=project
-    backup="$BACKUPS_ROOT/$slug-$stamp"
-    mkdir -p "$backup"
-    moved=
-    for item in config.toml credentials; do
-        if [ -e "$home/$item" ]; then
-            mv "$home/$item" "$backup/$item"
-            moved="$moved $item"
-        fi
-    done
-    append_log reset "user_id=$uid" "project=$project" "backup=$backup"
-    printf 'moved%s to %s\n' "$(printf '%s' "$moved" | sed 's/ /, /g; s/^, //; s/^/ /')" "$backup"
-    printf '%s is now clean; deploy an account or run '\''new'\''\n' "$project"
+    backup_home "$home"
+    append_log backup "user_id=$uid" "home=$home"
+    printf 'backed up %s\n' "$home"
+    printf '  into %s (single backup entry per home)\n' "$home/.backup"
+    if [ -n "$uid" ]; then
+        printf '  account: %s\n' "$(short_uid "$uid")"
+    fi
+    printf '  undo with: kimi-project.sh restore   (same target resolution as backup)\n'
+}
+
+cmd_restore() { # [--project DIR] — overwrite the target home's auth with its .backup/
+    local home current uid had_live
+    home=$(target_home)
+    is_excluded_home "$home" \
+        && die "$home is excluded (private); restore would touch its credentials. Run 'include <slot>' to lift this."
+    [ -d "$home/.backup" ] || die "no backup at $home/.backup — nothing to restore"
+    if [ ! -e "$home/.backup/config.toml" ] && [ ! -d "$home/.backup/credentials" ]; then
+        die "backup at $home/.backup holds neither config.toml nor credentials/"
+    fi
+
+    had_live=
+    if project_has_home "$home"; then
+        had_live=1
+    fi
+    rm -f "$home/config.toml"
+    rm -rf "$home/credentials"
+    if [ -e "$home/.backup/config.toml" ]; then
+        cp -p "$home/.backup/config.toml" "$home/config.toml"
+        chmod 600 "$home/config.toml"
+    fi
+    if [ -d "$home/.backup/credentials" ]; then
+        mkdir -p "$home/credentials"
+        chmod 700 "$home/credentials"
+        cp -a "$home/.backup/credentials/." "$home/credentials/"
+        find "$home/credentials" -type f -exec chmod 600 {} +
+    fi
+
+    current=$(slot_current "$home" || true)
+    uid=
+    if [ -n "$current" ]; then
+        uid=$(printf '%s' "$current" | cut -f1)
+    fi
+    append_log restore "user_id=$uid" "home=$home"
+    printf 'restored %s from %s\n' "$home" "$home/.backup"
+    if [ -n "$uid" ]; then
+        printf '  account: %s\n' "$(short_uid "$uid")"
+    fi
+    if [ -n "$had_live" ]; then
+        printf '  the previous live auth was overwritten\n'
+    fi
+    printf '  backup kept at %s (restores are repeatable)\n' "$home/.backup"
 }
 
 # ---------------------------------------------------------------------------
@@ -1232,12 +1409,21 @@ Read-only:
                                 extra PATHs may be homes, projects, or parents of projects
 
 Mutating:
-  deploy <selector> [opts]      copy an account's config+credentials into the project home
+  deploy <selector> [opts]      copy an account's config+credentials into the target home
                                 selector: alias, slot name, or account-id prefix
-                                opts: --from SLOT  --force  --project DIR
-  new [--project DIR]           create an empty project home for manual login
-  reset [--project DIR]         move project config+credentials to a timestamped backup
-  adopt <slot>                  record a slot's current account as its expected account
+                                target: --project DIR, else $KIMI_CODE_HOME, else cwd's .kimi-code;
+                                missing or empty targets are created/filled without flags
+                                opts: --from SLOT  --project DIR
+                                      --force              overwrite an occupied home (no backup)
+                                      --force-with-backup  back the home up to .backup/ first
+  backup [--project DIR]        copy the target home's config+credentials into its .backup/
+                                (single entry; overwrites the previous backup). Target home:
+                                --project DIR, else $KIMI_CODE_HOME, else ~/.kimi-code
+  restore [--project DIR]       overwrite the target home's config+credentials with the
+                                contents of its .backup/ (same target resolution as backup)
+  register <slot> <auth.json>   declare the account a slot is expected to hold; the
+                                account id is read from the given credential file,
+                                never inferred from the slot's current contents
   alias <name> <slot> [--force] bind an alias to the account currently in a slot
   unalias <name>                remove an alias
   exclude <slot>                mark a slot private: never read, scanned, or deployed from
@@ -1245,7 +1431,7 @@ Mutating:
 EOF
 }
 
-OPT_PROJECT=.; OPT_FROM=; OPT_FORCE=0
+OPT_PROJECT=; OPT_FROM=; OPT_FORCE=0; OPT_FORCE_BACKUP=0
 cmd=${1:-}
 [ $# -gt 0 ] && shift || { usage; exit 2; }
 
@@ -1255,6 +1441,7 @@ while [ $# -gt 0 ]; do
         --project) OPT_PROJECT=${2:?--project requires a value}; shift 2 ;;
         --from) OPT_FROM=${2:?--from requires a value}; shift 2 ;;
         --force) OPT_FORCE=1; shift ;;
+        --force-with-backup) OPT_FORCE_BACKUP=1; OPT_FORCE=1; shift ;;
         -h | --help) usage; exit 0 ;;
         --) shift; while [ $# -gt 0 ]; do pos+=("$1"); shift; done ;;
         *) pos+=("$1"); shift ;;
@@ -1267,14 +1454,14 @@ case $cmd in
     status) cmd_status ;;
     log) cmd_log "${1:-20}" ;;
     scan) cmd_scan "$@" ;;
-    adopt) [ $# -eq 1 ] || { usage; exit 2; }; cmd_adopt "$1" ;;
+    register) [ $# -eq 2 ] || { usage; exit 2; }; cmd_register "$1" "$2" ;;
     alias) [ $# -ge 2 ] || { usage; exit 2; }; cmd_alias "$1" "$2" ;;
     unalias) [ $# -eq 1 ] || { usage; exit 2; }; cmd_unalias "$1" ;;
     exclude) [ $# -eq 1 ] || { usage; exit 2; }; cmd_exclude "$1" ;;
     include) [ $# -eq 1 ] || { usage; exit 2; }; cmd_include "$1" ;;
     deploy) [ $# -ge 1 ] || { usage; exit 2; }; cmd_deploy "$1" ;;
-    new) cmd_new ;;
-    reset) cmd_reset ;;
+    backup) cmd_backup ;;
+    restore) cmd_restore ;;
     -h | --help | help) usage ;;
     *) usage; exit 2 ;;
 esac
