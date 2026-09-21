@@ -916,7 +916,8 @@ def cmd_deploy(args: argparse.Namespace) -> None:
           f"refresh TTL {fmt_age(source.exp - now)}")
     print(f"  into {home}")
     if not via_env:
-        print(f"next: export KIMI_CODE_HOME={home}")
+        print("  activate it with (copy and run):")
+        print(f"export KIMI_CODE_HOME={home}")
         print("      (or from its project dir: source ~/set-kimi-home-as-pwd.sh)")
 
 
