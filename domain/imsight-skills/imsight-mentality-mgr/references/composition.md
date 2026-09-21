@@ -2,7 +2,7 @@
 
 ## Workflow
 
-1. Resolve relevant families and effective selections through [runtime](runtime-injection.md#effective-selection). Human Speak ordinary application uses already selected flavors; management still requires a flavor choice.
+1. Resolve relevant families and effective selections through [runtime](runtime-injection.md#effective-selection). Human Speak and Rigor Control ordinary application use already selected flavors; management still requires a flavor choice.
 2. Read only selected, applicable definitions, examples, and settings needed for the task through [Definition Retention](runtime-injection.md#definition-retention).
 3. Resolve scope and [family priority](priorities.md#conflict-resolution), then apply guidance during planning, execution, and verification. Ponytail also requires its [edit boundary](../subskills/ponytail/references/state.md#edit-boundary).
 4. Report only material tradeoffs unless recall or explanation was requested.
@@ -22,6 +22,8 @@ Use [priority precedence](priorities.md#conflict-resolution): explicit memory ov
 Edit boundaries resolve independently. Another mentality cannot widen Ponytail's permitted surface. Honor an already explicit task instruction authorizing a necessary boundary-crossing fix, or surface the conflict; do not substitute a caller-specific symptom patch. Destructive scope remains task-related and minimal.
 
 Human Speak guides presentation, not investigation, test scope, evidence, or authorized work. It may compose with Docs Writer for durable human-facing prose; prior flavor use never fills an omitted management choice.
+
+Rigor Control calibrates engineering and verification effort to a declared assurance target. It cannot weaken explicit requirements, safety boundaries, or task authority. A lower-rigor flavor wins no conflict against a concrete acceptance obligation; prior flavor use never fills an omitted management choice.
 
 ## Reporting
 

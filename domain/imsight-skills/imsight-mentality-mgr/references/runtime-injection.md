@@ -36,9 +36,9 @@ Use this contract for deployment and all project selection/configuration actions
 
 ### Flavor-qualified bindings
 
-Human Speak requires an explicit flavor for every management invocation, including recall. Missing choices return its chooser before mutation; existing state never supplies a default. Ordinary work may apply already selected flavors.
+Human Speak and Rigor Control require an explicit flavor for every management invocation, including recall. Missing choices return the selected child's chooser before mutation; existing state never supplies a default. Ordinary work may apply already selected flavors.
 
-Use the child's declared [bindings](../subskills/human-speak/references/state.md#flavor-bindings): state identity, such as `human-speak/han-style`, qualifies rules and memory; storage key, such as `human-speak-han-style`, supplies catalog paths and markers. Each flavor has independent `P`, `M+`, and `M-`. Ordinary children use their registered name for both identities. Unknown bindings remain unresolved; do not derive arbitrary paths or a combined Human Speak catalog.
+Use the selected child's declared bindings: [Human Speak bindings](../subskills/human-speak/references/state.md#flavor-bindings) or [Rigor Control bindings](../subskills/rigor-control/references/state.md#flavor-bindings). A state identity, such as `human-speak/han-style` or `rigor-control/product-showcase`, qualifies rules and memory; its storage key supplies catalog paths and markers. Each flavor has independent `P`, `M+`, and `M-`. Ordinary children use their registered name for both identities. Unknown bindings remain unresolved; do not derive arbitrary paths or a combined child catalog.
 
 ## Effective Selection
 
@@ -153,7 +153,7 @@ Project selection/configuration authorizes required deployment without a separat
 
 1. Validate flavors, selectors, scope, settings, target files, and current state before writes. Resolve material conflicts; pending flavor choices stop preparation.
 2. Reuse complete usable catalogs; handle material definition disagreements through **Definition Retention**.
-3. Publish missing, incomplete, or externally dependent catalogs through **Catalog artifact** and the child's publication contract. Publish complete catalogs even for selected subsets; Human Speak publishes only the named flavor.
+3. Publish missing, incomplete, or externally dependent catalogs through **Catalog artifact** and the child's publication contract. Publish complete catalogs even for selected subsets; flavored children publish only the named flavor.
 4. Return prepared links and prior state to the caller. Do not run the whole deploy action or write a preliminary discovery section.
 
 Preparation writes catalog files only. The calling action computes final selections/settings and writes one coherent section per target.

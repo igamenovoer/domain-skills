@@ -3,7 +3,7 @@
 ## Workflow
 
 1. Resolve project, action, named families/flavors, scope, and selectors. Inspect current state without changing it.
-2. Validate the whole request before effects. Missing Human Speak flavors use its chooser; invalid/ambiguous selectors reject the request, not just the invalid subset.
+2. Validate the whole request before effects. Missing flavors use the selected child's chooser; invalid or ambiguous selectors reject the request, not just the invalid subset.
 3. Read the matching action below and only needed [runtime](runtime-injection.md) sections. For writes, resolve [instruction-file targets](runtime-injection.md#instruction-file-selection).
 4. Execute and report canonical IDs, scope, priorities, settings, changed paths, and any partial effects. Preserve unrelated state.
 
@@ -17,7 +17,7 @@ Inspect deployment first; its presence never determines scope. Omitted enable/di
 flowchart TD
     A["Enable or disable named mentality"] --> B["Inspect deployment and current state"]
     B --> F{"Required flavor omitted?"}
-    F -- "Yes" --> FC["List origins and summaries; ask for choice<br/>No mutation"]
+    F -- "Yes" --> FC["List flavor targets or origins and summaries; ask for choice<br/>No mutation"]
     F -- "No" --> C{"Explicit project scope?"}
     C -- "No" --> D["Resolve memory selectors<br/>Omitted: all current rules"]
     D --> E{"Each definition deployed and usable?"}
@@ -60,6 +60,8 @@ Both project branches automatically publish missing catalogs, then write final g
 | `disable all Brooks rules in CLAUDE.md` | Publish if needed; make Brooks reference-only in that file alone. |
 | `enable human-speak` | List flavors with origins/summaries and ask; no mutation. |
 | `enable human-speak han-style` | All current Han Style rules in agent memory. |
+| `enable rigor-control` | List assurance flavors and summaries and ask; no mutation. |
+| `enable rigor-control product-showcase` | All current Product Showcase rules in agent memory. |
 
 ## Deploy
 
@@ -112,7 +114,7 @@ Input and retention match memory enable.
 
 ## Recall
 
-Input: optional mentality filter and task context; Human Speak always needs an explicit flavor. Without a filter, report ordinary children and show its chooser.
+Input: optional mentality filter and task context; Human Speak and Rigor Control always need an explicit flavor. Without a filter, report ordinary children and show both choosers.
 
 1. Read applicable instruction-file state and this agent's context, preserving provenance and deduplicating matching entries. Validate [priorities](priorities.md) without repair; report unresolved differences or unavailable memory.
 2. Resolve effective selection and [task applicability/conflicts](composition.md). With no substantive task, mark applicability not evaluated.

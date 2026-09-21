@@ -11,7 +11,7 @@ For other requests, use the native planning tool without inventing missing prior
 
 ## Family Identity
 
-Each mentality or explicitly named Human Speak flavor is one family. Brooks production/tests share a priority; selector groups and Ponytail presets are not new families.
+Each ordinary mentality or explicitly named Human Speak or Rigor Control flavor is one family. Brooks production and test rules share a priority; selector groups and Ponytail presets are not new families.
 
 A nonempty project set `P` has one nonnegative family priority; a nonempty memory-enabled set `M+` has another. `M-` needs no priority. Inherited project rules keep project provenance even when the same family has other memory-enabled rules.
 
