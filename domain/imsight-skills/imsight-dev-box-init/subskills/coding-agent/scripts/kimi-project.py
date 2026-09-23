@@ -14,10 +14,13 @@ Account "slots" are the long-lived Kimi data homes: ~/.kimi-code (slot
 launcher). A slot is self-declaring: whatever session it currently holds IS
 its identity — there is no registration and no drift. Re-logging a slot into
 another session simply makes that the slot's new truth; copies deployed
-elsewhere are unaffected and owned by their projects. This tool copies a
+elsewhere are unaffected and owned by their projects. This tool deploys a
 session's auth state (config.toml + credentials/) into a project's
 .kimi-code/ home and logs every deployment so later audits know where
-credentials live.
+credentials live. Deploy merges config.toml key-wise — source keys win
+conflicts, target-only keys survive — so project-scoped settings are
+preserved; credentials/ is replaced wholesale. backup/restore and the
+slot-to-slot sync paths (rescue, collect) stay whole-file.
 
 Runtime state: ~/kimi-homes/manifest.json (session aliases and per-slot
 exclusion flags), ~/kimi-homes/deployments.jsonl (append-only deployment
@@ -27,7 +30,9 @@ material is ever written to state files or printed. A slot whose flags are
 "excluded" is private: its credentials are never read, scanned, or deployed
 by any subcommand.
 
-Dependencies: Python 3.9+ standard library only.
+Dependencies: Python 3.9+ standard library only; the settings-preserving
+config merge needs tomllib (Python 3.11+) — older interpreters fall back to
+wholesale config.toml overwrite with a warning.
 """
 
 from __future__ import annotations
@@ -44,6 +49,11 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Optional
+
+try:
+    import tomllib  # Python 3.11+
+except ImportError:
+    tomllib = None  # type: ignore[assignment]
 
 DEFAULT_HOME = Path.home() / ".kimi-code"
 HOMES_ROOT = Path.home() / "kimi-homes"
@@ -441,8 +451,141 @@ def session_seats(man: Manifest, uid: str, dev: str) -> list[tuple[str, Path]]:
 # Auth file operations
 
 
+_BARE_TOML_KEY = re.compile(r"[A-Za-z0-9_-]+")
+
+
+def _toml_key(key: str) -> str:
+    if _BARE_TOML_KEY.fullmatch(key):
+        return key
+    return '"' + key.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def _toml_value(value: object) -> str:
+    """Serialize one TOML scalar or array (dicts become inline tables)."""
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        return repr(value)
+    if isinstance(value, str):
+        s = (value.replace("\\", "\\\\").replace('"', '\\"')
+             .replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t"))
+        return f'"{s}"'
+    if isinstance(value, dict):
+        inner = ", ".join(f"{_toml_key(k)} = {_toml_value(v)}" for k, v in value.items())
+        return "{ " + inner + " }"
+    if isinstance(value, list):
+        return "[" + ", ".join(_toml_value(v) for v in value) + "]"
+    if hasattr(value, "isoformat"):  # datetime values produced by tomllib
+        return value.isoformat()  # type: ignore[union-attr, no-any-return]
+    die(f"cannot serialize TOML value of type {type(value).__name__}")
+
+
+def _dump_toml_table(table: dict, path: tuple[str, ...], out: list[str],
+                     array_element: bool = False) -> None:
+    """Emit one table body: scalar keys, then sub-tables, then arrays of tables."""
+    scalars: dict = {}
+    subs: dict = {}
+    arr_tables: dict = {}
+    for k, v in table.items():
+        if isinstance(v, dict):
+            subs[k] = v
+        elif isinstance(v, list) and v and all(isinstance(x, dict) for x in v):
+            arr_tables[k] = v
+        else:
+            scalars[k] = v
+    if path:
+        opener, closer = ("[[", "]]") if array_element else ("[", "]")
+        out.append(opener + ".".join(_toml_key(k) for k in path) + closer)
+    out.extend(f"{_toml_key(k)} = {_toml_value(v)}" for k, v in scalars.items())
+    if path or scalars:
+        out.append("")
+    for k, v in subs.items():
+        _dump_toml_table(v, path + (k,), out)
+    for k, items in arr_tables.items():
+        for item in items:
+            _dump_toml_table(item, path + (k,), out, array_element=True)
+
+
+def dump_toml(data: dict) -> str:
+    lines: list[str] = []
+    _dump_toml_table(data, (), lines)
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(lines).strip("\n")) + "\n"
+
+
+def deep_merge(base: dict, overlay: dict) -> dict:
+    """Key-wise merge: overlay wins conflicts; tables merge recursively."""
+    merged = dict(base)
+    for k, v in overlay.items():
+        if k in merged and isinstance(merged[k], dict) and isinstance(v, dict):
+            merged[k] = deep_merge(merged[k], v)
+        else:
+            merged[k] = v
+    return merged
+
+
+def merged_config_text(src_cfg: Path, dst_cfg: Path) -> Optional[str]:
+    """Merged config.toml text (src wins key conflicts); None without tomllib."""
+    if tomllib is None:
+        return None
+    try:
+        base = tomllib.loads(dst_cfg.read_text())
+        overlay = tomllib.loads(src_cfg.read_text())
+    except ValueError as e:
+        die(f"cannot merge config.toml: {e}\nFix the file or remove it and redeploy.")
+    return dump_toml(deep_merge(base, overlay))
+
+
+def deploy_auth(src: Path, dst: Path) -> str:
+    """Copy a session's auth into a deploy target.
+
+    credentials/ is copied wholesale (the caller clears stale files first);
+    config.toml is merged key-wise when the target already has one — source
+    keys win conflicts, target-only keys survive — so project-scoped settings
+    are preserved. Returns how config.toml was handled: "merged", "copied",
+    "kept", "overwritten", or "absent".
+    """
+    dst.mkdir(parents=True, exist_ok=True)
+    src_cfg, dst_cfg = src / "config.toml", dst / "config.toml"
+    status = "absent"
+    if src_cfg.exists():
+        if dst_cfg.exists():
+            merged = merged_config_text(src_cfg, dst_cfg)
+            if merged is None:
+                print("warning: no tomllib (Python <3.11); overwriting config.toml "
+                      "wholesale — target-only settings will be lost", file=sys.stderr)
+                shutil.copy2(src_cfg, dst_cfg)
+                os.chmod(dst_cfg, 0o600)
+                status = "overwritten"
+            else:
+                dst_cfg.write_text(merged)
+                os.chmod(dst_cfg, 0o600)
+                status = "merged"
+        else:
+            shutil.copy2(src_cfg, dst_cfg)
+            os.chmod(dst_cfg, 0o600)
+            status = "copied"
+    elif dst_cfg.exists():
+        status = "kept"
+    creds = src / "credentials"
+    if creds.is_dir():
+        dst_creds = dst / "credentials"
+        dst_creds.mkdir(exist_ok=True)
+        os.chmod(dst_creds, 0o700)
+        for f in creds.iterdir():
+            if f.is_file():
+                shutil.copy2(f, dst_creds / f.name)
+                os.chmod(dst_creds / f.name, 0o600)
+    return status
+
+
 def copy_auth(src: Path, dst: Path) -> None:
-    """Copy config.toml + credentials/ between homes with private permissions."""
+    """Copy config.toml + credentials/ between homes with private permissions.
+
+    Whole-file replacement; deploy targets use deploy_auth instead, which
+    merges config.toml key-wise.
+    """
     dst.mkdir(parents=True, exist_ok=True)
     cfg = src / "config.toml"
     if cfg.exists():
@@ -901,9 +1044,11 @@ def cmd_deploy(args: argparse.Namespace) -> None:
                        device_id=old.device_id if old else "", home=home)
             print(f"previous auth backed up to {home}/.backup"
                   + (" (replaced)" if replaced else ""))
-        clear_auth(home)
+        # Keep the target's config.toml for the key-wise merge below; only
+        # stale credentials are cleared.
+        shutil.rmtree(home / "credentials", ignore_errors=True)
 
-    copy_auth(source_home, home)
+    config_status = deploy_auth(source_home, home)
     append_log("deploy", selector=args.selector, user_id=source.user_id,
                device_id=source.device_id, source_home=source_home, home=home,
                cred_iat=source.iat)
@@ -915,6 +1060,10 @@ def cmd_deploy(args: argparse.Namespace) -> None:
     print(f"  credential refreshed {fmt_age(now - source.iat)} ago; "
           f"refresh TTL {fmt_age(source.exp - now)}")
     print(f"  into {home}")
+    if config_status == "merged":
+        print("  config.toml merged key-wise: project-only settings preserved")
+    elif config_status == "kept":
+        print("  config.toml kept as-is (source session has none)")
     if not via_env:
         print("  activate it with (copy and run):")
         print(f"export KIMI_CODE_HOME={home}")
@@ -1128,7 +1277,8 @@ is no registration and no drift.
 deploy selector: alias, slot name, or id prefix (user_id or device_id — a
 prefix matching several sessions is refused). Target resolution: --project
 DIR, else $KIMI_CODE_HOME, else cwd's .kimi-code (backup/restore fall back to
-~/.kimi-code instead).
+~/.kimi-code instead). Deploy merges config.toml key-wise (source wins
+conflicts, target-only keys survive); credentials/ is replaced wholesale.
 """
     p = argparse.ArgumentParser(
         prog="kimi-project.py",
@@ -1161,12 +1311,14 @@ DIR, else $KIMI_CODE_HOME, else cwd's .kimi-code (backup/restore fall back to
     sp = add("include", "lift the exclusion")
     sp.add_argument("slot")
 
-    sp = add("deploy", "copy a session's config+credentials into the target home")
+    sp = add("deploy", "deploy a session into the target home "
+                       "(config.toml merged key-wise, credentials replaced)")
     sp.add_argument("selector")
     sp.add_argument("--from", dest="from_slot", metavar="SLOT")
     sp.add_argument("--project")
     sp.add_argument("--force", action="store_true",
-                    help="overwrite an occupied home (no backup)")
+                    help="overwrite an occupied home: credentials replaced, "
+                         "config.toml merged (no backup)")
     sp.add_argument("--force-with-backup", action="store_true",
                     help="back the home up to .backup/ first")
     sp = add("undeploy", "return a project's auth and remove it from the project")
