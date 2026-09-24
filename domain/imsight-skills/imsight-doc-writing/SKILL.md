@@ -85,6 +85,7 @@ When the user names a file, edit that file in place. When the user asks for a ne
 
 - The result must be useful as documentation, not just a transcript of reasoning.
 - Any Mermaid diagram must render as a fenced `mermaid` block and fit the target document without horizontal scrolling.
+- Between-actor Mermaid sequence messages default to `[Technical operation]<br/>"Conversational message"`. Use ordinary technical-only messages only when the user explicitly requests them; follow the [sequence-diagram rules](commands/mermaid-graphing.md#sequence-diagrams) for both new diagrams and revisions.
 - Any durable document should have enough context for a future reader who did not watch the conversation.
 - State assumptions and unresolved questions only when they affect the document's correctness or next action.
 

@@ -8,7 +8,7 @@ When this subskill is invoked, execute the following steps in order.
 
 1. **Choose the diagram type**. Use the **Diagram Selection** table to map the user's documentation goal to a Mermaid diagram family.
 2. **Draft the smallest useful diagram**. Include the main actors, states, entities, or steps needed for the reader's decision; split the diagram if one view becomes crowded.
-3. **Apply the portable style rules**. See **Markdown Embedding**, **Layout Rules**, and the diagram-specific section for the selected type.
+3. **Apply the portable style rules**. See **Markdown Embedding**, **Layout Rules**, and the diagram-specific section for the selected type. For sequence diagrams, use the technical-plus-chat default unless the user explicitly requests technical-only messages.
 4. **Check renderer risks**. Use **Troubleshooting Rules** before shipping, especially when labels include HTML breaks, punctuation, or quoted strings.
 5. **Place the diagram in context**. Add or edit only the surrounding prose needed to make the diagram's purpose clear.
 6. **Validate when feasible**. Preview in the target Markdown renderer or Mermaid Live Editor when syntax, theme support, or layout is uncertain.
@@ -96,25 +96,51 @@ flowchart TD
 
 Declare participants at the top with short IDs and readable labels. Wrap the label, not the ID.
 
+### Default: technical operation plus chat
+
+For every message between distinct actors, including calls, replies, and asynchronous notifications, put the technical operation in literal square brackets, followed by a rendered newline and a double-quoted conversational message. Use `<br/>` for the newline and keep the Mermaid message on one source line:
+
+```text
+A->>B: [Technical operation]<br/>"Plain-language message from A to B."
+```
+
+Write the quoted line as something the sender would say to the receiver, not as a third-person description. Explain the request, handoff, or result in everyday language while preserving the technical meaning in the first line. Name the relevant data or action instead of relying on unclear pronouns such as "these". The quote is an explanatory paraphrase, not a literal wire payload or log entry.
+
+Preserve direction, ordering, identifiers, arguments, and conditions. In particular, a request to queue work must not become a claim that the work has completed, and an acknowledgment must not invent a guarantee absent from the source. Self-messages may use the same format as self-talk, but the two-part requirement applies to messages between actors; participant names, notes, and control-block titles do not need dialogue.
+
 ```mermaid
 sequenceDiagram
     participant U as User
     participant D as Doc-writing<br/>skill
     participant M as Mermaid<br/>subskill
-    U->>D: request diagram
-    D->>M: choose type<br/>and style rules
-    M-->>D: fenced mermaid block
-    D-->>U: updated docs
+    U->>D: [Diagram insertion request]<br/>"Add a diagram to this document."
+    D->>M: [Diagram construction]<br/>"Show who calls whom."
+    M-->>D: [Mermaid source]<br/>"Here is the sequence diagram."
+    D-->>U: [Document update]<br/>"The diagram is in your document."
 ```
 
-Keep arrow text concise, ideally under about 40 characters per visual line. When showing a call, command, or method, keep the identifier intact and wrap arguments or context:
+Keep arrow text concise, ideally under about 40 characters per visual line. Wrap either part with additional `<br/>` breaks when needed, while keeping identifiers intact. Shorten paraphrases or split crowded diagrams instead of dropping the conversational line. A call can retain its exact identifier and arguments:
 
 ```mermaid
 sequenceDiagram
     participant A as Agent
     participant T as Tool
-    A->>T: render_diagram<br/>(type, labels,<br/>target_doc)
-    T-->>A: preview result
+    A->>T: [render_diagram(type, labels)]<br/>"Render this sequence for me."
+    T-->>A: [Preview result]<br/>"The preview is ready."
+```
+
+### Explicit opt-out: technical-only messages
+
+Use ordinary technical-only sequence messages only when the user explicitly requests that style, for example "no chat style in seq diagram", "use normal seq diagram", or "use only technical representation in seq diagram". Equivalent requests count; exact wording is not required. Apply the opt-out to the diagrams or task the user specifies, keeping the technical content and omitting the explanatory quotes and style-only brackets.
+
+A request for a "sequence diagram" or "UML diagram", a technical audience, brevity, or an existing diagram with bare technical labels is not by itself an opt-out. Do not switch styles on those grounds. With an explicit technical-only request, the preceding tool exchange becomes:
+
+```mermaid
+sequenceDiagram
+    participant A as Agent
+    participant T as Tool
+    A->>T: render_diagram(type, labels)
+    T-->>A: Preview result
 ```
 
 Use `alt`, `else`, `opt`, `loop`, and `par` for control flow, but keep block titles short. If a sequence needs more than two nested control blocks, split it into a high-level diagram and a focused detail diagram.
@@ -202,5 +228,6 @@ gantt
 - The diagram has one clear purpose and is split if it tries to explain multiple concerns.
 - Long labels use `<br/>`, not raw newline escapes.
 - Identifiers remain intact across visual line breaks.
+- Between-actor sequence messages include a bracketed technical operation and quoted chat line, unless the user explicitly requested technical-only messages.
 - Flowchart labels with special characters are quoted.
 - The diagram should fit without horizontal scrolling in the target Markdown page.

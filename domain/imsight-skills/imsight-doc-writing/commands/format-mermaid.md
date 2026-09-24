@@ -9,7 +9,7 @@ When this subskill is invoked, execute the following steps in order.
 1. **Identify the target documents**. Use the file or directory the user named. If the user names a directory, collect all `*.md` files recursively. If no target is named, ask once unless the current project docs area is obvious.
 2. **Read each document and locate every Mermaid fence**. Find every fenced block with the `mermaid` info string. Note the surrounding context so replacements keep the document structure intact.
 3. **Classify each diagram**. Determine the diagram family from the first non-comment, non-blank line (`flowchart`, `sequenceDiagram`, `stateDiagram-v2`, `classDiagram`, `erDiagram`, `timeline`, `gantt`, or another Mermaid type).
-4. **Reformat each diagram** using the rules in **Formatting Rules**. Keep the diagram's meaning, labels, participants, states, entities, and relationships unchanged unless a rendering problem forces a minimal, equivalent rewrite.
+4. **Reformat each diagram** using the rules in **Formatting Rules**. Preserve meaning, technical label content, participants, states, entities, and relationships. For sequence messages, add the default conversational paraphrase or honor an explicit technical-only request as described in **Sequence Diagrams**; do not invent behavior while changing presentation.
 5. **Replace the original fences in place**. Do not reformat unrelated Markdown, code blocks, or prose. Preserve heading hierarchy, lists, tables, and line breaks outside the Mermaid fences.
 6. **Validate when feasible**. Open reformatted diagrams in the target Markdown renderer or Mermaid Live Editor when syntax, theme support, or layout is uncertain.
 7. **Return a concise handoff**. List the files touched, the number of diagrams reformatted, and any diagrams that needed a semantics-preserving rewrite to render correctly.
@@ -74,28 +74,21 @@ Use subgraphs for meaningful boundaries, not decoration. Keep subgraph titles sh
 
 ### Sequence Diagrams
 
-Declare participants at the top with short IDs and readable labels. Wrap the label, not the ID.
+Read and apply the [sequence-diagram rules](mermaid-graphing.md#sequence-diagrams), which own the technical-plus-chat default and explicit opt-out policy. Reformat each between-actor message, including calls, replies, and notifications, as `[Technical operation]<br/>"Conversational message"`. Preserve the existing technical operation and paraphrase it in the sender's voice without adding facts, changing conditions, or turning queued work into completed work.
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant D as Doc-writing<br/>skill
-    participant M as Mermaid<br/>subskill
-    U->>D: request diagram
-    D->>M: choose type<br/>and style rules
-    M-->>D: fenced mermaid block
-    D-->>U: updated docs
-```
+An existing bare technical label is not an opt-out. Return to ordinary technical-only labels only when the user explicitly asks, such as "no chat style in seq diagram", "use normal seq diagram", or "use only technical representation in seq diagram". In that case, remove explanatory chat and style-only brackets while retaining technical content. Self-messages may use self-talk; notes and control-block titles need not be conversational.
 
-Keep arrow text concise, ideally under about 40 characters per visual line. When showing a call, command, or method, keep the identifier intact and wrap arguments or context:
+Declare participants at the top with short IDs and readable labels. Wrap the label, not the ID. For example, without an explicit opt-out, a tool call and its reply become:
 
 ```mermaid
 sequenceDiagram
     participant A as Agent
     participant T as Tool
-    A->>T: render_diagram<br/>(type, labels,<br/>target_doc)
-    T-->>A: preview result
+    A->>T: [render_diagram(type, labels)]<br/>"Render this sequence for me."
+    T-->>A: [Preview result]<br/>"The preview is ready."
 ```
+
+Keep arrow text concise, ideally under about 40 characters per visual line. Wrap with `<br/>` without breaking identifiers. Shorten the paraphrase or split a crowded diagram instead of silently reverting to technical-only labels.
 
 Use `alt`, `else`, `opt`, `loop`, and `par` for control flow, but keep block titles short. If a sequence needs more than two nested control blocks, split it into a high-level diagram and a focused detail diagram.
 
@@ -190,6 +183,7 @@ gantt
 - Each diagram has one clear purpose and is split if it tries to explain multiple concerns.
 - Long labels use `<br/>`, not raw newline escapes.
 - Identifiers remain intact across visual line breaks.
+- Between-actor sequence messages follow the technical-plus-chat default or an explicit user request for technical-only messages.
 - Flowchart labels with special characters are quoted.
 - Each diagram should fit without horizontal scrolling in the target Markdown page.
 - Non-diagram content in each document is unchanged.
