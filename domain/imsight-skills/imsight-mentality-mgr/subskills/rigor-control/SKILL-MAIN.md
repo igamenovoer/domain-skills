@@ -38,6 +38,7 @@ Use this inventory for the chooser without reading every catalog.
 | Flavor / command | Assurance target | Main guidance | Detail |
 | --- | --- | --- | --- |
 | `product-showcase` | A short hands-on event demonstration for ordinary users. | Protect the core experience, support presented numbers with claim-relevant evidence, and defer industrial rigor. | [Command](commands/product-showcase.md) |
+| `daily-developer` | Everyday development and internal experiments where usefulness outranks publishability. | Stamp evidence with code version, refresh only materially affected evidence, keep iteration cheap, and defer publication-grade protocol. | [Command](commands/daily-developer.md) |
 
 ## Flavor Selection
 

@@ -14,6 +14,7 @@ For other requests, use the native planning tool; a pending choice authorizes no
 | Flavor | State identity | Storage key | Canonical catalog | Command |
 | --- | --- | --- | --- | --- |
 | `product-showcase` | `rigor-control/product-showcase` | `rigor-control-product-showcase` | [`rc1`–`rc5`](product-showcase-principles.md#principle-index) | [Detail](../commands/product-showcase.md) |
+| `daily-developer` | `rigor-control/daily-developer` | `rigor-control-daily-developer` | [`rc1`–`rc5`](daily-developer-principles.md#principle-index) | [Detail](../commands/daily-developer.md) |
 
 Use only declared bindings. Catalog path: `.imsight-arts/mentality/<storage-key>-principles.md`; catalog marker key: `imsight-skill:imsight-mentality-mgr/<storage-key>-principles`. Memory uses the state identity. Each flavor has its own entry in the [unified section](../../../references/runtime-injection.md#unified-mentality-section), labeled with Rigor Control and the flavor.
 
