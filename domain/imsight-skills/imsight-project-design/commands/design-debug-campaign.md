@@ -1,6 +1,6 @@
 # Design Debug Campaign
 
-Use this subcommand to create a systematic debug investigation campaign directory structure with intent, key questions, iterations, evidences, and reports.
+Use this subcommand to create a systematic debug investigation campaign directory structure with intent, key questions, iterations, evidences, discussions, and reports.
 
 ## Workflow
 
@@ -8,7 +8,7 @@ When this subcommand is invoked, execute these steps in order.
 
 1. **Resolve the campaign output directory** using the **Campaign Output Directory** rules below.
 2. **Capture the debug intent** from the request and available context: the problem being investigated, the divergence or bug being localized, the comparison arms (e.g., source vs maintained, A100 vs B200), success criteria, scope boundaries, and what product changes are explicitly not authorized.
-3. **Create the campaign folder structure** with subdirectories for `key-questions/`, `iterations/`, `evidences/`, and `reports/`.
+3. **Create the campaign folder structure** with subdirectories for `key-questions/`, `iterations/`, `evidences/`, `discussions/`, and `reports/`.
 4. **Write the campaign README** at `<campaign-dir>/README.md` following **Campaign README Format**.
 5. **Write the root intent document** at `<campaign-dir>/debug-intent.md` following **Debug Intent Format**.
 6. **Report the scaffold**. List created directories and files, summarize the captured intent, and suggest starting with the first key question or iteration plan.
@@ -42,6 +42,7 @@ See [debug-intent.md](debug-intent.md) for the complete campaign description.
 - **key-questions/** — Testable questions with propositions, answers, and scope declarations (KQ-N-<slug>.md)
 - **iterations/** — Execution plans with frozen workload, predeclared arms, gates, and checklists (YYYY-MM-DD-plan-N-<slug>.md)
 - **evidences/** — Raw measurement data from experiments with tables, commands, and hardware identity (YYYY-MM-DD-<observation>.md)
+- **discussions/** — Analysis and proposal documents with reasoning and design options (YYYY-MM-DD-<topic>.md)
 - **reports/** — Theory synthesis and evaluation across multiple evidences (YYYY-MM-DD-<topic>.md)
 ```
 
@@ -75,6 +76,7 @@ Create these subdirectories:
 - **`key-questions/`**: One `KQ-N-<slug>.md` file per key question with testable propositions, answer sections, and scope declarations
 - **`iterations/`**: One `YYYY-MM-DD-plan-N-<slug>.md` file per investigation cycle with frozen workload, predeclared arms, gates, measurements, and execution checklists
 - **`evidences/`**: One `YYYY-MM-DD-<specific-observation>.md` file per experiment with raw data, tables, hashes, commands, and hardware identity
+- **`discussions/`**: One `YYYY-MM-DD-<topic>.md` file per analysis or proposal with reasoning, design options, and links to the evidence it draws on
 - **`reports/`**: One `YYYY-MM-DD-<theory-or-synthesis>.md` file per synthesis document evaluating theories across multiple evidences
 
 Do not create a `goal/` subdirectory; success criteria belong in the root intent document.
@@ -90,6 +92,8 @@ Do not create a `goal/` subdirectory; success criteria belong in the root intent
 **`iterations/YYYY-MM-DD-plan-N-<slug>.md`**: Execution plan for one investigation cycle with status line, question/answer sought, frozen workload (exact hashes/settings/hardware), predeclared arms (experimental conditions in tables), gates (pass/fail criteria before execution), measurements and decision rules, execution checklist (checkboxes), and result section added after completion. Everything declared before execution; corrections noted but original preserved.
 
 **`evidences/YYYY-MM-DD-<specific-observation>.md`**: Raw observational data from one experiment with tables of measurements, hashes, tensor comparisons, exact commands, hardware identity, environment classification (stable/degraded/unstable). Factual only, minimal interpretation, reproducible. Multiple iterations/KQs can reference the same evidence.
+
+**`discussions/YYYY-MM-DD-<topic>.md`**: Analysis or proposal on a single topic: root-cause reasoning, design options, trade-offs, and a proposed resolution. More interpretive than evidence, narrower than a report; cites the key questions and evidence it draws on. Conclusions feed iteration plans, KQ answers, and reports.
 
 **`reports/YYYY-MM-DD-<theory-or-synthesis>.md`**: Synthesis across multiple evidences; theory evaluation with what survived/failed testing, mechanisms, implications, and updated interpretations. Living documents with dated corrections/qualifications. Claims backed by evidence links; explicit about what remains unresolved.
 
@@ -127,6 +131,7 @@ Follow these patterns observed in systematic debug campaigns:
 - Use relative links between documents
 - Bidirectional: iterations link to KQs, KQs link back to owning iteration
 - Evidence flows up: evidences ← iterations ← KQs ← reports ← intent
+- Discussions draw on KQs and evidence; their conclusions feed iterations, reports, and intent
 
 ### Tables over prose
 - Comparison tables for arms, measurements, boundaries
@@ -142,9 +147,10 @@ Templates at `assets/templates/campaign/` are **suggestive, not enforced**:
 - `key-questions/key-question.md`: Question template with propositions, answer, scope
 - `iterations/iteration-plan.md`: Iteration template with workload, arms, gates, checklist
 - `evidences/evidence.md`: Evidence template with measurements, commands, hardware
+- `discussions/discussion.md`: Discussion template with problem statement, analysis, proposal, scope
 - `reports/report.md`: Report template with synthesis, theory evaluation
 
-**Template flexibility**: These templates indicate what information is preferred in each document type, not mandatory structure. Agents may adjust sections, add domain-specific content, or reorganize based on the assigned task. Planning-stage artifacts (intent, key questions, iterations) benefit from more structure; produced artifacts (evidences, reports) vary naturally by experiment type and findings.
+**Template flexibility**: These templates indicate what information is preferred in each document type, not mandatory structure. Agents may adjust sections, add domain-specific content, or reorganize based on the assigned task. Planning-stage artifacts (intent, key questions, iterations) benefit from more structure; produced artifacts (evidences, discussions, reports) vary naturally by experiment type and findings.
 
 Use these templates when creating campaign artifacts through follow-up subcommands or helper workflows.
 

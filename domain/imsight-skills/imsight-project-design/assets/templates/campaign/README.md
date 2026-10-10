@@ -10,4 +10,5 @@ See [debug-intent.md](debug-intent.md) for the complete campaign description.
 - **key-questions/** — Testable questions with propositions, answers, and scope declarations (KQ-N-<slug>.md)
 - **iterations/** — Execution plans with frozen workload, predeclared arms, gates, and checklists (YYYY-MM-DD-plan-N-<slug>.md)
 - **evidences/** — Raw measurement data from experiments with tables, commands, and hardware identity (YYYY-MM-DD-<observation>.md)
+- **discussions/** — Analysis and proposal documents with reasoning and design options (YYYY-MM-DD-<topic>.md)
 - **reports/** — Theory synthesis and evaluation across multiple evidences (YYYY-MM-DD-<topic>.md)

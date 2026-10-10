@@ -58,7 +58,7 @@ If the task does not map cleanly to the currently supported feature-planning wor
 | `design-gates` | Create or update optional verification gates under `<feature-dir>/gates/` | `commands/design-gates.md` |
 | `plan-feature` | Create or update `<feature-dir>/feature-milestones.md` as a high-level milestone plan | `commands/plan-feature.md` |
 | `design-agent-task` | Create or update `<feature-dir>/agent-task.md` as an implementation handoff | `commands/design-agent-task.md` |
-| `design-debug-campaign` | Create a systematic debug investigation campaign directory with intent, key questions, iterations, evidences, and reports | `commands/design-debug-campaign.md` |
+| `design-debug-campaign` | Create a systematic debug investigation campaign directory with intent, key questions, iterations, evidences, discussions, and reports | `commands/design-debug-campaign.md` |
 | `design-profiling-campaign` | Create a performance profiling campaign directory with checkbox-driven plan and logs directory | `commands/design-profiling-campaign.md` |
 
 ### Helper Subcommands
