@@ -35,7 +35,7 @@ Accept the parent's shared actions with normal scope and selector defaults. Exam
 
 Resolve effective `rc1`–`rc5` and retain only needed [definitions, comparisons, and judgment](../references/daily-developer-principles.md) through [Definition Retention](../../../references/runtime-injection.md#definition-retention). Apply them while planning, implementing, debugging, measuring, and verifying everyday work.
 
-Treat the developer's own next decision and repeated daily use as the target level of rigor. Keep results usable and stamped with code version at run time; judge from code logic whether a change can materially affect each claim and refresh only the affected evidence; treat failed attempts as cheap recorded iterations rather than consumed assets. Stop when additional work primarily serves external review, publication, or audit. Explicit task requirements remain authoritative.
+Treat the developer's own next decision and repeated daily use as the target level of rigor. Keep results usable and stamped with code version at run time; judge from code logic whether a change can materially affect each claim and refresh only the affected evidence — a subset of the runs, not the whole series or campaign; treat failed attempts as cheap recorded iterations rather than consumed assets. Stop when additional work primarily serves external review, publication, or audit. Explicit task requirements remain authoritative.
 
 ## Catalog Publication
 

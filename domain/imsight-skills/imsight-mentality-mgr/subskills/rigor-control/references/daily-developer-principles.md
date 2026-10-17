@@ -65,7 +65,15 @@ Calibrate evidence refresh to changes that can materially affect each claim, jud
 >
 > **Do:** Keep requests as data independent of code version, stamp each run's results with the code version, and judge from the code change itself what it can affect. A print-only change does not affect latency, so prior numbers stand; a batching-logic change does, so the latency runs are repeated.
 
-**Judgment:** A version stamp identifies what was measured; it is not an automatic invalidation policy. Performance numbers usually depend on the executed code path, workload, configuration, and hardware. Comments, log lines, and unrelated files affect none of these, and reading the diff is sufficient to tell the difference for daily work.
+> **Second example (campaign scope).** A benchmark campaign compares many configurations of a service. Every run begins with the same expensive setup: provision a clean replica environment, load a large dataset, and warm all caches. A single shared helper changes, and the team must decide what to re-run.
+>
+> **Don't (underdone):** After the helper changes, keep quoting the whole configuration table as if nothing had moved under it.
+>
+> **Don't (overdone):** Because one shared source file changed, invalidate every recorded result and repeat the entire campaign, paying the full setup cost once per configuration again — including configurations whose claims the change cannot reach.
+>
+> **Do:** Read the diff and bound its blast radius over the recorded results. A helper edit that cannot alter the executed path leaves the recorded timings and correctness results standing; an edit that changes the request actually sent, the scheduling, or the measured configuration does not. Re-run the affected subset of runs, not the campaign, and record which runs were repeated and why.
+
+**Judgment:** A version stamp identifies what was measured; it is not an automatic invalidation policy. Performance numbers usually depend on the executed code path, workload, configuration, and hardware. Comments, log lines, and unrelated files affect none of these, and reading the diff is sufficient to tell the difference for daily work. The same reading applies across a whole campaign, not just between two versions of one run: a change's reach over a set of recorded results is usually a subset, and re-running that subset is the default. Re-running everything is justified only when the change genuinely spans every recorded claim; when in doubt, name the runs a change can reach before repeating them, so an expensive setup is paid for a reason rather than by reflex.
 
 ### rc3 — cheap-iteration-failure
 

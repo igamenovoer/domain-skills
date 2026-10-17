@@ -16,6 +16,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 - **Question:** the uncertainty that affects the next technical decision.
 - **Resolution:** the accuracy needed to make that decision, such as direction, approximate magnitude, or discrimination between explanations.
 - **Useful conclusion:** an answer supported within a stated scope, including an honest statement that the measurements cannot distinguish the alternatives.
+- **Campaign:** the set of runs needed to establish one or several claims, including whatever expensive preparation each run repeats.
 
 ## Principle Index
 
@@ -27,6 +28,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | `e4` | `execution-before-infrastructure` | Prefer an existing working execution path; add machinery only when it enables the next run or solves a demonstrated problem. |
 | `e5` | `bounded-preparation` | Establish a lightweight first-evidence checkpoint; reconsider expanding prerequisites when preparation produces no evidence. |
 | `e6` | `bounded-claims` | Report the useful finding, evidence, and limits; investigate objections that could overturn it and record other limitations without expanding the experiment. |
+| `e7` | `cost-aware-campaign-design` | Price the whole series before committing; share expensive preparation and take every claim a run can yield. |
 
 ## Experiment Principles
 
@@ -86,7 +88,15 @@ Use the existing working operator and raw evidence format when they serve the ne
 
 **Do:** Retain the verified operator, add only the missing measured-trial output, and run it. Check actual installed runtime owners with a cheap interface probe before expensive model initialization.
 
-**Judgment:** Safety, isolation, correct timers, and cleanup can justify infrastructure immediately. One caller alone does not make a helper unnecessary. Use focused validation during edits and required broader checks at a coherent executable checkpoint; no part of this rule cancels a material regression check.
+**Second comparison (instrument cost).** An existing observer, profiler, or tracing layer is already wired into the run and costs no engineering effort to switch on.
+
+**Don't:** Treat it as free because enabling it was easy, and later attribute the system's measured cost to the system. A tracing layer that multiplies end-to-end time by several factors, or that stalls start-up for minutes while every worker waits on the tracer, distorts exactly the quantity being measured.
+
+**Don't:** Discard the instrument wholesale because a *different* instrument was shown to be expensive, without measuring this one.
+
+**Do:** Measure the instrument's effect once, on the same workload with it on and off, and report that overhead beside any claim it could touch. Keep it if the perturbation is negligible or applies equally to both arms of a ratio; drop it, or confine it to runs whose claims it cannot distort, if it is not.
+
+**Judgment:** Safety, isolation, correct timers, and cleanup can justify infrastructure immediately. One caller alone does not make a helper unnecessary. Use focused validation during edits and required broader checks at a coherent executable checkpoint; no part of this rule cancels a material regression check. An instrument is infrastructure too, and its cost is measured, not assumed — neither assumed negligible nor assumed disqualifying.
 
 ### e5 — bounded-preparation
 
@@ -112,6 +122,20 @@ Lead with what the evidence supports and the decision it informs. Name the impor
 
 **Judgment:** A limitation can narrow a claim but cannot repair invalid evidence. A causal claim may need an intervention; a profile can still justify where to investigate next. Record other objections as limits or future questions without making all of them prerequisites. Preparation, tests passed, and capacity qualifications remain separate from measured findings.
 
+### e7 — cost-aware-campaign-design
+
+Price the whole series before committing to it, in whatever is scarce: wall-clock time, money, exclusive hardware, or human attention. Then design each run to yield every claim it can, and repeat only the preparation that a claim actually needs.
+
+**Representative Do / Don't comparison.** A team must qualify a system on four properties — correctness, latency, peak memory, and recovery after a fault — and every run begins with the same expensive setup: provision a clean replica environment, load a large dataset, and warm all caches. Setup dominates the run; the checks themselves are quick.
+
+**Don't:** Give every variation its own fresh environment and re-establish all four properties inside each one, so the same costly setup is paid once per variation rather than once per group of claims. Repeating the full series again after each small source edit belongs to the same mistake.
+
+**Don't:** Collapse everything into a single environment to save setup time, including variations that must not observe each other's state, so a result from one variation is contaminated by another and no longer attributable.
+
+**Do:** Estimate the campaign first — number of runs times cost per run, plus the per-check time — and compare it with what is affordable. Reserve one environment per group of variations that may share state safely, and inside that environment run the checks that answer several claims (correctness and latency and the memory ceiling from one warmed run) before tearing it down. Run the fault-injection variation last, or in its own environment, because it perturbs the others. Keep a separate environment only where interference would make a result unattributable, and state that assumption next to the result.
+
+**Judgment:** The saving comes from not repeating identical preparation and not re-running an unaffected claim — never from dropping a required check or merging variations whose interference destroys attribution. When two variations can only be told apart under isolation, the isolation is a required cost and must be paid and disclosed, not optimized away. Measure or estimate the setup cost rather than assuming it is small; a setup that dwarfs the measurement is what makes design errors here expensive. If the honest estimate is not affordable, reduce the number of arms or claims with the user as a scope decision; do not silently keep the count and weaken the rigor of the ones retained.
+
 ## Validity and Claim Boundaries
 
 The experiment's existing safety, ownership, correctness, and validation requirements remain in force. Preserve accurate work accounting, an appropriate measurement boundary, relevant controls, and enough run identity and raw evidence to inspect the result. Include failed attempts and explain exclusions rather than selecting only favorable trials.
@@ -130,5 +154,7 @@ Explicit precision or validation requirements govern the assigned result. When a
 ## Provenance
 
 These principles derive from the September 2026 `predkv-inference` ShadowKV debugging retrospective and the user's direction to prioritize useful findings over overengineered calibration. The implementation checkpoint was commit `64cc555a7`; examples concern premature runner extraction, statistical progression, full request preparation, and delayed runtime interface checks.
+
+`e7` and the instrument-cost comparison in `e4` were added in October 2026 from a qualification retrospective in which a large acceptance series repeatedly re-created an expensive multi-device serving environment per variation and re-ran the whole series after each small source change, and in which one instrumentation layer's measured overhead was overlooked while another's was measured. The examples above are generalized from those cases and name no repository, product, or hardware.
 
 The definitions and examples above carry the reusable guidance. Applying them does not require the originating repository, its ignored runs, or the retrospective to be available.

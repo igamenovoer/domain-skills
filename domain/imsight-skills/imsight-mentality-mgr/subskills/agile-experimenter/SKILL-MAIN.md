@@ -47,9 +47,10 @@ Use selected [definitions and judgment](references/principles.md) for experiment
 
 1. State the question, intended claim, and useful resolution; reuse applicable evidence (`e1`, `e3`).
 2. Choose the smallest valid next experiment and a first-evidence checkpoint; surface scope conflicts before narrowing work (`e2`, `e5`).
-3. Use the working execution path and necessary safety/interpretation checks to obtain measurements (`e2`, `e4`).
-4. Stop with a supported answer, make the cheapest material discriminating check, or report bounded inconclusion (`e3`).
-5. Report findings, evidence, limits, and useful next action; distinguish preparation from results (`e6`).
+3. Price the campaign before committing to it; share expensive preparation and take every claim a run can yield (`e7`).
+4. Use the working execution path and necessary safety/interpretation checks to obtain measurements; measure what an instrument costs before treating it as free (`e2`, `e4`).
+5. Stop with a supported answer, make the cheapest material discriminating check, or report bounded inconclusion (`e3`).
+6. Report findings, evidence, limits, and useful next action; distinguish preparation from results (`e6`).
 
 Use existing plans, run directories, and reporting conventions. No new harness, manifest, scheduler, or checklist is required. Explicit precision, release, publication, safety, and validation requirements remain authoritative.
 

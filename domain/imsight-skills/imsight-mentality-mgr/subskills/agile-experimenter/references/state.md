@@ -12,9 +12,9 @@ For other requests, use the native planning tool without inventing activation.
 
 | Selector | Meaning |
 | --- | --- |
-| `e1`–`e6` | Individual experiment principles. |
+| `e1`–`e7` | Individual experiment principles. |
 | Canonical name | Its corresponding rule. |
-| `all` | All six rules. |
+| `all` | All seven rules. |
 
 Accept case-insensitive IDs, canonical hyphenated names, and unambiguous natural variants. Expand groups, deduplicate, and report in catalog order. Foreign IDs or ambiguous/unknown selectors reject the whole request; list valid choices. Store canonical IDs, not aliases.
 
