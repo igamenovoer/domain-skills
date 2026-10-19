@@ -1,6 +1,6 @@
 ---
 name: coding-agent
-description: Use when an Imsight dev-box task configures Codex CLI, third-party Codex providers, Claude Code launchers for Kimi, GAC, OpenLux, or DeepSeek, Reasonix YOLO launchers or scrambled slash-command menus, Antigravity CLI launchers for OpenLux, Kimi Code CLI multi-credential launchers with an isolated KIMI_CODE_HOME, or the Kimi Code account manager that deploys isolated homes into project-scope homes.
+description: Use when an Imsight dev-box task configures Codex CLI, third-party Codex providers, Claude Code launchers for Kimi, GAC, OpenLux, or DeepSeek, Reasonix YOLO launchers, Antigravity CLI launchers for OpenLux, Kimi Code CLI multi-credential launchers with an isolated KIMI_CODE_HOME, or the Kimi Code account manager that deploys isolated homes into project-scope homes.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -47,7 +47,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | `claude-gac-launcher` | Create or repair `claude-gac` or `claude-gac-<suffix>` with the endpoint and key embedded, without Claude JSON changes. | `references/claude-gac-launcher.md` |
 | `claude-openlux-launcher` | Create or repair `claude-openlux` or `claude-openlux-<suffix>`, replacing the retired Yunwu relay. | `references/claude-openlux-launcher.md` |
 | `claude-deepseek-launcher` | Create or repair `claude-deepseek` or `claude-deepseek-<suffix>` with selectable Flash and Pro models, Flash by default, and explicit thinking-effort behavior. | `references/claude-deepseek-launcher.md` |
-| `reasonix-skip-all-launcher` | Create or repair `reasonix-skip-all` with YOLO sessions and discarded stderr by default; preserve stderr only when explicitly requested. | `references/reasonix-skip-all-launcher.md` |
+| `reasonix-skip-all-launcher` | Create or repair `reasonix-skip-all` or `reasonix-skip-all-<suffix>` with YOLO sessions and inherited stderr. | `references/reasonix-skip-all-launcher.md` |
 | `agy-openlux-launcher` | Create or repair a Windows, Linux, or macOS Antigravity launcher named `agy-openlux` or `agy-openlux-<suffix>` that uses OpenLux without changing plain `agy`. | `references/agy-openlux-launcher.md` |
 | `kimi-multi-credential` | Create Kimi Code CLI launchers named `kimi-<suffix>`, each with an isolated OAuth credential home and `--auto` startup default unless no-auto mode is explicitly requested. | `references/kimi-multi-credential.md` |
 | `create-kimi-manager` | Deploy or repair the `kimi-project.py` Kimi Code account manager (invoked through the `kimi-project.sh` launcher): plant independent OAuth auth sessions (identified per login by `(user_id, device_id)`, so same-account logins stay distinct) from isolated homes into project-scope homes, merging `config.toml` key-wise so project-only settings survive session swaps, manage session aliases and private slots, audit per-session credential freshness live, rescue fresher copies back to slots holding the same session, collect the freshest copy back to a seat on demand, return sessions home on `undeploy`, and back up or restore a home's auth state. | `references/create-kimi-manager.md` |
