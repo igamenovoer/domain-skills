@@ -57,7 +57,7 @@ Before writing a launcher, credential file, or PATH/profile change:
 
 1. Read the installed CLI's help and choose a supported non-interactive minimal-turn command.
 2. Apply the candidate endpoint, credential, mappings, and effort setting only to a disposable Claude Code process. Use isolated temporary working/configuration state as supported by that client; disable unrelated tools, hooks, MCP servers, and session persistence for the smoke test.
-3. Run a minimal real turn with the Flash startup mapping, then another with `--model opus` resolving to Pro. Confirm the model through Claude Code's own response metadata or status surface.
+3. Run a minimal real turn with the Flash startup mapping, then another with `--model fable` resolving to Pro. Confirm the model through Claude Code's own response metadata or status surface.
 4. Check `/model` when interactive selection matters: Flash and Pro must be selectable, and `Default` must resolve to Flash. Do not equate a displayed model name with a successful provider turn.
 5. Verify effort precedence using the actual CLI. A local request capture with a dummy credential may inspect only `model`, `thinking`, and `output_config.effort`; it supplements the real turns and must never record real credentials or private prompts.
 6. Stop without persistent setup if either required model fails. Report the client-visible failure and consult current documentation; do not substitute handcrafted provider `/models` or `/messages` probes.
@@ -72,25 +72,25 @@ The following mapping was verified with Claude Code `2.1.301` on 2026-10-18. Re-
 | --- | --- | --- |
 | Startup model | `ANTHROPIC_MODEL` | `deepseek-flash[1m]` |
 | Picker's `Default` model | `ANTHROPIC_DEFAULT_MODEL` | `deepseek-flash[1m]` |
-| Pro selection through `opus` | `ANTHROPIC_DEFAULT_OPUS_MODEL` | `deepseek-v4-pro[1m]` |
+| Pro selection through `fable` | `ANTHROPIC_DEFAULT_FABLE_MODEL` | `deepseek-v4-pro[1m]` |
+| Opus selection | `ANTHROPIC_DEFAULT_OPUS_MODEL` | `deepseek-flash[1m]` |
 | Flash selection through `sonnet` | `ANTHROPIC_DEFAULT_SONNET_MODEL` | `deepseek-flash[1m]` |
-| Fable alias, when exposed by the client | `ANTHROPIC_DEFAULT_FABLE_MODEL` | `deepseek-flash[1m]` |
 | Small/background model | `ANTHROPIC_DEFAULT_HAIKU_MODEL` | `deepseek-flash` |
 | Subagent model | `CLAUDE_CODE_SUBAGENT_MODEL` | `deepseek-flash` |
 
-Set the Opus and Sonnet `*_NAME` and `*_DESCRIPTION` variables as in the template so the picker labels those rows `DeepSeek Pro` and `DeepSeek Flash`. Other built-in rows may also resolve to Flash; do not claim that the picker contains exactly two rows.
+Set the Fable and Sonnet `*_NAME` and `*_DESCRIPTION` variables as in the template so the picker labels those rows `DeepSeek Pro` and `DeepSeek Flash`; confirm the installed client honors the pair for the fable row. Other built-in rows, including Opus, also resolve to Flash; do not claim that the picker contains exactly two rows.
 
 The `[1m]` suffix requests Claude Code's 1M context handling; the observed outgoing model IDs were `deepseek-flash` and `deepseek-v4-pro`. The template uses `CLAUDE_CODE_AUTO_COMPACT_WINDOW=786432`, following DeepSeek's current Claude Code guide. These context settings do not determine reasoning effort or guarantee a particular response length.
 
 ```bash
 claude-deepseek                    # Flash on a fresh start
 claude-deepseek --model sonnet     # Flash explicitly
-claude-deepseek --model opus       # Pro explicitly
+claude-deepseek --model fable      # Pro explicitly
 ```
 
-Inside Claude Code, use `/model` to select the named row, `/model sonnet` for Flash, or `/model opus` for Pro. Use the picker's session-only selection when available to avoid writing a provider-specific default into shared user settings. With `ANTHROPIC_MODEL` set by this launcher, the next fresh launch starts on Flash regardless of a saved pick; explicit startup `--model` still takes precedence. Subagents remain on Flash unless their mapping is deliberately changed and verified.
+Inside Claude Code, use `/model` to select the named row, `/model sonnet` for Flash, or `/model fable` for Pro. Use the picker's session-only selection when available to avoid writing a provider-specific default into shared user settings. With `ANTHROPIC_MODEL` set by this launcher, the next fresh launch starts on Flash regardless of a saved pick; explicit startup `--model` still takes precedence. Subagents remain on Flash unless their mapping is deliberately changed and verified.
 
-DeepSeek's vendor example maps every main alias to Flash. This guide deliberately maps Opus to Pro to offer both models in one launcher. Use explicit verified DeepSeek IDs: the provider can map an unsupported model name back to Flash, so a successful request alone does not prove Pro selection.
+DeepSeek's vendor example maps every main alias to Flash. This guide deliberately maps Fable, the client's top model tier, to Pro and maps every other alias to Flash, offering both models in one launcher. Use explicit verified DeepSeek IDs: the provider can map an unsupported model name back to Flash, so a successful request alone does not prove Pro selection.
 
 ## Thinking Levels and Precedence
 
@@ -114,8 +114,8 @@ Set the environment value before invoking the launcher to change the effective e
 
 ```bash
 CLAUDE_CODE_EFFORT_LEVEL=low claude-deepseek
-CLAUDE_CODE_EFFORT_LEVEL=high claude-deepseek --model opus
-CLAUDE_CODE_EFFORT_LEVEL=max claude-deepseek --model opus
+CLAUDE_CODE_EFFORT_LEVEL=high claude-deepseek --model fable
+CLAUDE_CODE_EFFORT_LEVEL=max claude-deepseek --model fable
 ```
 
 For a Windows native launcher with the same fallback policy, set `$env:CLAUDE_CODE_EFFORT_LEVEL = 'high'` before invocation; preserve and restore any previous value when this should apply to one call only.
@@ -147,13 +147,13 @@ unset ANTHROPIC_API_KEY CLAUDE_CODE_OAUTH_TOKEN
 
 export ANTHROPIC_MODEL='deepseek-flash[1m]'
 export ANTHROPIC_DEFAULT_MODEL="$ANTHROPIC_MODEL"
-export ANTHROPIC_DEFAULT_OPUS_MODEL='deepseek-v4-pro[1m]'
-export ANTHROPIC_DEFAULT_OPUS_MODEL_NAME='DeepSeek Pro'
-export ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION='DeepSeek V4 Pro with 1M context'
+export ANTHROPIC_DEFAULT_FABLE_MODEL='deepseek-v4-pro[1m]'
+export ANTHROPIC_DEFAULT_FABLE_MODEL_NAME='DeepSeek Pro'
+export ANTHROPIC_DEFAULT_FABLE_MODEL_DESCRIPTION='DeepSeek V4 Pro with 1M context'
+export ANTHROPIC_DEFAULT_OPUS_MODEL="$ANTHROPIC_MODEL"
 export ANTHROPIC_DEFAULT_SONNET_MODEL="$ANTHROPIC_MODEL"
 export ANTHROPIC_DEFAULT_SONNET_MODEL_NAME='DeepSeek Flash'
 export ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION='DeepSeek Flash with 1M context (default)'
-export ANTHROPIC_DEFAULT_FABLE_MODEL="$ANTHROPIC_MODEL"
 export ANTHROPIC_DEFAULT_HAIKU_MODEL='deepseek-flash'
 export CLAUDE_CODE_SUBAGENT_MODEL='deepseek-flash'
 export CLAUDE_CODE_EFFORT_LEVEL="${CLAUDE_CODE_EFFORT_LEVEL:-max}"
@@ -198,7 +198,7 @@ claude-deepseek --version
 
 Inspect only non-secret assignments or use redaction when reviewing an existing launcher. Do not print the key file. Confirm restrictive permissions with the platform's native metadata tools.
 
-Run the minimal actual-Claude turns again through the installed launcher: the default must report Flash and `--model opus` must report Pro. Inspect `/status` for the DeepSeek Anthropic endpoint and `/model` for both labels and the Flash `Default` row. Verify one caller-selected effort on each model using the client and, when necessary, dummy-credential local request capture. Verify argument forwarding and exit-code preservation without exposing credentials.
+Run the minimal actual-Claude turns again through the installed launcher: the default must report Flash and `--model fable` must report Pro. Inspect `/status` for the DeepSeek Anthropic endpoint and `/model` for both labels and the Flash `Default` row. Verify one caller-selected effort on each model using the client and, when necessary, dummy-credential local request capture. Verify argument forwarding and exit-code preservation without exposing credentials.
 
 Record the client version, verification date, exact model IDs, effective effort, and any unsupported behavior. The 2026-10-18 evidence used Claude Code `2.1.301`: both live model turns succeeded; local request captures confirmed `max` by default, environment-selected `low`/`high`, and the environment override of CLI effort. Local capture proves request construction, not DeepSeek's internal reasoning or answer quality.
 
