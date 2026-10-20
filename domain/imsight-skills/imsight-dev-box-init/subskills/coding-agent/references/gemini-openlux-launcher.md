@@ -61,6 +61,7 @@ Every generated launcher must satisfy these invariants:
 | Credential placement | Either read the key from the shared side key file (for example `$REAL_HOME/.local/bin/openlux-api-key-<suffix>`, mode 0600) or embed it in the launcher; restrict an embedding launcher to mode `0700`. Never commit or display the key. |
 | Suffix | Use it only as the optional name/profile label defined above. Do not derive configuration from its text. |
 | Model | Inject the resolved default as `-m <default-model>` only when the caller did not pass a model flag. Gemini CLI (yargs) collapses duplicate `-m` flags into an array, which fails the request; see **Runtime Argument Contract**. |
+| Thinking effort | Default the resolved model to `thinkingLevel: "HIGH"` in the dedicated profile's `modelConfigs.overrides`. Add a separate exact-match override for each additional served model id; never infer thinking behavior from the launcher suffix. |
 | Arguments | Forward every caller argument to `gemini` unchanged after the fixed defaults. |
 | Permissions | Inject `--approval-mode yolo` and `--skip-trust` by default. Omit them only when the user's initial launcher request explicitly asks to retain permission prompts. |
 | Executable | Resolve the real installed `gemini` binary without selecting the wrapper itself. |
@@ -104,7 +105,7 @@ The gate has two ordered phases. Do not require a handcrafted `/models` or `gene
 ### Phase A: Isolated Gemini CLI Test
 
 1. Confirm `gemini --version` and inspect current help for the permission, trust, model, and non-interactive surfaces needed by the installed version.
-2. Create a disposable home (for example `mktemp -d`) containing `.gemini/settings.json` with the exact profile body from **Dedicated Profile Layout**, so the test exercises the persisted settings verbatim.
+2. Create a disposable home (for example `mktemp -d`) containing `.gemini/settings.json` with the exact profile body from **Dedicated Profile Layout**, substituting the requested model for `<resolved-default-model>`, so the test exercises the persisted settings verbatim.
 3. Scope the supplied key and base URL only to this test process.
 4. Run one minimal real turn with the requested model:
 
@@ -151,11 +152,27 @@ For a new dedicated profile, start with:
   },
   "ui": {
     "useAlternateBuffer": true
+  },
+  "modelConfigs": {
+    "overrides": [
+      {
+        "match": {
+          "model": "<resolved-default-model>"
+        },
+        "modelConfig": {
+          "generateContentConfig": {
+            "thinkingConfig": {
+              "thinkingLevel": "HIGH"
+            }
+          }
+        }
+      }
+    ]
   }
 }
 ```
 
-Field roles: the `selectedType` pin is mandatory — without it a user-level `oauth-personal` selection overrides `GEMINI_API_KEY` and the CLI goes down the Code Assist path, failing with a demand for `GOOGLE_CLOUD_PROJECT`. `ide.enabled` and `ui.useAlternateBuffer` counter the 0.64.0 behaviors listed above; `enableAutoUpdate: false` keeps updates deliberate. When repairing an existing dedicated profile, parse and merge these fields instead of replacing the file; the CLI writes state (for example `hasSeenIdeIntegrationNudge`) back into the profile, so byte-exact comparison is wrong. Do not copy the ordinary Gemini CLI settings wholesale because that can import the OAuth pin, saved model, permission policy, or unrelated experiments into the OpenLux route.
+Field roles: the `selectedType` pin is mandatory — without it a user-level `oauth-personal` selection overrides `GEMINI_API_KEY` and the CLI goes down the Code Assist path, failing with a demand for `GOOGLE_CLOUD_PROJECT`. `ide.enabled` and `ui.useAlternateBuffer` counter the 0.64.0 behaviors listed above; `enableAutoUpdate: false` keeps updates deliberate. `modelConfigs.overrides` defaults the resolved model to high thinking: replace `<resolved-default-model>` with the actual default model id when creating the profile, and add another override for any other served id that should also use high thinking. The CLI forwards `thinkingConfig` with minimal validation; the endpoint remains the authority and may clamp or ignore it, so a successful turn is not proof of enforcement. When repairing an existing dedicated profile, parse and merge these fields instead of replacing the file; the CLI writes state (for example `hasSeenNudge`) back into the profile, so byte-exact comparison is wrong. Do not copy the ordinary Gemini CLI settings wholesale because that can import the OAuth pin, saved model, permission policy, or unrelated experiments into the OpenLux route.
 
 ## Platform Lanes
 
@@ -245,8 +262,8 @@ Confirm only the presence of the key assignment or key-file read; never output t
 
 For every platform:
 
-1. Confirm the dedicated settings file parses and contains `security.auth.selectedType: gemini-api-key` (plus the `ide`, `ui`, and `general` fields from the profile template).
-2. Run one small completion through the launcher: `<launcher-name> -p "Reply with exactly: GEMINI_OPENLUX_OK"`. Require the marker.
+1. Confirm the dedicated settings file parses and contains `security.auth.selectedType: gemini-api-key` (plus the `ide`, `ui`, and `general` fields from the profile template) and a `modelConfigs.overrides` entry matching the default model with `thinkingConfig.thinkingLevel: "HIGH"`.
+2. Run one small completion through the launcher: `<launcher-name> -p "Reply with exactly: GEMINI_OPENLUX_OK"`. Require the marker. This confirms the CLI accepts and forwards the configured override; the endpoint may still clamp or ignore it.
 3. Run the caller-override path: `<launcher-name> -m <second-served-model> -p "Reply with exactly: OVERRIDE_OK"`. Require the marker; this proves the conditional injection does not corrupt the model argument.
 4. Confirm the process exit status propagates and that the default invocation advertises yolo mode unless the initial request opted out.
 5. Confirm plain `gemini` still uses its pre-existing settings and OAuth route. Do not perform a billable official-provider completion unless the user requested it; inspect settings (content and mtime) and environment instead.
@@ -261,6 +278,7 @@ Record token usage for billable probes when the CLI reports it.
 - If headless runs warn about untrusted folders or lose auto-approval, the launcher is missing `--skip-trust` (0.64.0 and later).
 - If the TUI scrambles on terminal or tmux resize, set `ui.useAlternateBuffer: true` in the dedicated profile.
 - If a turn fails with a generic client error only when the caller passes `-m`, inspect the launcher's conditional model injection for a duplicate-flag array.
+- If HIGH thinking is configured but response behavior does not change, the relay may clamp or ignore `thinkingConfig` for that model id. Confirm the override's `match.model` is the exact model string and treat enforcement as provider-side. For a model that accepts `thinkingBudget` instead of `thinkingLevel`, use an explicitly high numeric budget and record that choice.
 - If the relay rejects a turn with a model-not-found or schema error (for example `Unknown name ... tools[0].function_declarations`), the failure is provider-side for that model or routing channel: the client passes any id through, and the endpoint decides. Verify the id with a fresh Phase A turn or pick another served id; do not treat a missing catalog entry as proof either way.
 - If ordinary Git, SSH, cloud, or skill discovery is missing inside the launcher, review **Isolated-Home Effects** and add only the user-authorized resources needed by that profile.
 
