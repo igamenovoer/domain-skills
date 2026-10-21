@@ -183,6 +183,10 @@ print(response.text)
 
 If a client treats the base URL literally rather than appending the version path, set the base URL to the exact prefix that client expects, such as `http://<proxy-host>:<api-port>/v1beta`. Verify with one real call instead of assuming.
 
+## Kimi Code Client
+
+Kimi Code configures the proxy as a `google-genai` provider with the host root as `base_url`; its model entry must also declare `support_efforts` and `default_effort`, or the thinking-level picker stays hidden. For the TOML shape, the `/effort` selector, the Gemini 3/4 `thinkingLevel` mapping, and the verification checks, read [client-kimi-code.md](client-kimi-code.md).
+
 ## Verification Checklist
 
 - The login process wrote a credential file into the auth directory with owner-only permissions.

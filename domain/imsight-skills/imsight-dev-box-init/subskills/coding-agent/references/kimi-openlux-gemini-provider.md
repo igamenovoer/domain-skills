@@ -88,19 +88,21 @@ Kimi Code exposes a model's effort levels through `support_efforts` and chooses 
 
 - `support_efforts` lists the levels the model accepts. Keep it aligned with the levels the installed client can send; an explicit effort outside the list can fail, and the installed client resolves a global value that is outside the list according to its own mapping.
 - `default_effort` supplies the model-level default. Set it to `"high"` for `gemini-4-argon` because that is the level that reliably produced reasoning in tests.
-- The global `[thinking]` table can also set `effort` for the main agent. On Kimi Code 2.2.0, a global `max` remained the recorded effort and mapped to the same 32,000-token budget as `high`; do not assume it is sent as a native provider level. Other global values can override the model default, so check the session's effective effort when strict high behavior matters.
-- In the TUI, `/model` exposes the model and its thinking-mode choices. Use `-m openlux-gemini/gemini-4-argon` for non-interactive selection.
+- The global `[thinking]` table can also set `effort` for the main agent. On Kimi Code 2.3.0, a global concrete effort is recorded and, for `gemini-3`/`gemini-4` ids, mapped to native `thinkingLevel`; older 2.2.x builds mapped `gemini-4` ids to `thinkingBudget`. Other global values can override the model default, so check the session's effective effort when strict high behavior matters.
+- In the TUI, `/effort` (alias `/thinking`) opens the thinking-effort selector; `/model` exposes the model and its thinking choices during model selection. Use `-m openlux-gemini/gemini-4-argon` for non-interactive selection.
 
-The installed Kimi Code Gemini adapter selects the wire field by model id:
+The installed Kimi Code Gemini adapter selects the wire field by model id and version:
 
 | Model id pattern | Wire field for effort |
 | --- | --- |
-| contains `gemini-3` | `thinkingLevel`: `MINIMAL`, `LOW`, `MEDIUM`, or `HIGH` |
-| other Gemini ids, including `gemini-4-argon` | `thinkingBudget`: off `0`, low `1024`, medium `4096`, high/xhigh/max `32000` |
+| contains `gemini-3` or `gemini-4` | `thinkingLevel`: low `LOW`, medium `MEDIUM`, high/xhigh/max `HIGH`; off `MINIMAL` for `gemini-3` and rejected for `gemini-4` |
+| other Gemini ids | `thinkingBudget`: off `0`, low `1024`, medium `4096`, high/xhigh/max `32000` |
 
-Observed on Kimi Code 2.2.0 with `gemini-4-argon`: an effort of `high` produced `{"includeThoughts":true,"thinkingBudget":32000}` and returned thought parts plus `thoughtsTokenCount`; low and medium produced no thought parts for the tested prompts. OpenLux advertises native `thinkingLevel` values low, medium, and high for this model, but Kimi Code does not send that field for ids outside `gemini-3`. Treat this as a client-version limitation: configuring `support_efforts` changes the selectable effort and the budget, not the wire field. Re-verify the mapping when the installed Kimi Code version changes.
+For `gemini-4`, `off` is rejected because the model always reasons; use a concrete `low`, `medium`, or `high`.
 
-If the user requires true native `thinkingLevel` semantics, use a client that sends it, such as the Gemini CLI OpenLux profile, or leave the Kimi Code route on effort `high` and document the limitation. Do not claim that the Kimi Code config alone enables native low/medium/high levels for `gemini-4-argon`.
+Observed on Kimi Code 2.3.0: the adapter maps `gemini-4` ids to native `thinkingLevel`; a live low-versus-high comparison on a Gemini 4 Argon route produced different thought-token usage, and high returned thought parts plus `thoughtsTokenCount`. On Kimi Code 2.2.0 the same id mapped to `thinkingBudget` instead, with high using a 32,000-token budget. The adapter mapping is version-dependent, so re-verify it against the installed `kimi` binary rather than relying on a tutorial written for another release.
+
+Configuring `support_efforts` is necessary but not sufficient proof: the installed client must also send the concrete level. Verify with a real turn and inspect the session's recorded `thinkingEffort`; a UI label alone is not evidence.
 
 ## Verification
 
@@ -119,6 +121,7 @@ Also confirm:
 
 - `test -n "${OPENLUX_API_KEY:-}"` succeeds when `api_key_env` is used, without printing the value.
 - The new alias appears in `/model` and exposes the expected effort choices.
+- For thinking-level claims, confirm the session log records the intended `thinkingEffort` and compare thought-token usage on a reasoning prompt between two levels; `/effort` changing the footer alone is not proof.
 - The previous `default_model` and unrelated provider/model tables are unchanged.
 - No key appears in the shell history, process arguments, logs, or the final report.
 
@@ -130,7 +133,7 @@ A raw `curl` success against `/v1beta/...` is useful diagnostic evidence, but it
 - **`Model "..." must define a positive max_context_size`**: add a positive `max_context_size` to the model entry.
 - **401 or 403**: the key is missing, the `api_key_env` variable is unset in the launch environment, or the key is not valid for OpenLux's Gemini-native route. Kimi Code does not silently read a shell variable unless `api_key_env` names it.
 - **404 or a doubled `/v1beta/v1beta` path**: `base_url` includes an API-version suffix. Use `https://api.openlux.ai`.
-- **No thinking output**: try effort `high`. Low and medium map to small budgets for non-`gemini-3` ids and did not produce thought parts in tests; the endpoint also decides whether a prompt needs reasoning.
+- **No thinking output**: try effort `high`, then confirm the installed Kimi Code version maps the model id to the intended wire field. On 2.3.0, `gemini-3`/`gemini-4` use native `thinkingLevel`; older 2.2.x used `thinkingBudget` for `gemini-4`. The endpoint also decides whether a prompt needs reasoning, so compare a reasoning-heavy prompt and the session's recorded `thinkingEffort`.
 - **No effort picker**: add `support_efforts` and `default_effort` to the model entry; a `thinking` capability alone exposes thinking mode but not a level list.
 - **The old OpenAI-compatible route is used**: check the model entry's `provider` field. The `/v1` route belongs to an OpenAI-compatible provider, not the `google-genai` provider.
 
@@ -139,6 +142,6 @@ A raw `curl` success against `/v1beta/...` is useful diagnostic evidence, but it
 - DO NOT print, commit, or expose the OpenLux key in skill sources, documentation, logs, command arguments, or reports.
 - DO NOT change `default_model` or unrelated provider and model tables unless the user explicitly requests it.
 - DO NOT append `/v1beta` or a model path to `base_url`; give the host root only.
-- DO NOT claim that Kimi Code sends native `thinkingLevel` for `gemini-4-argon`; the adapter uses `thinkingBudget` for ids outside `gemini-3`.
+- DO NOT assume the Kimi Code adapter mapping is version-independent; verify the installed build (2.3.0+ sends native `thinkingLevel` for `gemini-3`/`gemini-4`, while older 2.2.x used `thinkingBudget` for `gemini-4`).
 - DO NOT treat `kimi doctor config` alone, or a raw provider API probe, as proof that the Kimi Code route works.
 - DO NOT overwrite an existing provider or model alias; merge the new tables or choose a distinct name.

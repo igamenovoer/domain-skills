@@ -46,7 +46,7 @@ Do not use this subskill when:
 5. **Launch and authenticate.** Start the proxy with the required environment, including `HTTP_PROXY` and `HTTPS_PROXY` when outbound traffic is mediated. Run the provider login, confirm the credential lands in the proxy's auth store, and confirm the running process reloads it.
 6. **Discover models.** Query the proxy's model-list endpoints instead of assuming upstream IDs. Record the exact IDs, display names, and capabilities the account exposes.
 7. **Verify end-to-end.** Check unauthorized rejection, authorized model listing, a real generation, streaming, and at least one tool or structured-output path the client will use. Exercise the same protocol the client will use, not only the model list.
-8. **Hand off operations.** Report the base URL, where the client key lives, the model IDs, the restart command, the auth-store backup location, the proxy-environment dependency, and the quota or terms caveats.
+8. **Hand off operations.** Report the base URL, where the client key lives, the model IDs, the restart command, the auth-store backup location, the proxy-environment dependency, and the quota or terms caveats. When the client is Kimi Code, wire the provider and model with `support_efforts` and `default_effort`, then verify the effort selector and the recorded request; see `references/client-kimi-code.md`.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the two parts, the linked references, the user's client protocol, and the provider account type, then execute the plan.
 
@@ -55,7 +55,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | Part | Question it answers | Detailed guide |
 | --- | --- | --- |
 | Part 1: The proxy tool | Which tool should expose the CLI account, how should it be deployed, and what protocol surface does it provide? | `references/proxy-tools.md` |
-| Part 2: Provider API creation | Which account and auth flow supply the upstream API, which models become available, and how are they verified? | `references/provider-apis.md` and `references/provider-gemini.md` |
+| Part 2: Provider API creation | Which account and auth flow supply the upstream API, which models become available, and how are they verified? | `references/provider-apis.md`, `references/provider-gemini.md`, and `references/client-kimi-code.md` for Kimi Code client wiring |
 
 ## Part 1: The Proxy Tool
 
@@ -80,7 +80,7 @@ The provider layer answers a different question: which upstream account, authent
 - **Protocol translation**: whether the client protocol maps cleanly to the provider's native shape, especially for tools, images, thinking, and streaming.
 - **Quota and terms**: whether the account's plan permits API-style use and what limits apply.
 
-For the cross-provider auth matrix, model discovery, verification matrix, and secret-handling rules, read `references/provider-apis.md`. For the Gemini worked case, including Antigravity OAuth, Gemini API keys, Vertex import, Gemini-native calls, and SDK configuration, read `references/provider-gemini.md`.
+For the cross-provider auth matrix, model discovery, verification matrix, and secret-handling rules, read `references/provider-apis.md`. For the Gemini worked case, including Antigravity OAuth, Gemini API keys, Vertex import, Gemini-native calls, and SDK configuration, read `references/provider-gemini.md`. For Kimi Code client wiring, including the `google-genai` provider shape, `support_efforts`, and the `/effort` picker, read `references/client-kimi-code.md`.
 
 ## Placeholder Convention
 
