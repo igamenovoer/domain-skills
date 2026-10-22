@@ -46,6 +46,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | `houmao-system` | Choose this branch whenever Houmao owns the installed system skills, project overlay, credentials, or specialist. | `subskills/houmao-system/SKILL-MAIN.md` |
 | `hermes-mgr` | Choose this branch for Hermes model routing, Feishu gateway integration and approval callbacks, a Kimi-backed local Hindsight server, persistent memory integration, or memory lifecycle operations. | `subskills/hermes-mgr/SKILL-MAIN.md` |
 | `misc` | Choose this branch for standalone agent skills, search, documentation, and cloud storage utilities, currently Ponytail, Tavily, Context7, and BaiduPCS-Go. | `subskills/misc/SKILL-MAIN.md` |
+| `sangfor-vdi-arm64` | Choose this branch when the task is running the Sangfor VDI Linux client on an arm64 Ubuntu box, including qemu-user amd64 containers, SSH-host or proxy traffic bridging, or the post-login vdi_session hotplug crash. | `subskills/sangfor-vdi-arm64/SKILL-MAIN.md` |
 
 ## Subcommands
 
