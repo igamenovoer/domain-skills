@@ -1,6 +1,6 @@
 ---
 name: coding-agent
-description: Use when an Imsight dev-box task configures Codex CLI, third-party Codex providers, Claude Code launchers for Kimi, GAC, OpenLux, or DeepSeek, Reasonix YOLO launchers, Antigravity CLI launchers for OpenLux, Gemini CLI launchers for OpenLux with arbitrary (including unadvertised) relay model ids, Kimi Code OpenLux Gemini provider configuration including thinking-effort setup, Kimi Code CLI multi-credential launchers with an isolated KIMI_CODE_HOME, or the Kimi Code account manager that deploys isolated homes into project-scope homes.
+description: Use when an Imsight dev-box task configures Codex CLI, third-party Codex providers, Claude Code launchers for Kimi, GAC, OpenLux, or DeepSeek, Reasonix YOLO launchers, Antigravity CLI launchers for OpenLux, Gemini CLI launchers for OpenLux with arbitrary (including unadvertised) relay model ids, Kimi Code OpenLux Gemini provider configuration including thinking-effort setup, Kimi Code OpenLux OpenAI-compatible GPT provider configuration with discovery-driven model selection and thinking-effort setup, Kimi Code CLI multi-credential launchers with an isolated KIMI_CODE_HOME, or the Kimi Code account manager that deploys isolated homes into project-scope homes.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -51,13 +51,14 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | `agy-openlux-launcher` | Create or repair a Windows, Linux, or macOS Antigravity launcher named `agy-openlux` or `agy-openlux-<suffix>` that uses OpenLux without changing plain `agy`. | `references/agy-openlux-launcher.md` |
 | `gemini-openlux-launcher` | Create or repair `gemini-openlux` or `gemini-openlux-<suffix>` with an isolated home and arbitrary relay model ids, including models OpenLux serves but does not advertise, while leaving plain `gemini` on OAuth. | `references/gemini-openlux-launcher.md` |
 | `kimi-openlux-gemini-provider` | Add OpenLux's Gemini-native provider and `gemini-4-argon` model to a Kimi Code home, including thinking-effort settings, without changing the default Kimi route. | `references/kimi-openlux-gemini-provider.md` |
+| `kimi-openlux-gpt-provider` | Add OpenLux's OpenAI-compatible provider and a user-specified or explicitly requested Codex-supported GPT model set to a Kimi Code home, including discovery-driven model selection and thinking-effort settings, without changing the default Kimi route. | `references/kimi-openlux-gpt-provider.md` |
 | `kimi-multi-credential` | Create Kimi Code CLI launchers named `kimi-<suffix>`, each with an isolated OAuth credential home and `--auto` startup default unless no-auto mode is explicitly requested. | `references/kimi-multi-credential.md` |
 | `create-kimi-manager` | Deploy or repair the `kimi-project.py` Kimi Code account manager (invoked through the `kimi-project.sh` launcher): plant independent OAuth auth sessions (identified per login by `(user_id, device_id)`, so same-account logins stay distinct) from isolated homes into project-scope homes, merging `config.toml` key-wise so project-only settings survive session swaps, manage session aliases and private slots, audit per-session credential freshness live, rescue fresher copies back to slots holding the same session, collect the freshest copy back to a seat on demand, return sessions home on `undeploy`, and back up or restore a home's auth state. | `references/create-kimi-manager.md` |
 | `help` | Explain this subskill and list its commands. | This entrypoint |
 
 ## Resource Ownership
 
-This subskill owns its Codex, Codex-GAC, Codex-OpenLux, Claude-Kimi, Claude-GAC, Claude-OpenLux, Claude-DeepSeek, Reasonix skip-all, Antigravity-OpenLux, Gemini-OpenLux, Kimi OpenLux Gemini provider, Kimi multi-credential, and Kimi account-manager references, the cross-platform Claude-Kimi and Claude-GAC launcher generators, the Unix Kimi Code credential launcher generator, and the bundled `kimi-project.py`, `kimi-project.sh`, and `set-kimi-home-as-pwd.sh` scripts under `scripts/`.
+This subskill owns its Codex, Codex-GAC, Codex-OpenLux, Claude-Kimi, Claude-GAC, Claude-OpenLux, Claude-DeepSeek, Reasonix skip-all, Antigravity-OpenLux, Gemini-OpenLux, Kimi OpenLux Gemini provider, Kimi OpenLux GPT provider, Kimi multi-credential, and Kimi account-manager references, the cross-platform Claude-Kimi and Claude-GAC launcher generators, the Unix Kimi Code credential launcher generator, and the bundled `kimi-project.py`, `kimi-project.sh`, and `set-kimi-home-as-pwd.sh` scripts under `scripts/`.
 
 ## Custom Launcher Compatibility Policy
 
