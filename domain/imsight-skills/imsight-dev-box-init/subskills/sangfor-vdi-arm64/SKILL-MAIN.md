@@ -50,6 +50,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | `qemu-container-setup` | Build and run the amd64 Ubuntu client container under qemu-user binfmt and show its GUI on the host X desktop. | `references/qemu-container-setup.md` |
 | `network-bridge` | Reach an isolated VDI gateway through an intermediate SSH host or HTTP proxy when the arm64 host has no direct route. | `references/network-bridge.md` |
 | `session-crash-fix` | Diagnose and binary-patch the post-login `vdi_session` SIGSEGV caused by a NULL libusb context in the hotplug listener. | `references/session-crash-fix.md` |
+| `client-feature-tuning` | Enable the rvldisk mapped drive, use clipboard file copy, or run the session windowed at a chosen resolution after basic setup works. | `references/client-feature-tuning.md` |
 | `native-routes` | Assess the native arm64 deb and box64 routes, their packaging prerequisites, and their known failure modes. | `references/native-routes.md` |
 
 ### Helper Subcommands
@@ -74,6 +75,7 @@ This subskill owns the four setup and forensics references plus the helper scrip
 - DO NOT hardcode hotplug patch offsets for any client build other than the one they were derived from; re-derive offsets per package version with the forensics recipe.
 - DO NOT record gateway addresses, credentials, VDI resource names, or session screen contents in the skill sources, committed notes, or reports.
 - DO NOT let loopback traffic enter the proxy path; the client talks to its own local agent on `127.0.0.1`.
+- DO NOT drive the in-session toolbar's power-off, restart, or restore-snapshot buttons during automated checks; they act on the user's VM immediately.
 - DO NOT rely on iptables or nftables inside containers when the host kernel lacks container netfilter support; proxy at the `LD_PRELOAD` layer instead.
 
 ## Troubleshooting Guide
@@ -92,3 +94,7 @@ This subskill owns the four setup and forensics references plus the helper scrip
   - If `vdi_session` or `vdi_client` output is absent, then export the diagnostics environment (`QEMU_STRACE`, preload libraries) to the agent process that spawns them, because children inherit it from there.
 - Xcursor warnings or cursor-theme lookups for an all-zero hash appear right before a crash
   - If the container image ships a stripped icon theme without a `cursors/` directory, then install a full cursor theme set; note this fixes cursor rendering noise only, not the hotplug session crash.
+- Session works but the VM shows no mapped drive
+  - If `vdi_session.log` shows `check_path` failing with an empty path, then install the `xdg-user-dir` shim and Desktop directory from `client-feature-tuning()`; the client resolves the share folder through that tool.
+- Session always opens fullscreen despite a windowed display config
+  - If the log shows `exit_full_screen` immediately followed by `enter_full_screen` at connect, then treat startup fullscreen as build behavior and switch to windowed from the in-session toolbar; the choice persists per VM.

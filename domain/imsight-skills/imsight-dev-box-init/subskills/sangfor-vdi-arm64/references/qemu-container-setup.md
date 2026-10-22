@@ -77,7 +77,7 @@ Use `scripts/start-vdi-container.sh` from this subskill as the template. Its req
 2. Remove stale state at every start: `/etc/sangfor/vdiclient/is_installing_depend`, `/run/sangfor/vdiclient/is_updating`, old `*.sock`/`*.lock` under `/run/sangfor/vdiclient/`.
 3. Synthesize a logind-style user record at `/run/systemd/users/<uid>` (the client refuses to run its GUI for a user without an "active" record) and a writable `XDG_RUNTIME_DIR`.
 4. Clear setuid bits on `vdi_session`/`rapp_session` so `LD_PRELOAD` survives exec.
-5. Apply the crash-fix binary patch idempotently (see `session-crash-fix()`); the template carries a byte-checked `dd` block keyed on `PATCH_FILE_OFFSET`.
+5. Apply the crash-fix binary patch idempotently (see `session-crash-fix()`); the template carries a byte-checked `dd` block keyed on `PATCH_FILE_OFFSET`. Include the feature-tuning steps from `client-feature-tuning()` as well: the `xdg-user-dir` shim and Desktop directory (mapped drive), and the per-VM display conf (windowed size).
 6. Start `vdi_super_agent`, wait for its socket; start `vdi_webui_agent`, wait for its TCP listener; then run `vdi_local_client` in the foreground and keep the container alive (`sleep infinity`) when it exits, so the agents stay up for reconnects.
 7. Run all client processes as the non-root user via `runuser -u <user> -- env ...`, from a cwd that user can write (its home), so qemu guest cores land somewhere writable.
 
