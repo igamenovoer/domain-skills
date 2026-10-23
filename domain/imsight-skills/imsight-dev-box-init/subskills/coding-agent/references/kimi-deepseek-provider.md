@@ -117,6 +117,7 @@ Kimi Code exposes a model's effort levels through `support_efforts` and chooses 
 
 - `support_efforts` lists the levels the model accepts. Keep it aligned with the levels the installed client can send; an out-of-list value can fail.
 - `default_effort` supplies the model-level default. Set it from the user's request, then the recorded default in **Known model defaults**, then the catalog's `effort.default_level`.
+- Entry placement follows entry ownership: this provider is user-defined, so `support_efforts` and `default_effort` live directly in its `[models]` entries. Never edit the top-level fields of `managed:kimi-code` entries — a login or catalog refresh rewrites them; pin `[models."<alias>".overrides]` for a different managed default. When a subagent needs a non-default effort, register a derived `<provider>/<model>-<effort>` entry for the same upstream id; see `kimi-code-model-registration.md` for the ownership and decision rules.
 - The global `[thinking]` table can also set `effort` for the main agent. A global concrete effort can override the model default, so check the session's effective effort when strict model-level behavior matters.
 - In the TUI, `/effort` (alias `/thinking`) opens the thinking-effort selector, and `/model` exposes the model and its thinking choices during model selection. Use `-m deepseek/<model-id>` for non-interactive selection.
 
