@@ -1,6 +1,6 @@
 interface:
   display_name: "kimi-code-subagents"
-  short_description: "Create Kimi Code CLI subagent definitions with secondary_model pool bindings"
-  default_prompt: "Invoke skill imsight-project-subagents->kimi-code-subagents with the target project and the subagent roster to create."
+  short_description: "Create model-agnostic Kimi Code CLI subagent definitions and suggest model routing in AGENTS.md"
+  default_prompt: "Invoke skill imsight-project-subagents->kimi-code-subagents with the target project and the subagent roster to create; keep definitions model-agnostic and suggest a model-binding table for the user's Kimi AGENTS.md."
 policy:
   allow_implicit_invocation: false

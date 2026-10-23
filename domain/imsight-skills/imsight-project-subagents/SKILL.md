@@ -1,6 +1,6 @@
 ---
 name: imsight-project-subagents
-description: Use when the user explicitly invokes imsight-project-subagents or another loaded skill routes the creation, teaching, or standardization of project-level coding-agent subagent definitions (custom reviewer, coder, or task-specific sub-agents with pinned models) for a specific agent runtime. Do not invoke implicitly for generic coding or delegation tasks.
+description: Use when the user explicitly invokes imsight-project-subagents or another loaded skill routes the creation, teaching, or standardization of project-level coding-agent subagent definitions (custom reviewer, coder, or task-specific sub-agents) for a specific agent runtime, including model-agnostic definitions and a user-owned model-binding handoff. Do not invoke implicitly for generic coding or delegation tasks.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -18,13 +18,13 @@ metadata:
 
 ## Overview
 
-Use this skill as the manually invoked or internally routed entrypoint for teaching an agent how to equip a project with custom subagent definitions: named, purpose-scoped sub-agents (for example a default coder for maintained code, a deep reviewer, or a fast coder for disposable work) that the main agent delegates to. Each supported agent runtime has its own definition format, discovery locations, and model-binding mechanism, so the runtime-specific procedure lives in a bundled subskill.
+Use this skill as the manually invoked or internally routed entrypoint for teaching an agent how to equip a project with custom subagent definitions: named, purpose-scoped sub-agents (for example a default coder, an escalation coder for repeatedly failing problems, a planner, or a deep reviewer) that the main agent delegates to. Each supported agent runtime has its own definition format and discovery locations, and its own place where the user binds models, so the runtime-specific procedure and handoff live in a bundled subskill.
 
 ## When to Use
 
 - Use only when the user explicitly invokes `imsight-project-subagents` or another loaded skill explicitly routes a subagent-authoring operation here.
 - Use to create a project's subagent roster from scratch, to add one new subagent definition to an existing roster, or to port a proven roster from one project into another.
-- Use to standardize how subagents bind their models and thinking efforts so delegation behavior is reproducible across sessions.
+- Use to standardize project subagent definitions and hand off model binding to the user's runtime instruction file.
 - Do not activate implicitly for generic coding, delegation, or review tasks that merely happen to involve subagents at runtime.
 
 ## Workflow
@@ -35,7 +35,7 @@ When this skill is invoked, execute the following steps in order.
 2. **Identify the target agent runtime** (for example Kimi Code CLI) and the target project root. Use the user-provided project directory, or the current repository root when the task clearly targets it.
 3. **Select the matching subskill** from **Subskills**. If no subskill covers the runtime, stop and report the gap rather than inventing a format.
 4. **Load only the selected subskill's `SKILL-MAIN.md`** and the local resources it explicitly requires, then follow its workflow step by step.
-5. **Report the result** using the subskill's output contract: definitions written, configuration changed, and validation result.
+5. **Report the result** using the subskill's output contract: definitions written, the suggested model-binding handoff, and the validation result.
 
 If the user's task does not map cleanly to these steps, use your native planning tool to build a step-by-step plan from the subskills and constraints in this skill, then execute the plan.
 
@@ -50,14 +50,15 @@ If the user's task does not map cleanly to these steps, use your native planning
 
 | Subskill | When to Route Here | Entrypoint |
 | --- | --- | --- |
-| `kimi-code-subagents` | Route here when the target runtime is Kimi Code CLI and the deliverable is Markdown agent definition files plus model-pool configuration, including a ready-to-adapt coder/reviewer/fast-coder roster. | `subskills/kimi-code-subagents/SKILL-MAIN.md` |
+| `kimi-code-subagents` | Route here when the target runtime is Kimi Code CLI and the deliverable is model-agnostic Markdown agent definition files, including a ready-to-adapt default-coder, expert-coder, planner, and reviewer roster, and a suggested model-binding handoff for the user's Kimi `AGENTS.md`. | `subskills/kimi-code-subagents/SKILL-MAIN.md` |
 
 Load only the selected subskill's `SKILL-MAIN.md` and the local resources it explicitly requires.
 
 ## Guardrails
 
 - DO NOT activate this skill for a task that did not name it or was not routed from another skill.
-- DO NOT author subagent definitions for a runtime without loading that runtime's subskill; formats and model-binding mechanisms differ per runtime.
+- DO NOT author subagent definitions for a runtime without loading that runtime's subskill; formats and model-binding handoff locations differ per runtime.
+- DO NOT choose or write model bindings for the user's subagents; the runtime subskill only suggests where the user can bind them.
 - DO NOT treat bundled agent templates as drop-in finals; each subskill defines the adaptation step for the target project.
 
 ## Maintenance
