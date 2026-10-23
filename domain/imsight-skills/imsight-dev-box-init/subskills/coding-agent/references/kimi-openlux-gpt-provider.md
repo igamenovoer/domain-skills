@@ -7,10 +7,10 @@ Use this reference when the user wants to add OpenLux's OpenAI-compatible (`http
 1. Resolve the target Kimi Code home, provider name, credential source, and requested model set under **Target Home and Naming**, **Credential Placement**, and **Model Selection**.
 2. Complete **Compatibility Preflight** without writing configuration; stop when the installed CLI does not expose the required provider type or model effort fields.
 3. Resolve the model inventory under **Model Selection**: add the user's explicit ids, or run discovery only when the user explicitly asks for the Codex-supported set.
-4. Back up the target `config.toml` when it is not under version control, then merge the provider and model entries from **Provider and Model Contract** without replacing unrelated tables.
+4. Back up the target `config.toml` when it is not under version control, then merge the provider and model entries from **Provider and Model Contract** without replacing unrelated tables; set each `max_context_size` from **Known model defaults** when the id is listed, otherwise from resolved provider metadata and record the assumption.
 5. Add the thinking-effort fields and choose the effective default under **Thinking Effort Contract**.
 6. Validate the file and run real end-to-end turns with the installed `kimi` binary under **Verification**; do not substitute a raw HTTP probe for the CLI result.
-7. Report the changed configuration path, model aliases, discovery source and date, credential source, effort defaults, skipped ids, and any provider-side limitation.
+7. Report the changed configuration path, model aliases, discovery source and date, credential source, context-window source, effort defaults, skipped ids, and any provider-side limitation.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this page's contracts, the installed CLI, the discovery sources, and the user's constraints, then execute the plan without exposing the key.
 
@@ -88,31 +88,40 @@ api_key_env = "OPENLUX_API_KEY"
 [models."openlux-gpt/gpt-6.1-sol"]
 provider = "openlux-gpt"
 model = "gpt-6.1-sol"
-max_context_size = 1048576
+max_context_size = 500000
 capabilities = [ "thinking", "tool_use" ]
 support_efforts = [ "low", "medium", "high", "xhigh", "max" ]
-default_effort = "high"
+default_effort = "xhigh"
 display_name = "GPT-6.1 Sol (OpenLux)"
 
 [models."openlux-gpt/gpt-6-astra"]
 provider = "openlux-gpt"
 model = "gpt-6-astra"
-max_context_size = 1048576
+max_context_size = 372000
 capabilities = [ "thinking", "tool_use" ]
 support_efforts = [ "low", "medium", "high", "xhigh", "max" ]
-default_effort = "high"
+default_effort = "xhigh"
 display_name = "GPT-6 Astra (OpenLux)"
 ```
+
+Known model defaults (recorded 2026-10-23; re-check before relying on them):
+
+| Upstream id | `max_context_size` | `default_effort` |
+| --- | --- | --- |
+| `gpt-6.1-sol` | `500000` | `xhigh` |
+| `gpt-6-astra` | `372000` | `xhigh` |
+
+These are the project's recorded serving defaults, not catalog fields: the OpenLux `/v1/models` response lists both ids but publishes no numeric context window for either. The default thinking level for both ids is `xhigh`. `gpt-6-astra` is the only Astra id in the current catalog; do not invent a `gpt-6.1-astra` id or alias from the product name.
 
 Field rules:
 
 - `base_url` must end in `/v1` for this provider. The OpenAI-protocol client appends `/chat/completions` or `/responses`, so the Gemini-native host root, or a doubled `/v1/v1`, produces the wrong path. Do not share one provider entry across the two protocols.
 - `type = "openai"` selects Chat Completions and injects `reasoning_effort` for a model that declares thinking support. `type = "openai_responses"` is a separate protocol for ids that only advertise `openai-response`; use a separately named provider rather than mixing endpoint types under one name.
 - `model` is the upstream id; the alias is local. Keep the alias stable when the upstream id changes so `-m` and session references keep working.
-- `max_context_size` must come from provider metadata: the OpenLux catalog or OpenAI's model documentation. When the exact window is unpublished, use the family window and record that assumption. The GPT-6 family advertised 1,048,576 tokens on 2026-10-22; re-check instead of copying.
+- `max_context_size` must be a positive window you can justify. Use the recorded default from **Known model defaults** when the id is listed there. For any other id, take the value from provider metadata or OpenAI's model documentation; when the exact window is unpublished, use the family window and record that assumption. Re-check instead of copying: ids, aliases, and served windows change.
 - `capabilities` should include `"thinking"` and `"tool_use"` after those behaviors have been verified with the installed client. Add `"image_in"` only when the catalog declares vision for that id and a real image turn succeeds.
 - `support_efforts` must be the intersection of the id's discovered reasoning levels and the levels Kimi Code can select: `low`, `medium`, `high`, `xhigh`, `max`. Codex's catalog also advertises `ultra`, which the Kimi Code effort vocabulary cannot select; drop it and report the gap.
-- `default_effort` should honor the user's requested level; otherwise use the id's discovered Codex default restricted to `support_efforts`, then fall back to `high`.
+- `default_effort` should honor the user's requested level; otherwise use the recorded default from **Known model defaults** when the id is listed there, then the id's discovered Codex default restricted to `support_efforts`, then fall back to `high`.
 - Do not set `reasoning_key` speculatively. Set it only when the gateway returns reasoning content under a non-standard field name; the tested OpenLux build returned no reasoning content at all.
 
 ## Thinking Effort Contract
@@ -120,7 +129,7 @@ Field rules:
 Kimi Code exposes a model's effort levels through `support_efforts` and chooses a default through `default_effort`:
 
 - `support_efforts` lists the levels the model accepts. Keep it aligned with the levels the installed client can send; an out-of-list value can fail, and the installed client resolves a global value that is outside the list according to its own mapping.
-- `default_effort` supplies the model-level default. Set it from the user's request or the discovered Codex default rather than from a memorized value.
+- `default_effort` supplies the model-level default. Set it from the user's request, then the recorded default in **Known model defaults** when the id is listed there, then the discovered Codex default rather than from a memorized value.
 - The global `[thinking]` table can also set `effort` for the main agent. A global concrete effort can override the model default, so check the session's effective effort when strict model-level behavior matters.
 - In the TUI, `/effort` (alias `/thinking`) opens the thinking-effort selector, and `/model` exposes the model and its thinking choices during model selection. Use `-m openlux-gpt/<model-id>` for non-interactive selection.
 
