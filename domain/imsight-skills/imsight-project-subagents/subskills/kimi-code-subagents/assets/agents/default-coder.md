@@ -1,6 +1,6 @@
 ---
 name: default-coder
-description: "Default subagent for writing repo-tracked code that is part of the product and must be well-maintained: features, fixes, and refactors in the source and test trees. Runs on model kimi-code/k3-256k."
+description: "Default subagent for writing repo-tracked code that is part of the product and must be well-maintained: features, fixes, and refactors in the source and test trees. Runs on model kimi-code/k3-256k at max thinking."
 whenToUse: "The default choice for any change that lands in tracked, maintained code: product source, committed tests, durable tooling. Prefer this agent whenever the result will be maintained long-term; use fast-coder instead for disposable, experimental, or glue work, and default-reviewer for reviews."
 ---
 

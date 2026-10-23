@@ -83,9 +83,32 @@ default_effort = "max"
 
 Spawn-time model resolution: an explicit `model` argument wins; otherwise `default_model` applies. The `model` parameter accepts pool aliases and the reserved alias `primary` (the caller's own model and effort); anything else fails the spawn with an error listing the choices.
 
-Thinking-effort resolution for a pool-bound spawn: the section's `default_effort` wins when set; otherwise the bound `[models]` entry's `default_effort`, then the global `[thinking].effort`, then the middle of the entry's `support_efforts`. Pool-bound spawns do not inherit the caller's effort. A requested effort the model does not support falls back to the model entry's `default_effort`; a model entry whose own `default_effort` is not in its `support_efforts` is a configuration error. For per-entry efforts, leave the section `default_effort` unset and register variant aliases of the same underlying model differing only in `default_effort` (copy the full entry; variants inherit nothing).
+Thinking-effort resolution for a pool-bound spawn: the section's `default_effort` wins when set; otherwise the bound `[models]` entry's `default_effort`, then the global `[thinking].effort`, then the middle of the entry's `support_efforts`. Pool-bound spawns do not inherit the caller's effort. A requested effort the model does not support falls back to the model entry's `default_effort`; a model entry whose own `default_effort` is not in its `support_efforts` is a configuration error.
 
 Configuration errors fail loudly: session creation fails when `default_model` is missing or not a pool key, a pool key does not resolve to a configured `[models]` entry, or `force` is miscombined. Pool aliases referencing a later-deleted provider or model break startup until fixed.
+
+## Thinking-Effort Contract
+
+The resolution rules above allow several ways to control effort, and they interact confusingly (a section-wide `[secondary_model] default_effort` silently overrides every model entry's own default). Keep the configuration least-surprising by following four rules:
+
+1. **Do not touch settings that managed refreshes rewrite.** For `managed:kimi-code` models provisioned by `/login` (the `kimi-code/*` aliases), never edit the entry's top-level `default_effort` or `support_efforts`; a login or catalog refresh restores the provider's values.
+2. **Want a different default for a Kimi model? Use model overrides.** Pin `[models."<alias>".overrides] default_effort = "<level>"`; overrides survive managed refreshes and outrank the top-level field for every runtime consumer. The value must be a member of the entry's `support_efforts`.
+3. **Defaults for non-managed models live in their own entries.** For user-defined providers, set `default_effort` (and the other fields) directly in the `[models]` entry; nothing refreshes them, so no override table is needed.
+4. **Need a subagent-specific thinking level? Use a suffixed derived model.** Register `<provider>/<model>-<effort>` as a standalone `[models]` entry for the same underlying model with only `default_effort` changed (copy every other field in full; variants inherit nothing), add it to the pool, and name that alias — with its effort — in the subagent definition's `description`. Keep the bare alias on the model's own default, and keep `[secondary_model] default_effort` unset so each bound alias speaks for itself.
+
+Under this contract, effort is a pure function of the bound alias: read the alias name, and you know the thinking level.
+
+### Registering a model for subagent use
+
+When a subagent should run on a model that is not yet configured — including an unreleased or newly served model id — register it before binding:
+
+1. **Check whether the model is already provisioned.** Managed providers (`managed:kimi-code`) may already list it after a `/login` or catalog refresh; if so, only overrides are ever needed. User-defined providers require manual entries.
+2. **Resolve the model's facts from live sources**, never from memory or from this page: the provider's `/models` catalog or documentation for the exact id, context window, input modalities, and supported reasoning levels; the current Kimi Code documentation for the config fields. Record the source and the resolution date in the final report.
+3. **Write or extend the `[models]` entry**: `provider`, upstream `model` id, a justified positive `max_context_size`, `capabilities` (add `"thinking"` and `"tool_use"` when verified), `support_efforts` as the intersection of the model's discovered levels and the Kimi Code vocabulary (`low`, `medium`, `high`, `xhigh`, `max`), and `default_effort` per rules 2-3 of the contract.
+4. **Mint a suffixed variant only when the subagent needs a non-default effort** (rule 4); otherwise bind the bare alias.
+5. **Add the pool entry** under `[secondary_model.models]` with a hint naming the subagent it serves, then validate: TOML parses, the alias resolves, the effective effort is in `support_efforts`, and the CLI's change notification or a fresh `Agent`-tool catalog confirms hot-reload.
+
+Dated example (recorded 2026-10-23, Kimi Code 2.x; re-resolve before relying on it): a project runs four subagents on three providers — `default-coder` on `kimi-code/k3-256k` pinned to `max` through `[models."kimi-code/k3-256k".overrides]` because the managed entry ships `high`; `default-planner` on `openlux-gpt/gpt-6-astra` at its entry default `xhigh`; `default-reviewer` on the derived `openlux-gpt/gpt-6-astra-max` entry for a subagent-specific `max`; `fast-coder` on `deepseek/deepseek-flash` with `default_effort = "max"` set directly in its user-provider entry. The pool carries no section-wide `default_effort`.
 
 ## Dispatch Form
 
