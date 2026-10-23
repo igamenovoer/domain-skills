@@ -1,0 +1,6 @@
+interface:
+  display_name: "imsight-project-subagents"
+  short_description: "Teach an agent to create project-level subagent definitions for a specific coding-agent runtime"
+  default_prompt: "Use $imsight-project-subagents to see supported runtimes and create project subagent definitions such as coder, reviewer, and fast-coder rosters."
+policy:
+  allow_implicit_invocation: false
