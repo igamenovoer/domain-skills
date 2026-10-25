@@ -216,6 +216,11 @@ Kimi Code configures the proxy as a `google-genai` provider with the host root a
   - If the request uses the upstream Gemini API key, then replace it with a proxy client key; upstream keys belong in `gemini-api-key` configuration.
 - **Generation works but tools or images fail.**
   - If the model's modality fields do not include the requested input or the proxy's translator lacks support, then switch models or use the protocol the client supports; do not assume text support implies full modality support.
+- **Large-context compaction takes minutes or looks stalled.**
+  - A `full_compaction` request re-sends the conversation to the same model. One observed Kimi Code request took 5m28s and returned `200` only after the client had cancelled at 5m22s. Compact earlier by lowering the client's configured context window, and enable `streaming.keepalive-seconds` in CLIProxyAPI if the client times out on a silent stream.
+  - CLIProxyAPI's Antigravity compaction helper is non-streaming internally: it calls `Execute` with streaming disabled and synthesizes the response afterward. A Gemini-native `full_compaction` from Kimi Code has no `compaction_trigger` in `input`, so it is forwarded as a normal `streamGenerateContent` rather than through that helper. Do not assume the proxy will stream a summary produced by its compaction route.
+- **`400 Requests ending with a model turn are not supported`.**
+  - Gemini-native `contents` must end with a user turn or a function response. The proxy's compaction helper appends a user summary prompt only for OpenAI Responses `input`, not for Gemini `contents`. Add a user "summarize this conversation" turn client-side, or use the Responses compaction path, before retrying.
 
 ## Quota and Terms
 
