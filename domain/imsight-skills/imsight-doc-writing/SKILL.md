@@ -1,6 +1,6 @@
 ---
 name: imsight-doc-writing
-description: Use when explicitly invoking imsight-doc-writing, routing from another Imsight skill, or handling an Imsight-scoped request to draft, revise, structure, review, or polish technical Markdown, project notes, design or usage docs, architecture explanations, annotated source-code explainer webpages, or Mermaid diagrams.
+description: Use when explicitly invoking imsight-doc-writing, routing from another Imsight skill, or handling an Imsight-scoped request to draft, revise, structure, review, or polish technical Markdown, project notes, design or usage docs, architecture explanations, annotated source-code explainer webpages, Slidev presentations, or Mermaid diagrams.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -25,13 +25,14 @@ Use this skill as the Imsight entrypoint for documentation work. Keep this file 
 - Use for an explicit `imsight-doc-writing` invocation or route from another Imsight skill.
 - Use for Imsight-scoped documentation writing, structure, Markdown deliverables, review, Mermaid graphing, or Mermaid formatting.
 - Use for annotated implementation webpages that align explanations, equations, data shapes, and exact ranges from a source file.
+- Use for Slidev presentations, including optional slides opened through links during a presentation.
 - Use the general documentation pass when no specialized route fits.
 
 ## Workflow
 
 When this skill is invoked, execute the following steps in order.
 
-1. **Identify the documentation task**. Determine whether the user wants a new document, a revision, a review, a structure proposal, an annotated source walkthrough, a diagram, or a mixed documentation pass.
+1. **Identify the documentation task**. Determine whether the user wants a new document, a revision, a review, a structure proposal, an annotated source walkthrough, a Slidev presentation, a diagram, or a mixed documentation pass.
 2. **Select the narrowest route** from **Subskills** or **Subcommands**. If no specialized route fits, use the **General Documentation Pass** rules.
 3. **Resolve the target artifact**. Use the file, directory, or output location provided by the user; otherwise ask only when writing to the wrong place would be risky.
 4. **Read existing context before writing**. Inspect nearby docs, project terminology, linked specs, and existing diagrams before choosing headings, terms, or diagram shapes.
@@ -52,6 +53,7 @@ If the user's task does not map cleanly to these steps, use your native planning
 | Subskill | When to Route Here | Load |
 | --- | --- | --- |
 | `code-explainer` | Route here when the requested document is an implementation walkthrough that must keep commentary, equations, or data shapes aligned with exact source ranges in a webpage. | [subskills/code-explainer/SKILL-MAIN.md](subskills/code-explainer/SKILL-MAIN.md) |
+| `slidev` | Route here when the artifact is a Slidev deck or the request involves slide layout, presenter navigation, or on-demand appendix slides. | [subskills/slidev/SKILL-MAIN.md](subskills/slidev/SKILL-MAIN.md) |
 
 ## Subcommands
 
@@ -96,4 +98,4 @@ When the user names a file, edit that file in place. When the user asks for a ne
 - DO NOT treat a documentation result as a transcript of reasoning.
 - DO NOT add unused process notes or auxiliary documents.
 - DO NOT produce Mermaid that does not render or requires horizontal scrolling.
-- DO NOT use the general documentation pass when the code-explainer subskill is the specific route.
+- DO NOT use the general documentation pass when a listed subskill is the specific route.
