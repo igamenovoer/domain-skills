@@ -4,15 +4,16 @@
 
 When this subcommand is invoked, execute the following steps in order.
 
-1. **Resolve the day boundary**. Convert the requested date or “today” into an explicit start and end timestamp in the user's timezone or the current environment timezone.
+1. **Resolve the day boundary**. Convert the requested date or "today" into an explicit start and end timestamp in the user's timezone or the current environment timezone.
 2. **Resolve reporting scope**. Include the current repository, repositories explicitly named by the user, and directly relevant project-owned nested repositories or worktrees. See **Repository Scope**.
-3. **Inspect Git evidence**. Read all-branch commits within the day boundary plus staged, unstaged, and relevant untracked changes. See **Git Inspection**.
-4. **Inspect project materials**. Read authoritative non-Git records that establish work performed, decisions made, artifacts produced, or validation completed. See **Project Material Inspection**.
-5. **Build a private evidence ledger**. Record candidate outcomes, delivery state, supporting evidence, verification, and uncertainty; use it for synthesis but do not emit it unless the user requests an audit view.
-6. **Group evidence into report themes**. Merge commits, diffs, specifications, and project artifacts that support the same outcome; remove duplicate evidence and incidental mechanics.
-7. **Draft the report**. Apply [../references/day-log-principles.md](../references/day-log-principles.md), defaulting to English and three numbered points.
-8. **Verify every sentence**. Confirm names, counts, status verbs, validation claims, and artifact outcomes against the inspected evidence.
-9. **Deliver or save**. Follow the parent skill's **Output Contract**, then state the output path when a file was written.
+3. **Load the project report contract and select the shape**. Extract the project's own naming, language, sections, and style, or record that none exists; then choose the compact or structured report shape. See **Project Contract** and **Shape Selection**.
+4. **Inspect Git evidence**. Read all-branch commits within the day boundary plus staged, unstaged, and relevant untracked changes. See **Git Inspection**.
+5. **Inspect project materials**. Read authoritative non-Git records that establish work performed, decisions made, artifacts produced, or validation completed. See **Project Material Inspection**.
+6. **Build a private evidence ledger**. Record candidate outcomes, delivery state, supporting evidence, verification, and uncertainty; use it for synthesis but do not emit it unless the user requests an audit view.
+7. **Group evidence into report themes**. Merge commits, diffs, specifications, and project artifacts that support the same outcome; remove duplicate evidence and incidental mechanics.
+8. **Draft the report**. Apply [../references/day-log-principles.md](../references/day-log-principles.md) and the selected shape, defaulting to the requested language and three numbered outcome points.
+9. **Verify every sentence**. Confirm names, counts, status verbs, validation claims, and artifact outcomes against the inspected evidence.
+10. **Deliver or save**. Follow the parent skill's **Output Contract**, then state the output path when a file was written.
 
 If the requested report spans unusual repositories, dates, evidence systems, or audience constraints, use the native planning tool to build a bounded inspection and synthesis plan from this workflow and the user's scope, then execute the plan.
 
@@ -25,6 +26,21 @@ Use a bounded scope rather than every Git repository visible on the host:
 3. Project-owned submodules, nested topic repositories, or external checkouts whose paths or records are directly connected to the day's work.
 
 Inspect all branches and reachable refs within each selected repository. Include a separate repository only when it contributes evidence to the requested report; do not count the same commit twice through multiple worktrees.
+
+## Project Contract
+
+Check for the project's own reporting instructions before drafting, so that the report matches the artifact series it belongs to. See [Project Report Contract](../references/project-report-contract.md) for the discovery order and the fields to extract. When no contract exists, keep the skill defaults and do not invent project-specific sections or a localized body language.
+
+Record the resolved filename, title form, body language, section set, numbering, and table rules in one private note. Re-read the contract on each run rather than reusing a remembered copy.
+
+## Shape Selection
+
+| Shape | Produces | Use when |
+| --- | --- | --- |
+| Compact | A dated heading and three numbered outcome paragraphs in the requested language | No contract selects a structure, or the user asks for a short recap |
+| Structured | Contract-defined sections over capability, investigation, and remaining work, with result-bearing bullets first | The contract defines report sections, or the user asks for an engineering report |
+
+Resolve the shape from the contract first, then the user's request, then an unambiguous existing series. Apply [../references/structured-report-shape.md](../references/structured-report-shape.md) for the structured shape. Do not mix the two: a structured report does not fall back to bare paragraphs, and a compact report does not grow section headings.
 
 ## Git Inspection
 
@@ -73,8 +89,11 @@ Before delivery, confirm that:
 - The date and timezone match the requested reporting day.
 - All selected repositories include both committed and uncommitted evidence.
 - Relevant project materials were inspected rather than inferred from filenames.
-- The report uses the requested language, or English when none was requested.
+- The report uses the requested language, or the contract's declared language, or English when neither exists.
 - The default report contains three outcome-oriented points, not three arbitrary commits.
 - A reader unfamiliar with the repository can understand every point.
 - Public project and topic names use their recognizable full forms, while internal abbreviations are expanded or omitted.
 - Completion and validation verbs match the evidence.
+- The filename and title match the contract or the default naming rule.
+- A structured report places its sections over the three purposes in order, leads every section with bullets, and keeps all future work in the closing section.
+- A report triggered by an experiment shows the original primary metric by arm in the background section, with a table only when at least two comparable rows or columns exist.
