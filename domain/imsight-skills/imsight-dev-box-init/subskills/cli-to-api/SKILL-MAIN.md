@@ -1,6 +1,6 @@
 ---
 name: cli-to-api
-description: Use when a coding CLI subscription or OAuth account must be exposed as an OpenAI-, Gemini-, or Anthropic-compatible API through a proxy such as CLIProxyAPI, including headless login, model discovery, endpoint verification, or adding a Gemini/Antigravity account.
+description: Use when a coding CLI subscription or OAuth account must be exposed as an OpenAI-, Gemini-, or Anthropic-compatible API through a proxy such as CLIProxyAPI, including headless login, Codex OAuth, model discovery, endpoint verification, service-tier aliases, or adding a Gemini/Antigravity account.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -42,11 +42,11 @@ Do not use this subskill when:
 1. **Define the API contract.** Identify the client protocol (OpenAI Chat Completions or Responses, Gemini `generateContent`, or Anthropic Messages), the required model IDs and capabilities, whether the endpoint is local or remote, and which upstream account type will supply quota. If the user has not chosen, propose the smallest surface that satisfies the client.
 2. **Choose the proxy tool.** Read **Part 1** and `references/proxy-tools.md`. Prefer a multi-provider OAuth proxy such as CLIProxyAPI when several providers or accounts are needed; use a single-provider bridge for one narrow integration; use an API-key gateway only when upstream credentials are already API keys.
 3. **Plan the deployment and security boundary.** Decide the bind address, API port, client-key storage, TLS or reverse-proxy termination, process supervision, and whether the host needs an outbound HTTP proxy. Keep the bind on loopback unless remote access is intended, and never publish the port without client authentication.
-4. **Prepare provider access.** Read **Part 2** and `references/provider-apis.md`. For a Gemini or Antigravity account, follow `references/provider-gemini.md`. Complete OAuth on a machine that can reach the provider, using a device flow when the provider supports it or a loopback callback tunnel otherwise.
+4. **Prepare provider access.** Read **Part 2** and `references/provider-apis.md`. For a Gemini or Antigravity account, follow `references/provider-gemini.md`; for a Codex/ChatGPT OAuth account, follow `references/provider-codex.md`. Complete OAuth on a machine that can reach the provider, using a device flow when the provider supports it or a loopback callback tunnel otherwise.
 5. **Launch and authenticate.** Start the proxy with the required environment, including `HTTP_PROXY` and `HTTPS_PROXY` when outbound traffic is mediated. Run the provider login, confirm the credential lands in the proxy's auth store, and confirm the running process reloads it.
 6. **Discover models.** Query the proxy's model-list endpoints instead of assuming upstream IDs. Record the exact IDs, display names, and capabilities the account exposes.
 7. **Verify end-to-end.** Check unauthorized rejection, authorized model listing, a real generation, streaming, and at least one tool or structured-output path the client will use. Exercise the same protocol the client will use, not only the model list.
-8. **Hand off operations.** Report the base URL, where the client key lives, the model IDs, the restart command, the auth-store backup location, the proxy-environment dependency, and the quota or terms caveats. When the client is Kimi Code, wire the provider and model with `support_efforts` and `default_effort`, then verify the effort selector and the recorded request; see `references/client-kimi-code.md`.
+8. **Hand off operations.** Report the base URL, where the client key lives, the model IDs, the restart command, the auth-store backup location, the proxy-environment dependency, and the quota or terms caveats. When the client is Kimi Code, wire the provider and model with `support_efforts` and `default_effort`, then verify the effort selector and the recorded request; see `references/client-kimi-code.md` for Gemini-native routes and `references/provider-codex.md` for OpenAI-compatible Codex routes and tier aliases.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from the two parts, the linked references, the user's client protocol, and the provider account type, then execute the plan.
 
@@ -55,7 +55,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | Part | Question it answers | Detailed guide |
 | --- | --- | --- |
 | Part 1: The proxy tool | Which tool should expose the CLI account, how should it be deployed, and what protocol surface does it provide? | `references/proxy-tools.md` |
-| Part 2: Provider API creation | Which account and auth flow supply the upstream API, which models become available, and how are they verified? | `references/provider-apis.md`, `references/provider-gemini.md`, and `references/client-kimi-code.md` for Kimi Code client wiring |
+| Part 2: Provider API creation | Which account and auth flow supply the upstream API, which models become available, how are service tiers exposed, and how are they verified? | `references/provider-apis.md`, `references/provider-gemini.md`, `references/provider-codex.md`, and `references/client-kimi-code.md` for Kimi Code client wiring |
 
 ## Part 1: The Proxy Tool
 
@@ -78,9 +78,10 @@ The provider layer answers a different question: which upstream account, authent
 - **Credential store**: the proxy's per-provider auth file or upstream key list, with restrictive permissions.
 - **Model catalog**: discovered dynamically from the running proxy; IDs, display names, and input/output modalities can differ from the provider's public API.
 - **Protocol translation**: whether the client protocol maps cleanly to the provider's native shape, especially for tools, images, thinking, and streaming.
+- **Service tiers**: whether the provider exposes Fast, priority, or ultrafast scheduling, whether the client can request it, and how the effective tier is verified.
 - **Quota and terms**: whether the account's plan permits API-style use and what limits apply.
 
-For the cross-provider auth matrix, model discovery, verification matrix, and secret-handling rules, read `references/provider-apis.md`. For the Gemini worked case, including Antigravity OAuth, Gemini API keys, Vertex import, Gemini-native calls, and SDK configuration, read `references/provider-gemini.md`. For Kimi Code client wiring, including the `google-genai` provider shape, `support_efforts`, and the `/effort` picker, read `references/client-kimi-code.md`.
+For the cross-provider auth matrix, model discovery, verification matrix, and secret-handling rules, read `references/provider-apis.md`. For the Gemini worked case, including Antigravity OAuth, Gemini API keys, Vertex import, Gemini-native calls, and SDK configuration, read `references/provider-gemini.md`. For the Codex OAuth worked case, including Fast/Ultrafast tier aliases, payload overrides, and the OpenAI-compatible Kimi Code provider, read `references/provider-codex.md`. For Kimi Code Gemini-native client wiring, including the `google-genai` provider shape, `support_efforts`, and the `/effort` picker, read `references/client-kimi-code.md`.
 
 ## Placeholder Convention
 
@@ -98,6 +99,11 @@ Every host-specific value in this subskill is a placeholder. Replace placeholder
 | `<install-dir>` | Proxy installation directory |
 | `<proxy-url>` | Outbound HTTP or SOCKS proxy URL when direct egress is blocked |
 | `<account>` | Upstream account identifier used only in local file names, never in skill sources |
+| `<alias>` | Client-visible model name exposed by the proxy |
+| `<upstream-model-id>` | Exact upstream model ID before a client-visible alias is applied |
+| `<service-tier>` | Wire service tier value such as `priority` (Fast) or `ultrafast` |
+| `<context-size>` | Model context window in tokens, taken from the live catalog |
+| `<display-name>` | Human-readable label for a client model entry |
 
 ## Verification Checklist
 
@@ -106,6 +112,9 @@ Every host-specific value in this subskill is a placeholder. Replace placeholder
 - A real generation returns content and a stop or finish reason, not only a model list.
 - Streaming returns incremental chunks and terminates cleanly.
 - Tool, structured-output, image, or thinking paths work when the client depends on them.
+- A client-visible tier alias appears in the model list and resolves to the intended upstream model.
+- The final outbound request carries the requested `service_tier`; the upstream response field alone is not evidence.
+- Usage records expose `effective_service_tier` when the proxy build supports it.
 - Restarting the proxy preserves provider credentials and still applies the outbound proxy environment.
 - Logs and tracked files contain no tokens, account emails, client keys, or host-specific endpoints.
 
@@ -121,6 +130,14 @@ Every host-specific value in this subskill is a placeholder. Replace placeholder
   - If the provider login reported success but no models appear, then check the auth directory, file permissions, and reload log; restart the proxy when hot reload did not pick up the credential.
 - **Generation returns 404.**
   - If the protocol route exists but the model call fails, then use an exact ID from the model-list response and the route that exposes it; do not assume an upstream model name is routable.
+- **A tier alias returns 404.**
+  - If the client requests an alias that is absent from the model list, then add the client-visible alias with `fork: true`, confirm the reload, and make sure the client's `model` field uses the alias rather than the upstream ID.
+- **Fast or Ultrafast has no visible effect.**
+  - If the final outbound request carries `priority` or `ultrafast` but the response says `default` or `auto`, then do not treat the response field as evidence; check the effective-tier usage field, a temporary request log, or a controlled latency comparison, and confirm the account is entitled.
+- **The proxy strips a tier value.**
+  - If the installed build's translator does not support the value, then normalize `fast` to `priority` and verify `ultrafast` support against the release; upgrade when the build predates the translator change.
+- **The usage record lacks an effective tier.**
+  - If the proxy build predates effective-tier reporting, then use a temporary request log or upgrade; the client-requested and response tiers alone do not prove what was sent.
 - **Proxy returns 401.**
   - If the client sends a provider API key, then replace it with a configured proxy client key; upstream provider keys belong in the proxy's upstream configuration.
 - **Works locally but not remotely.**
@@ -132,5 +149,7 @@ Every host-specific value in this subskill is a placeholder. Replace placeholder
 - DO NOT copy a coding CLI's stored credential file into the proxy's auth store as a shortcut; use the proxy's supported login flow.
 - DO NOT expose the proxy on a public interface without client keys plus TLS or a trusted reverse proxy.
 - DO NOT hardcode model IDs or assume upstream model names are exposed; discover them from the running proxy.
+- DO NOT treat the upstream response's `service_tier` as proof that Fast or Ultrafast was applied.
+- DO NOT assume a model-ID suffix such as `-fast` changes the service tier; the tier is a request field that must be injected or forwarded.
 - DO NOT claim the endpoint is verified from a model list alone; a real generation must succeed.
 - DO NOT help bypass provider quotas, share accounts against provider terms, or use credentials the user does not own.

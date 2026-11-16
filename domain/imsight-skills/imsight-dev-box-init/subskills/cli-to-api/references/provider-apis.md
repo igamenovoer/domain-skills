@@ -30,7 +30,7 @@ The flags below reflect a recent CLIProxyAPI v8 build and are examples of the in
 | --- | --- | --- | --- |
 | Google Gemini | Antigravity account; Gemini API key; Vertex project; Gemini CLI account where the build exposes it | OAuth loopback, API key, or service account | Antigravity OAuth uses a loopback callback that defaults to `51121`; Gemini API keys are configured as upstream entries, not logged in |
 | Anthropic Claude | Claude Code subscription; Anthropic API key | OAuth or API key | Claude Code OAuth uses a loopback callback; API-key upstreams are separate from downstream client keys |
-| OpenAI | Codex/ChatGPT account; OpenAI API key | OAuth, device code, or API key | Codex device flow is the headless-friendly route; Responses and Chat Completions surfaces may differ |
+| OpenAI | Codex/ChatGPT account; OpenAI API key | OAuth, device code, or API key | Codex device flow is the headless-friendly route; Fast/`priority` and `ultrafast` are request tiers, not model-ID suffixes; Responses and Chat Completions surfaces may differ. See [provider-codex.md](provider-codex.md) |
 | GitHub Copilot | GitHub Copilot subscription | OAuth or device flow through a Copilot-specific bridge | CLIProxyAPI does not necessarily cover Copilot; use a bridge such as `copilot-api` and verify GitHub's terms |
 | Kimi | Kimi account domains | OAuth | Two login flags exist for different account domains in recent builds |
 | xAI | Grok account | OAuth | Loopback callback; model IDs are account-dependent |
@@ -38,6 +38,8 @@ The flags below reflect a recent CLIProxyAPI v8 build and are examples of the in
 | Meta | Meta account | OAuth | Loopback callback; model availability is account-dependent |
 | Vertex AI | Google Cloud project | Service-account JSON import | Project, region, and IAM roles determine quota and models |
 | Qwen, iFlow, others | Community-documented accounts | Usually OAuth | Flags appear and disappear between releases; do not assume an older tutorial still applies |
+
+For the Codex OAuth worked case, including device login, model discovery, Fast/Ultrafast tier aliases, payload overrides, and the Kimi Code OpenAI-compatible provider, read [provider-codex.md](provider-codex.md).
 
 ## Choosing an OAuth Flow
 

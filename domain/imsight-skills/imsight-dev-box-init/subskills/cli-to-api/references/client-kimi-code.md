@@ -2,6 +2,8 @@
 
 Use this reference after the proxy exposes a working Gemini endpoint. It configures Kimi Code CLI as a downstream client and enables a selectable thinking level for Gemini 3/4 models.
 
+For an OpenAI-compatible Codex provider and service-tier aliases such as Fast/`priority` or `ultrafast`, read [provider-codex.md](provider-codex.md); this page covers the Gemini-native provider shape.
+
 ## Preflight
 
 ```bash
