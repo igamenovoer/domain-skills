@@ -1,0 +1,4 @@
+interface:
+  display_name: "meta-project-mgr"
+  short_description: "Initialize Pixi meta workspaces and manage realwork submodules"
+  default_prompt: "Use $imsight-project-mgr->meta-project-mgr to initialize a Pixi-managed meta workspace with selected realwork branches, migrate an existing project, or manage its realwork submodules."

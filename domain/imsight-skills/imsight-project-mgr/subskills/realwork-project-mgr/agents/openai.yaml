@@ -1,0 +1,4 @@
+interface:
+  display_name: "realwork-project-mgr"
+  short_description: "Maintain functional project structure, resources, guidance, and releases"
+  default_prompt: "Use $imsight-project-mgr->realwork-project-mgr for the selected project and requested operation."

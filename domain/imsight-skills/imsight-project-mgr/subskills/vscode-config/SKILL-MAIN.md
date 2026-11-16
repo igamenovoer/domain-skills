@@ -32,7 +32,7 @@ Scope a project's VS Code workspace so file watching and language-server analysi
 When this subskill is invoked, execute the following steps in order.
 
 1. **Confirm routing**. Continue only when the user explicitly invoked `imsight-project-mgr->vscode-config` or the parent skill routed the operation here.
-2. **Resolve the project root**. Use the user-provided project directory, or the current repository root when the task clearly targets it.
+2. **Resolve the editor workspace and authored targets**. Use the user-provided workspace. In a metaproj, identify the active realworks and meta tools explicitly; workspace-root settings belong to meta, while product source remains in those realworks.
 3. **Inventory and classify the workspace trees**. Walk the project root (sizes via `du -sh -- */`, hidden entries included) and assign every substantial directory to watch or unwatch by applying **Classification Principles**. Do not copy another project's glob list; derive the classification from this project's actual trees.
 4. **Select the subcommand** from **Subcommands**. File watching and language-server analysis are independent mechanisms with separate settings keys; run both when the task covers both.
 5. **Load and execute the selected command page**. Follow its workflow step by step, merging into the existing `.vscode/settings.json` rather than replacing it.
@@ -57,6 +57,12 @@ If the user's task does not map cleanly to these steps, use your native planning
 Each subcommand is independently invocable; the table order does not impose a lifecycle.
 
 ## Classification Principles
+
+### Separated development workspaces
+
+Follow the [responsibility contract](../../references/project-responsibilities.md). `realworks/` is authored source, not an external-reference or generated tree. Do not exclude every realwork because it is a submodule. Keep the selected checkout's source, tests, and functional scripts visible to the appropriate workspace folder; scope inactive clones only when they are deliberately outside that editor session. Meta source and planning are also authored content. Dependency submodules under an active checkout may be obtained code or editable task targets; classify them by the task rather than Git storage form.
+
+Prefer per-folder/multi-root language settings when multiple realworks expose the same package name. Do not add every checkout to one shared Python import path or claim language-server results identify the selected branch without verifying resolution. Shared environments, data/model payloads, ignored scratch and caches can be excluded separately. Keep editor configuration in meta and preserve standalone user settings.
 
 The durable product of this subskill is the classification itself; glob patterns only encode it. Apply these principles in order to every candidate tree.
 
