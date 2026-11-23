@@ -1,6 +1,6 @@
 ---
 name: imsight-project-mgr
-description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes project setup, a metaproj/realworks migration, branch-specific submodule development, project rules, editor configuration, or product release management here.
+description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes project setup, a metaproj/realworks migration, branch-specific submodule development, temporary in-repo worktrees in standalone repositories, project rules, editor configuration, or product release management here.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -38,14 +38,14 @@ A **meta project** (`metaproj`) is a development workspace with six characterist
 5. **Shares resources with explicit isolation.** It hosts shared data, models, references, and development inputs exposed through declared resource bindings. Temporary outputs and task state are separated by realwork and run.
 6. **Is not an end-user product to publish.** Product features and their tests belong in the selected realwork. Metaproj's own maintained development tools belong in `meta_src/`, experimental development scripts in `meta_scripts/`, and it has no root product `src/`.
 
-The distinction is purpose: product functionality and its verification belong to a selected realwork; development support and coordination belong to metaproj. A request made from the meta project still implements product features in the selected realwork.
+The distinction is purpose: product functionality and its verification belong to a selected realwork; development support and coordination belong to metaproj. A request made from the meta project still implements product features in the selected realwork. When a repository is a standalone realwork rather than a metaproj workspace or attached submodule, bounded parallel tasks may use temporary in-repo worktrees through `realwork-project-mgr`.
 
 ## Workflow
 
 1. **Confirm scope.** Continue on explicit invocation or an explicit route from a loaded skill. Honor discussion-only requests without writing reports or project files.
-2. **Resolve ownership.** Identify the requested functional checkout, meta workspace, or existing combined project. Do not interpret the shell cwd as permission to edit every repository beneath it.
+2. **Resolve ownership and topology.** Identify the requested functional checkout, meta workspace, or standalone project; when parallel development or temporary worktrees are requested, detect `meta-project` versus `realwork` signatures first via `subskills/realwork-project-mgr/scripts/detect_project_kind.sh`. Do not interpret the shell cwd as permission to edit every repository beneath it.
 3. **Select a child** from **Subskills** and load only its `SKILL-MAIN.md` plus the linked resources needed by the request.
-4. **Pass explicit context.** Include the selected checkout and branch, meta root when present, requested operation, existing authorization, and relevant specification location.
+4. **Pass explicit context.** Include the selected checkout and branch, meta root when present, detected topology, requested operation, existing authorization, and relevant specification location.
 5. **Report the result.** Distinguish files, refs, environment setup, verification, and publication actually completed from remaining work.
 
 If the request crosses several capabilities, use the native planning tool to order the required child workflows while retaining their ownership and authorization boundaries.
@@ -54,8 +54,8 @@ If the request crosses several capabilities, use the native planning tool to ord
 
 | Subskill | When to Route Here | Entrypoint |
 | --- | --- | --- |
-| `realwork-project-mgr` | Route here for functional project structure, acquisition controls, project guidance, or release of a selected product checkout. | [SKILL-MAIN.md](subskills/realwork-project-mgr/SKILL-MAIN.md) |
-| `meta-project-mgr` | Route here to create or migrate a development workspace, manage branch checkouts, or configure shared tools and resources. | [SKILL-MAIN.md](subskills/meta-project-mgr/SKILL-MAIN.md) |
+| `realwork-project-mgr` | Route here for functional project structure, acquisition controls, project guidance, product releases, or temporary in-repo Git worktrees in standalone realwork repositories. | [SKILL-MAIN.md](subskills/realwork-project-mgr/SKILL-MAIN.md) |
+| `meta-project-mgr` | Route here to create or migrate a metaproj workspace, manage realwork branch submodules, or configure shared tools and resources. | [SKILL-MAIN.md](subskills/meta-project-mgr/SKILL-MAIN.md) |
 | `vscode-config` | Route here to scope editor file watching or Python analysis around authored source and large obtained/generated trees. | [SKILL-MAIN.md](subskills/vscode-config/SKILL-MAIN.md) |
 
 ## Subcommands
@@ -64,7 +64,7 @@ If the request crosses several capabilities, use the native planning tool to ord
 | --- | --- |
 | `help` | Explain the ownership split and available children; perform no setup. |
 
-Invoke `imsight-project-mgr->meta-project-mgr->init-meta-project()` to initialize a Pixi-managed meta workspace with a selected set of branch submodules, defaulting to `realworks/main`, or `imsight-project-mgr->meta-project-mgr->migrate-project()` for an existing combined project. Functional project commands belong to `realwork-project-mgr`.
+Invoke `imsight-project-mgr->meta-project-mgr->init-meta-project()` to initialize a Pixi-managed meta workspace with a selected set of branch submodules, defaulting to `realworks/main`, or `imsight-project-mgr->meta-project-mgr->migrate-project()` for an existing combined project. Standalone functional project setup and temporary in-repo worktrees belong to `realwork-project-mgr`.
 
 ## Output and External Routes
 
@@ -75,6 +75,6 @@ Requirements and feature design remain with `imsight-project-explore` and `imsig
 ## Guardrails
 
 - DO NOT invoke implicitly for generic project work or mere mention of Imsight.
-- DO NOT recreate linked-worktree layouts, worker anchor branches, or automatic `.pixi`/agent-directory symlinks as the parallel-development model.
+- DO NOT use linked-worktree layouts, worker anchor branches, or `extern/trees/` inside a metaproj workspace or attached realwork; limit temporary in-repo worktrees to standalone realwork repositories via `realwork-project-mgr`.
 - DO NOT confuse a realwork branch with the metaproj branch or advance a gitlink merely because a branch name matches.
 - DO NOT infer permission to commit, push, publish, delete branches, stop services, or remove data from setup or verification alone.

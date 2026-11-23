@@ -2,7 +2,7 @@
 
 ## Ownership
 
-A **realwork** is the functional project at a selected revision. A **metaproj** is its non-publishable development workspace. In the standard arrangement the same remote repository provides a `metaproj` branch and functional `main`/feature branches. Each realwork is an independent clone registered as a submodule, not a linked Git worktree. Preserve an established alternative remote arrangement when the user requests it.
+A **realwork** is the functional project at a selected revision. A **metaproj** is its non-publishable development workspace. In the standard arrangement the same remote repository provides a `metaproj` branch and functional `main`/feature branches. Each realwork is an independent clone registered as a submodule, not a linked Git worktree. Standalone realwork repositories without a `metaproj` workspace or enclosing meta superproject may still use temporary in-repo Git worktrees via `realwork-project-mgr` for bounded parallel tasks. Preserve an established alternative remote arrangement when the user requests it.
 
 | Content | Owner |
 | --- | --- |
