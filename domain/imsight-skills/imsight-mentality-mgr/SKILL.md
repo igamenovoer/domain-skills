@@ -1,6 +1,6 @@
 ---
 name: imsight-mentality-mgr
-description: Use when an Imsight mentality request concerns catalogs, project or agent-memory rules, communication or rigor flavors, experiment evidence, simplification settings, effective mentality recall, or explicit Brooks or Ponytail reviews, or when applicable work has resolved mentality rules. Do not use for ordinary factual memory or unrelated preferences.
+description: Use when an Imsight mentality request concerns explanation shortcuts, catalogs, project or agent-memory rules, communication or rigor flavors, experiment evidence, simplification settings, effective mentality recall, or explicit Brooks or Ponytail reviews, or when applicable work has resolved mentality rules. Do not use for ordinary factual memory or unrelated preferences.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -20,7 +20,9 @@ Manage principle catalogs, project defaults, and each agent's chat-memory overri
 
 ## Workflow
 
-1. Resolve the action and named child below. Human Speak and Rigor Control management require an explicit flavor; otherwise show the selected child's chooser before any mutation.
+1. Select the action or child below.
+   - For `shortcuts`, load [Shortcuts](subskills/shortcuts/SKILL-MAIN.md) and use its workflow for the entire invocation.
+   - For Human Speak and Rigor Control management, resolve an explicit flavor or show the selected child's chooser before any mutation.
 2. Load only that child's entrypoint and relevant selector, action, or review sections. Use [actions.md](references/actions.md) for management, [composition.md](references/composition.md) for ordinary application, and the child's procedure for an explicit review.
 3. Resolve scope and definitions through the needed sections of [runtime-injection.md](references/runtime-injection.md). Read [priorities.md](references/priorities.md) when allocating or comparing family priorities. Validate the whole request before effects.
 4. Execute and report canonical IDs, scope, priorities, and actual file effects. Memory actions also summarize meanings and definition retention.
@@ -29,7 +31,7 @@ For requests outside this flow, use the native planning tool with these contract
 
 ## Invocation
 
-Bare invocation shows help; a named ordinary child recalls its state and shows help. Human Speak and Rigor Control instead ask for a flavor. Manager-wide recall reports ordinary children and shows both flavor choosers.
+Bare manager invocation shows help. A named ordinary mentality child recalls its state and shows help. Human Speak and Rigor Control ask for a flavor. Manager-wide recall reports ordinary mentalities and shows both flavor choosers.
 
 Example: `imsight-mentality-mgr->brooks->enable-memory()` with `r1 r5`. Flavors are flat commands, such as `imsight-mentality-mgr->human-speak->han-style()` with `enable-memory h1 h5` or `imsight-mentality-mgr->rigor-control->product-showcase()` with `enable-memory all`.
 
@@ -37,6 +39,8 @@ Example: `imsight-mentality-mgr->brooks->enable-memory()` with `r1 r5`. Flavors 
 - Project enable/disable requires explicit scope and selectors, including `all` when intended. Naming an instruction file selects project scope.
 - Project actions publish missing catalogs and update all existing project-wide coding-agent files (`AGENTS.md`, `CLAUDE.md`, etc.) unless the user selects specific files. Create root `AGENTS.md` only when none exist. Follow [file selection](references/runtime-injection.md#instruction-file-selection).
 - Missing flavors, invalid selectors, or conflicting scope instructions require resolution before mutation. Omitted enable/disable scope alone does not.
+
+Invoke `imsight-mentality-mgr->shortcuts` to list available shortcuts. Invoke `imsight-mentality-mgr->shortcuts->revelio()` to explain the previous reply in Han Style. Supply a subject, a mentality, or both to customize the explanation.
 
 ## Subcommands
 
@@ -52,7 +56,7 @@ Example: `imsight-mentality-mgr->brooks->enable-memory()` with `r1 r5`. Flavors 
 
 ## Subskills
 
-| Mentality | When to Route Here | Entry |
+| Subskill | When to Route Here | Entry |
 | --- | --- | --- |
 | `brooks` | Route here for maintainable code and tests or an explicit diagnostic review. | [Brooks](subskills/brooks/SKILL-MAIN.md) |
 | `ponytail` | Route here for implementation simplification with independent intensity and edit scope or an explicit simplification review. | [Ponytail](subskills/ponytail/SKILL-MAIN.md) |
@@ -60,8 +64,9 @@ Example: `imsight-mentality-mgr->brooks->enable-memory()` with `r1 r5`. Flavors 
 | `agile-experimenter` | Route here when experiment scope and evidence should be calibrated to the next decision. | [Agile Experimenter](subskills/agile-experimenter/SKILL-MAIN.md) |
 | `human-speak` | Route here when human-facing communication should follow an explicitly selected writing flavor. | [Human Speak](subskills/human-speak/SKILL-MAIN.md) |
 | `rigor-control` | Route here when engineering and verification rigor should match an explicitly selected assurance flavor. | [Rigor Control](subskills/rigor-control/SKILL-MAIN.md) |
+| `shortcuts` | Route here when the caller invokes a shortcut or asks this manager to explain a topic or previous reply. | [Shortcuts](subskills/shortcuts/SKILL-MAIN.md) |
 
-Unknown names return this inventory. Children own canonical IDs, definitions, examples, and applicability; flavored children keep independent state per flavor.
+Unknown names return this inventory. Mentality children own canonical IDs, definitions, examples, and applicability. Flavored children keep independent state per flavor.
 
 ## Scope Contract
 
@@ -78,7 +83,7 @@ Keep shared semantics in parent references and child-specific guidance with its 
 ## Guardrails
 
 - DO NOT infer activation from deployment, discovery, or bare invocation.
-- DO NOT infer a missing flavor for Human Speak or Rigor Control.
+- DO NOT infer a missing flavor for Human Speak or Rigor Control management.
 - DO NOT write files for memory actions, recall, or help, or publish an agent's effective selection as project rules.
 - DO NOT lose explicit disabled overrides or copy another agent's memory implicitly.
 - DO NOT load all catalogs or upstream references for routine application.
