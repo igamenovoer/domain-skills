@@ -1,6 +1,6 @@
 ---
 name: imsight-dev-box-init
-description: Use when explicitly invoking imsight-dev-box-init, routing from another Imsight skill, or using Imsight context to configure Codex, Claude Code, Reasonix, Antigravity CLI, Gemini CLI, Kimi Code CLI, Houmao, Hermes, Hindsight, Feishu, Ponytail, Tavily, Context7, BaiduPCS-Go, or related development-host tooling. Do not use for generic setup tasks without Imsight context.
+description: Use when explicitly invoking imsight-dev-box-init, routing from another Imsight skill, or using Imsight context to configure Codex, Claude Code, Reasonix, Antigravity CLI, Gemini CLI, Kimi Code CLI, Houmao, Hermes, Hindsight, Feishu, Ponytail, Tavily, Context7, BaiduPCS-Go, tmux, or related development-host tooling. Do not use for generic setup tasks without Imsight context.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -45,7 +45,7 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | `cli-to-api` | Choose this branch when the task is to turn a coding CLI's OAuth-backed subscription into a Gemini-, OpenAI-, or Anthropic-compatible API through a proxy, including headless provider login, Codex OAuth, model discovery, endpoint verification, or exposing Fast/Ultrafast service tiers as model aliases. | `subskills/cli-to-api/SKILL-MAIN.md` |
 | `houmao-system` | Choose this branch whenever Houmao owns the installed system skills, project overlay, credentials, or specialist. | `subskills/houmao-system/SKILL-MAIN.md` |
 | `hermes-mgr` | Choose this branch for Hermes model routing, Feishu gateway integration and approval callbacks, a Kimi-backed local Hindsight server, persistent memory integration, or memory lifecycle operations. | `subskills/hermes-mgr/SKILL-MAIN.md` |
-| `misc` | Choose this branch for standalone agent skills, search, documentation, and cloud storage utilities, currently Ponytail, Tavily, Context7, and BaiduPCS-Go. | `subskills/misc/SKILL-MAIN.md` |
+| `misc` | Choose this branch for tmux configuration and standalone agent skills, search, documentation, and cloud storage utilities such as Ponytail, Tavily, Context7, and BaiduPCS-Go. | `subskills/misc/SKILL-MAIN.md` |
 | `sangfor-vdi-arm64` | Choose this branch when the task is running the Sangfor VDI Linux client on an arm64 Ubuntu box, including qemu-user amd64 containers, SSH-host or proxy traffic bridging, or the post-login vdi_session hotplug crash. | `subskills/sangfor-vdi-arm64/SKILL-MAIN.md` |
 
 ## Subcommands

@@ -1,6 +1,6 @@
 ---
 name: misc
-description: Use when an Imsight dev-box task installs supported utilities or agent skills outside the coding-agent and Houmao domains, currently Ponytail, Tavily CLI and skills, Context7 CLI and its agent skill, or BaiduPCS-Go Netdisk CLI.
+description: Use when an Imsight dev-box task configures tmux or installs supported utilities or agent skills outside the coding-agent and Houmao domains, including Ponytail, Tavily CLI and skills, Context7 CLI and its agent skill, and BaiduPCS-Go Netdisk CLI.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -23,9 +23,9 @@ Use this subskill for maintained Imsight utility and agent-skill setup that does
 ## Workflow
 
 1. Select the applicable utility command from **Subcommands**.
-2. Load its linked reference and resolve the target agent and installation scope.
-3. Follow the reference's prerequisites, credential rules, and verification steps.
-4. Report installed commands, skills, and any remaining authentication action.
+2. Load its linked reference and resolve the target host, account, or agent and the requested setup scope.
+3. Follow the reference's procedure, including prerequisites, any credential rules, and verification.
+4. Report what changed, the verification results, and any remaining user action.
 
 If the task does not map cleanly to these steps, use the native planning tool to build a step-by-step plan from this subskill's commands, resources, constraints, and user request, then execute the plan.
 
@@ -43,11 +43,12 @@ If the task does not map cleanly to these steps, use the native planning tool to
 | `tavily-setup` | Install and authenticate Tavily CLI or install Tavily agent skills. | `references/tavily-cli-and-skills.md` |
 | `context7-setup` | Install Context7 CLI and its agent skill without configuring Context7 MCP. | `references/context7-cli-setup.md` |
 | `baidupcs-go-setup` | Install and configure BaiduPCS-Go, build static binary, and perform headless QR authentication with Playwright. | `references/baidupcs-go-setup.md` |
+| `tmux-config` | Configure user defaults for tmux mouse support, true color, `NO_COLOR`, and OSC 8 hyperlinks. | `references/tmux-config.md` |
 | `help` | Explain this subskill and list its commands. | This entrypoint |
 
 ## Resource Ownership
 
-This subskill owns the Ponytail, Tavily, Context7, and BaiduPCS-Go references plus Tavily skill installation/verification scripts and the BaiduPCS-Go Playwright login helper script.
+This subskill owns the Ponytail, Tavily, Context7, BaiduPCS-Go, and tmux references plus Tavily skill installation/verification scripts and the BaiduPCS-Go Playwright login helper script.
 
 ## Guardrails
 
