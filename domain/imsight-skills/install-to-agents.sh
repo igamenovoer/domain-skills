@@ -8,6 +8,20 @@ mode="copy"
 scope="project"
 yes=0
 
+# Houmao role entrypoints are provisioned by the Houmao agent setup flow,
+# not by this general-purpose installer.
+excluded_skills=(imsight-autodev-master imsight-autodev-slave)
+
+is_excluded() {
+  local name="$1" excluded
+  for excluded in "${excluded_skills[@]}"; do
+    if [ "$name" = "$excluded" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 usage() {
   cat <<'EOF'
 Usage: install-to-agents.sh [options]
@@ -32,9 +46,12 @@ Target paths:
   agy/antigravity  global: ~/.gemini/config/skills   project: .agents/skills
   generic          global: ~/.agents/skills          project: .agents/skills
 
+Installs every imsight-* skill except the Houmao role entrypoints
+imsight-autodev-master and imsight-autodev-slave.
+
 In either mode, any pre-existing imsight-* entries in the destination are
-removed first. Symlinks are unlinked without following them, so the source
-tree is never deleted.
+removed first, including the excluded role entrypoints. Symlinks are unlinked
+without following them, so the source tree is never deleted.
 EOF
 }
 
@@ -132,7 +149,11 @@ dest_root="$(cd "$dest_root" && pwd)"
 skills=()
 for skill_dir in "$SCRIPT_DIR"/imsight-*/; do
   [ -d "$skill_dir" ] || continue
-  skills+=("$(basename "$skill_dir")")
+  name="$(basename "$skill_dir")"
+  if is_excluded "$name"; then
+    continue
+  fi
+  skills+=("$name")
 done
 
 if [ "${#skills[@]}" -eq 0 ]; then
@@ -162,12 +183,12 @@ fi
 
 echo "Installing imsight skills for target=$target mode=$mode scope=$scope into $dest_root"
 
-# Remove any existing imsight-* entries. find without -L does not follow
-# symlinks, so only the link itself is removed, never its target.
-cd "$dest_root"
-find . -maxdepth 1 -name 'imsight-*' -exec rm -rf {} +
-
-cd "$SCRIPT_DIR"
+# Remove all pre-existing imsight-* entries, including excluded role
+# entrypoints. rm does not follow symlinks, so targets are never deleted.
+for entry in "$dest_root"/imsight-*; do
+  [ -e "$entry" ] || [ -L "$entry" ] || continue
+  rm -rf "$entry"
+done
 
 for name in "${skills[@]}"; do
   skill_dir="$SCRIPT_DIR/$name"
