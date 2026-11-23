@@ -81,11 +81,15 @@ Helper subcommands are lower-level implementation commands called by procedural 
 
 ### Misc subcommands
 
-Misc subcommands are public support commands and shortcuts that do not represent one normal procedural step.
+Misc subcommands are public support commands and skill-local shortcuts that do not represent one normal procedural step.
 
 - Put `help` here when the skill supports help.
 - Put shortcuts such as `fast-forward` or `step-by-step` here. `fast-forward` should run the full procedural workflow automatically. `step-by-step` should run the same required workflow but pause for user confirmation between stages.
 - Include misc subcommands in help output because they are part of the public interface.
+
+### Cross-skill shortcuts
+
+Use `imsight-shortcuts` for reusable sequences that compose existing skills, subskills, or subcommands across skill boundaries. Give each shortcut a command page that specifies its inputs, fully qualified routes, step order, and handoffs. Link to the owning workflows and honor their prerequisites, approval requirements, and output contracts. Keep skill-local helpers and role-specific workflows with their owners.
 
 ### Nested subcommands
 

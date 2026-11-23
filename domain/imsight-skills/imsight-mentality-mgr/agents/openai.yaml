@@ -1,9 +1,8 @@
 interface:
   display_name: "imsight-mentality-mgr"
-  short_description: "Manage scoped mentalities, reviews, and shortcuts"
+  short_description: "Manage scoped mentalities and reviews"
   default_prompt: >-
     Use $imsight-mentality-mgr to manage scoped principles for Brooks, Ponytail, Docs Writer, Agile Experimenter, Human Speak, or Rigor Control, configure Ponytail, recall settings, or run a Brooks or Ponytail review.
     For management, choose an explicit Human Speak or Rigor Control flavor or show the relevant chooser.
-    Use imsight-mentality-mgr->shortcuts->revelio() to explain a subject or previous reply in Han Style by default. An explicitly requested mentality takes precedence for that reply.
 policy:
   allow_implicit_invocation: false

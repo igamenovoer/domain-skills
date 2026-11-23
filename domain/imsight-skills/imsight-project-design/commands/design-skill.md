@@ -48,9 +48,11 @@ Use the **complex-procedure** flavor when the skill describes a multi-step proce
 
 - `### Helper Subcommands` for lower-level implementation commands called by procedural subcommands.
 - `### Procedural Subcommands` for user-facing workflow steps.
-- `### Misc Subcommands` for `help` and public shortcuts such as `fast-forward` or `step-by-step`.
+- `### Misc Subcommands` for `help` and skill-local shortcuts such as `fast-forward` or `step-by-step`.
 
 For complex-procedure skills, put procedural subcommands in user-facing workflow order within their table, keep helper subcommands out of help output unless promoted, and say `No helper subcommands are currently exposed.` when the helper group is empty.
+
+Use `imsight-shortcuts` for reusable sequences across skills. Specify the input, owning commands, execution order, and handoffs in the design.
 
 Override the multi-subcommand default only when the task clearly maps to a single technique or pattern with no meaningful subcommands. Document the override reason in the design overview.
 

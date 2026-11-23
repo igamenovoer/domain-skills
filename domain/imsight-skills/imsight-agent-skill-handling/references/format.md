@@ -53,7 +53,7 @@ Use the complex-procedure flavor when the skill describes a multi-step procedure
 
 - `### Procedural Subcommands` for user-facing workflow steps.
 - `### Helper Subcommands` for lower-level implementation commands called by procedural subcommands.
-- `### Misc Subcommands` for `help` and public shortcuts.
+- `### Misc Subcommands` for `help` and skill-local shortcuts.
 
 For the complex-procedure flavor, keep helper subcommands out of help output unless they are promoted to public workflow steps. If no helper subcommands exist, write `No helper subcommands are currently exposed.`
 

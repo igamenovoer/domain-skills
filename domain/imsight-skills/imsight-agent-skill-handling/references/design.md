@@ -48,9 +48,11 @@ Use the **complex-procedure** flavor when the skill describes a multi-step proce
 
 - `### Helper Subcommands` for lower-level implementation commands called by procedural subcommands.
 - `### Procedural Subcommands` for user-facing workflow steps.
-- `### Misc Subcommands` for `help` and public shortcuts such as `fast-forward` or `step-by-step`.
+- `### Misc Subcommands` for `help` and skill-local shortcuts such as `fast-forward` or `step-by-step`.
 
 For complex-procedure skills, put procedural subcommands in user-facing workflow order within their table, keep helper subcommands out of help output unless promoted, and say `No helper subcommands are currently exposed.` when the helper group is empty.
+
+For reusable sequences across skills, follow [Cross-skill shortcuts](imsight-skill-style-guide.md#cross-skill-shortcuts).
 
 Allow a subcommand to own child subcommands when it represents a command object with scoped operations. Record the immediate parent, full invocation chain, child detail page, inherited context, containing resource owner, and the parent's terminal behavior. In `X->parent()->child()`, treat `parent()` as an object generator and `child()` as the invoked leaf; do not imply that the parent's standalone terminal action also runs. Nested children may generate deeper command objects, but they remain inside the containing skill or subskill's resource boundary.
 
