@@ -43,7 +43,7 @@ Use the same Skills CLI path and agent ids as the Tavily skills setup (see `tavi
 npx skills add https://github.com/upstash/context7 --skill context7-cli --agent kimi-code-cli --yes
 ```
 
-Project scope is the default and lands in `.agents/skills/context7-cli/` for Kimi Code CLI, Codex CLI, and Gemini CLI.
+Project scope is the default and lands in `.agents/skills/context7-cli/` for Antigravity CLI, Kimi Code CLI, Codex CLI, and Gemini CLI. For global scope, the Skills CLI uses `~/.gemini/config/skills/` for Antigravity CLI, `~/.agents/skills/` for Kimi Code CLI, `~/.codex/skills/` for Codex CLI, and `~/.gemini/skills/` for Gemini CLI; Kimi Code CLI also scans `~/.kimi-code/skills/`, and Gemini CLI also reads the shared `~/.agents/skills/` alias.
 
 ## Verify
 

@@ -9,6 +9,9 @@
 
 .PARAMETER Target
     Agent target: claude-code, generic, kimi-code, codex, agy, antigravity, gemini. Default: generic.
+    Global scope for agy and antigravity installs into ~/.gemini/config/skills;
+    global scope for gemini installs into ~/.gemini/skills. Gemini CLI also
+    reads ~/.agents/skills as a user-level alias.
 
 .PARAMETER Mode
     Install mode: copy or symlink. Default: copy.
@@ -54,9 +57,10 @@ if ($Scope -eq "global") {
             $codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $HOME ".codex" }
             $destRoot = Join-Path $codexHome "skills"
         }
-        { $_ -in @("agy", "antigravity", "gemini") } {
+        { $_ -in @("agy", "antigravity") } {
             $destRoot = Join-Path $HOME ".gemini" "config" "skills"
         }
+        "gemini"      { $destRoot = Join-Path $HOME ".gemini" "skills" }
         "generic"     { $destRoot = Join-Path $HOME ".agents" "skills" }
     }
 } else {

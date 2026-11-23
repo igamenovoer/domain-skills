@@ -66,16 +66,19 @@ Official Skills CLI paths for the Imsight-supported coding agents:
 
 | Target | `--agent` | Project path | Global path |
 | --- | --- | --- | --- |
+| Antigravity CLI | `antigravity-cli` | `.agents/skills/` | `~/.gemini/config/skills/` |
 | Claude Code | `claude-code` | `.claude/skills/` | `~/.claude/skills/` |
 | Codex CLI | `codex` | `.agents/skills/` | `~/.codex/skills/` |
 | Gemini CLI | `gemini-cli` | `.agents/skills/` | `~/.gemini/skills/` |
-| Kimi Code CLI | `kimi-code-cli` | `.agents/skills/` | `~/.config/agents/skills/` |
+| Kimi Code CLI | `kimi-code-cli` | `.agents/skills/` | `~/.agents/skills/` |
 
 The Skills CLI agent id for Kimi Code CLI was renamed from `kimi-cli` to `kimi-code-cli`; the scripts still accept `kimi-cli` as a legacy alias.
 
-Project scope is the default for `npx skills add`. Codex CLI, Gemini CLI, and Kimi Code CLI all respect `.agents/skills/` in project scope, so do not copy or symlink those project skills into tool-specific project dirs. Claude Code uses `.claude/skills/`.
+Project scope is the default for `npx skills add`. Antigravity CLI, Codex CLI, Gemini CLI, and Kimi Code CLI all respect `.agents/skills/` in project scope, so do not copy or symlink those project skills into tool-specific project dirs. Claude Code uses `.claude/skills/`.
 
-For global scope, use each agent's official global path. Do not assume `.agents/skills/` is a global path.
+Kimi Code CLI also scans `$KIMI_CODE_HOME/skills/` (default `~/.kimi-code/skills/`), but the Skills CLI installs its global scope into the shared `~/.agents/skills/`. Gemini CLI treats `~/.agents/skills/` as a user-level alias, so a generic global install already makes a skill available there without a second copy.
+
+For global scope, use each agent's official global path. Do not assume `.agents/skills/` is a global path for agents outside the shared alias group.
 
 ## Install Tavily Skills
 
@@ -91,7 +94,9 @@ Common examples:
 <misc-subskill-dir>/scripts/install-tavily-skills.sh --agent claude-code --scope project
 <misc-subskill-dir>/scripts/install-tavily-skills.sh --agent gemini-cli --scope project
 <misc-subskill-dir>/scripts/install-tavily-skills.sh --agent kimi-code-cli --scope project
+<misc-subskill-dir>/scripts/install-tavily-skills.sh --agent antigravity-cli --scope project
 <misc-subskill-dir>/scripts/install-tavily-skills.sh --agent codex --scope global
+<misc-subskill-dir>/scripts/install-tavily-skills.sh --agent antigravity-cli --scope global
 ```
 
 If the user asks for a subset, repeat `--skill`:
@@ -147,7 +152,7 @@ tvly search "tavily cli test" --json | head -20
 - Prefer the script over hand-written `npx skills add` commands for install and verification.
 - Verify `npx skills` installs with `npx skills list`, not manual directory inspection.
 - Use manual filesystem checks only for manual fallback installs.
-- For project installs on Codex CLI, Gemini CLI, and Kimi Code CLI, `.agents/skills/` is the install. Do not create extra project-scope copies or symlinks under tool-specific dirs.
+- For project installs on Antigravity CLI, Codex CLI, Gemini CLI, and Kimi Code CLI, `.agents/skills/` is the install. Do not create extra project-scope copies or symlinks under tool-specific dirs.
 - Use global scope only when the user explicitly wants user-level skills across projects.
 
 ## Source References

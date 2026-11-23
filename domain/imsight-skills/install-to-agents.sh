@@ -30,7 +30,7 @@ Install the local imsight-* skills into a supported agent skills directory.
 
 Options:
   --target TARGET   Agent target: claude-code, generic, kimi-code, codex,
-                    agy (or antigravity, gemini).
+                    agy (or antigravity), gemini.
                     Default: generic.
   --mode MODE       Install mode: copy or symlink. Default: copy.
   --scope SCOPE     Install scope: global (under $HOME) or project (under cwd).
@@ -44,6 +44,8 @@ Target paths:
   codex            global: $CODEX_HOME/skills        project: .codex/skills
                    (CODEX_HOME defaults to ~/.codex)
   agy/antigravity  global: ~/.gemini/config/skills   project: .agents/skills
+  gemini           global: ~/.gemini/skills          project: .agents/skills
+                   (Gemini CLI also reads ~/.agents/skills as an alias)
   generic          global: ~/.agents/skills          project: .agents/skills
 
 Installs every imsight-* skill except the Houmao role entrypoints
@@ -129,7 +131,8 @@ if [ "$scope" = "global" ]; then
     claude-code)             dest_root="$HOME/.claude/skills" ;;
     kimi-code)               dest_root="$HOME/.kimi-code/skills" ;;
     codex)                   dest_root="${CODEX_HOME:-$HOME/.codex}/skills" ;;
-    agy|antigravity|gemini)  dest_root="$HOME/.gemini/config/skills" ;;
+    agy|antigravity)         dest_root="$HOME/.gemini/config/skills" ;;
+    gemini)                  dest_root="$HOME/.gemini/skills" ;;
     generic)                 dest_root="$HOME/.agents/skills" ;;
   esac
 else
