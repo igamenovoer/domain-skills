@@ -1,6 +1,6 @@
 ---
 name: imsight-shortcuts
-description: Use when the user invokes imsight-shortcuts or requests a maintained shortcut across skills, subskills, or subcommands, such as elighten-me or a local OpenSpec one-pass run.
+description: Use when the user invokes imsight-shortcuts or requests a maintained shortcut such as elighten-me, graph-it for ASCII diagrams, or a local OpenSpec one-pass run.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -16,7 +16,7 @@ metadata:
 
 # Imsight Shortcuts
 
-Run predefined sequences that combine Imsight skills, subskills, and subcommands.
+Use shortcuts for chat explanations and workflows that combine Imsight skills, subskills, and subcommands.
 
 ## Workflow
 
@@ -36,6 +36,7 @@ Invoke a command directly, such as `imsight-shortcuts->openspec-one-pass()` with
 | --- | --- | --- |
 | `help` | List the available shortcuts and what they do. | This entrypoint |
 | `elighten-me` | Explain a supplied subject or the previous substantive reply using a selected mentality. | [Elighten Me](commands/elighten-me.md) |
+| `graph-it` | Explain a supplied subject or the previous substantive reply with ASCII diagrams. | [Graph It](commands/graph-it.md) |
 | `openspec-one-pass` | Run a development request through the OpenSpec lifecycle in the target workspace. | [OpenSpec One-Pass](commands/openspec-one-pass.md) |
 
 ## Maintenance

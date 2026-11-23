@@ -1,7 +1,10 @@
 interface:
   display_name: "imsight-shortcuts"
-  short_description: "Run shortcuts across Imsight skills"
+  short_description: "Run explanation and workflow shortcuts"
   default_prompt: >-
-    Use $imsight-shortcuts to list available shortcuts. Invoke imsight-shortcuts->elighten-me() to explain a subject or the previous reply, or imsight-shortcuts->openspec-one-pass() to run the OpenSpec lifecycle for a development request.
+    Use $imsight-shortcuts to list available shortcuts.
+    Invoke imsight-shortcuts->elighten-me() to explain a subject or the previous reply using a selected mentality.
+    Invoke imsight-shortcuts->graph-it() to explain a subject or the previous reply with ASCII diagrams.
+    Invoke imsight-shortcuts->openspec-one-pass() to run the OpenSpec lifecycle for a development request.
 policy:
   allow_implicit_invocation: false
