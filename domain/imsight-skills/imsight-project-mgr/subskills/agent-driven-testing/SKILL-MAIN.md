@@ -1,6 +1,6 @@
 ---
 name: agent-driven-testing
-description: Use when authoring, running, auditing, or reporting agent-driven instructional test cases (defaulting to tests/instructional in a realwork project or a user-specified suite location), or when distilling debug campaigns, specs, or PR behavior into live agent-executable verification suites.
+description: Use when authoring, running, auditing, or reporting agent-driven instructional test bundles under <output-dir>/<case-slug>/ (defaulting <output-dir> to tests/instructional in a realwork project or a user-specified output directory), or when distilling debug campaigns, specs, or PR behavior into live agent-executable verification suites.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -18,13 +18,13 @@ metadata:
 
 ## Overview
 
-Design, maintain, execute, and report agent-driven instructional test suites (placed in a user-specified suite directory or `<realwork>/tests/instructional/` by default) so any cold agent can launch a realwork project, drive user-facing features or multi-agent workflows through real interfaces, capture surviving runtime evidence inside a project-local temporary directory, and report verifiable outcomes without conflating test drift with product regressions.
+Design, maintain, execute, and report self-contained agent-driven instructional test bundles placed under `<output-dir>/<case-slug>/` (where `<output-dir>` is user-specified or defaults to `<realwork>/tests/instructional/`) so multiple test topics coexist cleanly, any cold agent can launch and drive real user interfaces or multi-agent workflows, runtime evidence survives inside a project-local temporary directory, and test drift stays separated from product regressions.
 
 ## When to Use
 
-- Use when a realwork project needs repeatable, agent-executable verification cases in `<suite-root>` (default `<realwork>/tests/instructional/`, or a user-specified location) for CLI, TUI, Web UI, service, API, or multi-agent behaviors that unit tests alone cannot prove.
-- Use when turning manual walkthroughs, debug campaigns, OpenSpec requirements, or bug reproductions into durable instructional test cases.
-- Use when running instructional test cases live, verifying before-and-after bug fixes on the real surface, auditing an instructional suite for drift against current source, or generating evidence-backed test reports.
+- Use when a realwork project needs repeatable, agent-executable verification bundles under `<output-dir>/<case-slug>/` (default `<output-dir>`: `<realwork>/tests/instructional/`) for CLI, TUI, Web UI, service, API, or multi-agent behaviors that unit tests alone cannot prove.
+- Use when turning manual walkthroughs, debug campaigns, OpenSpec requirements, or bug reproductions into durable instructional test bundles.
+- Use when running instructional test bundles live, verifying before-and-after bug fixes on the real surface, auditing bundles under `<output-dir>` for drift against current source, or generating evidence-backed test reports.
 - Do not use for ordinary fast unit tests (`tests/unit/`), static lint/type checks, or repository-policy checks owned by a metaproj (place those in standard automated suites or metaproj tools instead).
 - Do not use to silently patch product code during test execution or audit; report confirmed product regressions separately.
 
@@ -32,7 +32,7 @@ Design, maintain, execute, and report agent-driven instructional test suites (pl
 
 When this subskill is invoked, execute the following steps in order.
 
-1. **Confirm routing, target realwork, and suite location.** Continue on explicit invocation of `imsight-project-mgr->agent-driven-testing` or a route from `imsight-project-mgr`. Resolve the exact realwork checkout and branch (and enclosing metaproj root when attached) following the [responsibility contract](../../references/project-responsibilities.md), and resolve `<suite-root>` (user-specified path first, then project context, then default `<realwork>/tests/instructional/`). See **Ownership and Layout Summary**.
+1. **Confirm routing, target realwork, output directory, and `<case-slug>`.** Continue on explicit invocation of `imsight-project-mgr->agent-driven-testing` or a route from `imsight-project-mgr`. Resolve the exact realwork checkout and branch (and enclosing metaproj root when attached) following the [responsibility contract](../../references/project-responsibilities.md), resolve `<output-dir>` (user-specified path first, then project context, then default `<realwork>/tests/instructional/`), and resolve the target `<case-slug>` bundle directory `<output-dir>/<case-slug>/` (or all `<case-slug>/` bundles under `<output-dir>` for whole-directory runs/audits). See **Ownership and Layout Summary**.
 2. **Resolve the project-local temporary directory.** Locate `<project-tmp-root>` from explicit user input, project context, or an ignored project-local directory so all temporary scripts, disposable runtime state, and raw proof artifacts stay inside the project's ignored temp tree. See **Project-Local Temporary Directory** and [case-and-harness-contract.md](references/case-and-harness-contract.md).
 3. **Select the subcommand** from **Subcommands** based on the user's request (`generate-cases`, `run-cases`, `audit-cases`, `report-results`, or `help`).
 4. **Load and execute the selected command page.** Follow its numbered workflow, live-verification invariants, and evidence rules without weakening preconditions or skipping runtime proof.
@@ -42,7 +42,7 @@ If the user's request spans multiple stages (for example, distilling a debug cam
 
 ## Invocation Contract
 
-- Preferred explicit form: invoke skill `imsight-project-mgr->agent-driven-testing` with the selected realwork, optional suite location, and task.
+- Preferred explicit form: invoke skill `imsight-project-mgr->agent-driven-testing` with the selected realwork, optional `<output-dir>` and `<case-slug>`, and task.
 - Direct subcommand forms:
   - `imsight-project-mgr->agent-driven-testing->generate-cases()`
   - `imsight-project-mgr->agent-driven-testing->run-cases()`
@@ -55,29 +55,30 @@ If the user's request spans multiple stages (for example, distilling a debug cam
 
 | Subcommand | Use For | Detail |
 | --- | --- | --- |
-| `generate-cases` | Interview the realwork repo (or distill a debug campaign, spec, or PR) to create or update `<suite-root>/README.md`, user-POV cases in `<suite-root>/cases/`, and optional helpers, then self-prove at least one case live | [generate-cases.md](commands/generate-cases.md) |
-| `run-cases` | Execute selected or all cases in `<suite-root>` live against the realwork using a project-local temp workspace for temporary scripts, runtime state, and surviving proof artifacts | [run-cases.md](commands/run-cases.md) |
-| `audit-cases` | Keep `<suite-root>` aligned with evolving source through index hygiene, a parallel read-only source wave, a mandatory live pass, and strict drift-versus-regression triage | [audit-cases.md](commands/audit-cases.md) |
+| `generate-cases` | Interview the realwork repo (or distill a debug campaign, spec, or PR) to create or update `<output-dir>/<case-slug>/README.md`, user-POV scenarios in `<output-dir>/<case-slug>/cases/`, and optional helpers in `<output-dir>/<case-slug>/helpers/`, then self-prove at least one scenario live | [generate-cases.md](commands/generate-cases.md) |
+| `run-cases` | Execute one `<output-dir>/<case-slug>/` bundle (or all bundles under `<output-dir>`) live against the realwork using a project-local temp workspace for temporary scripts, runtime state, and surviving proof artifacts | [run-cases.md](commands/run-cases.md) |
+| `audit-cases` | Keep `<output-dir>/<case-slug>/` bundles aligned with evolving source through index hygiene, a parallel read-only source wave, a mandatory live pass, and strict drift-versus-regression triage | [audit-cases.md](commands/audit-cases.md) |
 | `report-results` | Synthesize verified run artifacts into a durable Markdown test report and a concise in-chat summary | [report-results.md](commands/report-results.md) |
-| `help` | Explain `<suite-root>` resolution and layout, project-local temp directory rules, and available subcommands without mutating files | This entrypoint |
+| `help` | Explain `<output-dir>/<case-slug>/` resolution and layout, project-local temp directory rules, and available subcommands without mutating files | This entrypoint |
 
 Each subcommand is independently invocable; the table lists common entry points without forcing a fixed pipeline.
 
 ## Ownership and Layout Summary
 
-Resolve the instructional test suite location (`<suite-root>`) in priority order:
+Resolve the top-level instructional test output directory (`<output-dir>`) in priority order:
 
-1. **User-specified path**: honor an explicit directory (or specific case file path inside a suite) provided by the user.
-2. **Project context**: use an existing instructional suite directory documented in the project's `AGENTS.md` or test guides.
+1. **User-specified path**: honor an explicit output directory provided by the user.
+2. **Project context**: use an existing instructional test root documented in the project's `AGENTS.md` or test guides.
 3. **Default**: `<realwork>/tests/instructional/` (functional verification assets owned by the realwork project).
 
-Within `<suite-root>`, maintain this consistent structure:
+Always place every generated test bundle inside its own kebab-case subdirectory `<output-dir>/<case-slug>/` rather than directly under `<output-dir>`:
 
-- `<suite-root>/README.md`: harness contract (`Launch`, `Doctor`, `Drive`, `Evidence`, `Cleanup`, `Helpers`), isolation rules, and case index.
-- `<suite-root>/cases/<case-slug>.md`: user-POV instructional test cases using four fixed H2 sections (`Sub-cases`, `How to get to it (user POV)`, `Driving it with <harness>`, `Gotchas`).
-- `<suite-root>/helpers/`: optional durable, executable helper scripts invoked directly by `README.md` or case files.
+- `<output-dir>/README.md` (optional): lightweight top-level index listing `<case-slug>/` bundles only, never a single bundle's harness.
+- `<output-dir>/<case-slug>/README.md`: bundle-specific harness contract (`Launch`, `Doctor`, `Drive`, `Evidence`, `Cleanup`, `Helpers`), isolation rules, and scenario index.
+- `<output-dir>/<case-slug>/cases/<scenario-slug>.md`: user-POV instructional test scenarios using four fixed H2 sections (`Sub-cases`, `How to get to it (user POV)`, `Driving it with <harness>`, `Gotchas`).
+- `<output-dir>/<case-slug>/helpers/`: optional durable, executable helper scripts and fixtures scoped to `<case-slug>`.
 
-Disposable run state, temporary per-run scripts, and raw proof artifacts never go into `<suite-root>` or Git; they go into `<project-tmp-root>/instructional-tests/<run-id>/`. Full schemas and templates live in [case-and-harness-contract.md](references/case-and-harness-contract.md) and [report-template.md](references/report-template.md).
+Disposable run state, temporary per-run scripts, and raw proof artifacts never go into `<output-dir>` or Git; they go into `<project-tmp-root>/instructional-tests/<run-id>/`. Full schemas and templates live in [case-and-harness-contract.md](references/case-and-harness-contract.md) and [report-template.md](references/report-template.md).
 
 ## Project-Local Temporary Directory
 
@@ -117,7 +118,8 @@ Stop and correct course immediately if you notice any of the following:
 
 ## Guardrails
 
-- DO NOT store disposable scripts, runtime logs, raw screenshots, secrets, or session tokens under `<suite-root>` or any Git-tracked path.
+- DO NOT write a single test bundle's harness `README.md`, `cases/`, or `helpers/` directly under `<output-dir>`; always nest each bundle under `<output-dir>/<case-slug>/`.
+- DO NOT store disposable scripts, runtime logs, raw screenshots, secrets, or session tokens under `<output-dir>` or any Git-tracked path.
 - DO NOT write temporary test scripts or run artifacts to system `/tmp` when a project-local ignored temporary directory can be resolved or created.
 - DO NOT declare a newly generated instructional test suite ready before executing at least one mapped case end to end and confirming evidence survives cleanup.
 - DO NOT drive an instance without running `Doctor` before the first drive, on each fresh session, and after any failed drive.

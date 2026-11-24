@@ -42,15 +42,15 @@ Assign exactly one verdict to each executed case (and sub-case when granular rep
 ### Run-Level Outcome (for `audit-cases()`)
 
 - `clean`: every mapped case received source and live coverage with no drift, harness gap, or regression to fix.
-- `changed`: proven fixes were applied strictly inside `<suite-root>` (doc drift or harness gap) and re-verified live.
+- `changed`: proven fixes were applied strictly inside `<output-dir>/<case-slug>/` (doc drift or harness gap) and re-verified live.
 - `blocked`: coverage could not complete or a proven harness fix could not be verified safely; exact blocker named.
 
 ## Triage Categories (for `FAIL` or Drift Findings)
 
 Classify every non-passing finding honestly so product bugs are never buried as test-doc updates:
 
-- `doc-drift`: the product behaves as intended (confirmed from source, specs, or commit history), while `<suite-root>` describes stale flags, routes, labels, or omitted prerequisites.
-- `harness-gap`: the product works for a human user, but the harness script or selector in `<suite-root>` cannot drive or observe it reliably.
+- `doc-drift`: the product behaves as intended (confirmed from source, specs, or commit history), while `<output-dir>/<case-slug>/` describes stale flags, routes, labels, or omitted prerequisites.
+- `harness-gap`: the product works for a human user, but the harness script or selector in `<output-dir>/<case-slug>/` cannot drive or observe it reliably.
 - `product-regression`: the product violates its documented or intended contract on the real surface. Record the repro steps, observed vs. expected behavior, and commit SHA; do not mask it by weakening the case.
 
 ## Durable Markdown Report Template
@@ -66,7 +66,8 @@ Date: YYYY-MM-DD HH:MM UTC | Overall Status: <PASS | FAIL | MIXED | BLOCKED> | M
 
 - **Realwork checkout**: `<path>` (branch `<branch>`, commit `<sha>`, working tree `<clean | dirty: summary>`)
 - **Enclosing metaproj**: `<path or none (standalone)>`
-- **Instructional suite root**: `<suite-root>` (default `<realwork>/tests/instructional/` or user-specified path)
+- **Instructional output dir**: `<output-dir>` (default `<realwork>/tests/instructional/` or user-specified path)
+- **Case bundle(s)**: `<output-dir>/<case-slug>/`
 - **Project-local temp workspace**: `<project-tmp-root>/instructional-tests/<run-id>/`
 - **Evidence root (verified post-cleanup)**: `<project-tmp-root>/instructional-tests/<run-id>/evidence/`
 - **Temporary scripts used**: `<list under scripts/ or none>`
@@ -75,19 +76,19 @@ Date: YYYY-MM-DD HH:MM UTC | Overall Status: <PASS | FAIL | MIXED | BLOCKED> | M
 
 ## Summary Table
 
-| Case | Entry Point(s) Tested | Verdict | Triage | Doctor | Surviving Evidence | Notes |
+| Bundle / Scenario | Entry Point(s) Tested | Verdict | Triage | Doctor | Surviving Evidence | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `<case-slug>` | `<cli / web / ...>` | `PASS` | `none` | `pass` | `<evidence/<case-slug>/...>` | `<1-line summary>` |
+| `<case-slug>/<scenario-slug>` | `<cli / web / ...>` | `PASS` | `none` | `pass` | `<evidence/<case-slug>/<scenario-slug>/...>` | `<1-line summary>` |
 
 ## Per-Case Details
 
-### `<case-slug>` — `<VERDICT>`
+### `<case-slug>/<scenario-slug>` — `<VERDICT>`
 
 - **Preconditions & Doctor**: `<exact doctor check and observed app identity/version>`
 - **Executed path**: `<ordered steps or commands run>`
 - **Expected vs. observed**: `<concrete outputs, exit codes, UI/state observations>`
 - **Read-only cross-check**: `<independent verification of files, DB, mailbox, or transcript>`
-- **Artifacts**: `<exact paths under <run-tmp>/evidence/<case-slug>/ verified present after cleanup>`
+- **Artifacts**: `<exact paths under <run-tmp>/evidence/<case-slug>/<scenario-slug>/ verified present after cleanup>`
 - **Triage & follow-up**: `<none, or doc-drift / harness-gap / product-regression with exact file/line or issue target>`
 
 ## Cleanup Verification

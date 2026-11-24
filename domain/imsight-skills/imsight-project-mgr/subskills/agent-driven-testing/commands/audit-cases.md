@@ -14,18 +14,18 @@ metadata:
 
 # Audit Instructional Test Cases
 
-Keep `<suite-root>` (user-specified location, project context, or `<realwork>/tests/instructional/` by default) honest as the realwork evolves by checking index hygiene, auditing every case against current source in parallel, driving every case live, triaging drift versus regressions strictly, and shipping proven test-suite corrections without touching product code.
+Keep instructional test bundles under `<output-dir>/<case-slug>/` (defaulting `<output-dir>` to `<realwork>/tests/instructional/`) honest as the realwork evolves by checking index hygiene, auditing every scenario against current source in parallel, driving every scenario live, triaging drift versus regressions strictly, and shipping proven test-bundle corrections without touching product code.
 
 ## Workflow
 
 When `imsight-project-mgr->agent-driven-testing->audit-cases()` is invoked, execute the following steps in order.
 
-1. **Locate the suite and resolve the project-local temp directory.** Resolve `<suite-root>` per **Suite Location Resolution and Layout** in [case-and-harness-contract.md](../references/case-and-harness-contract.md) and confirm `<suite-root>/README.md` and `<suite-root>/cases/` exist; if absent, stop and point the user to `imsight-project-mgr->agent-driven-testing->generate-cases()`. Resolve `<project-tmp-root>` and allocate `<run-tmp>`.
-2. **Run index hygiene.** Compare the case index in `<suite-root>/README.md` against the actual files in `<suite-root>/cases/` and `<suite-root>/helpers/`. Record or repair missing, extra, duplicate, or dead links.
-3. **Run a parallel read-only source wave.** Launch one read-only subagent per case file concurrently to inspect current product source against the case, cite likely doc drift with `file:line`, and propose one concise live-verification recipe. Children never drive the app and never edit files. See **Source Wave and Reconciliation**.
-4. **Reconcile source findings and sweep recent churn.** Merge overlapping recipes into as few clean app states as practical, spot-check cited drift, and inspect recent commits for new user-facing surfaces missing from `<suite-root>` (requiring a concrete source path before flagging a missing surface).
-5. **Execute a mandatory live pass.** Even when source looks clean, run all mapped cases live following `imsight-project-mgr->agent-driven-testing->run-cases()` invariants (coordinator owns driving, `Doctor` before first drive / per fresh session / after failures, evidence survives cleanup, failed-iteration residue cleaned). If a `Doctor` failure is caused by skill/harness drift inside `<suite-root>`, fix it within edit scope, restart only what the fix invalidated, and retry once before calling the audit `blocked`.
-6. **Triage every finding strictly.** Classify each mismatch into `doc-drift`, `harness-gap`, or `product-regression`, applying edits only inside `<suite-root>` and re-driving every harness fix live before final teardown. See **Edit Scope and Triage**.
+1. **Locate the target bundle(s) and resolve the project-local temp directory.** Resolve `<output-dir>` and the target `<output-dir>/<case-slug>/` bundle(s) (one named bundle, or every `<case-slug>/` directory containing `README.md` and `cases/` under `<output-dir>`) per **Output Location Resolution and Bundle Layout** in [case-and-harness-contract.md](../references/case-and-harness-contract.md). If none exist, stop and point the user to `imsight-project-mgr->agent-driven-testing->generate-cases()`. Resolve `<project-tmp-root>` and allocate `<run-tmp>`.
+2. **Run index hygiene.** Compare each bundle's `<output-dir>/<case-slug>/README.md` case index against `<output-dir>/<case-slug>/cases/` and `helpers/`, and check any optional top-level `<output-dir>/README.md` index against existing `<case-slug>/` subdirectories. Record or repair missing, extra, duplicate, or dead links.
+3. **Run a parallel read-only source wave.** Launch one read-only subagent per scenario file concurrently to inspect current product source against the scenario, cite likely doc drift with `file:line`, and propose one concise live-verification recipe. Children never drive the app and never edit files. See **Source Wave and Reconciliation**.
+4. **Reconcile source findings and sweep recent churn.** Merge overlapping recipes into as few clean app states as practical, spot-check cited drift, and inspect recent commits for new user-facing surfaces missing from `<output-dir>` (requiring a concrete source path before flagging a missing surface).
+5. **Execute a mandatory live pass.** Even when source looks clean, run all mapped scenarios live following `imsight-project-mgr->agent-driven-testing->run-cases()` invariants (coordinator owns driving, `Doctor` before first drive / per fresh session / after failures, evidence survives cleanup, failed-iteration residue cleaned). If a `Doctor` failure is caused by skill/harness drift inside `<output-dir>/<case-slug>/`, fix it within edit scope, restart only what the fix invalidated, and retry once before calling the audit `blocked`.
+6. **Triage every finding strictly.** Classify each mismatch into `doc-drift`, `harness-gap`, or `product-regression`, applying edits only inside the audited `<output-dir>/<case-slug>/` bundle(s) (and optional `<output-dir>/README.md` index) and re-driving every harness fix live before final teardown. See **Edit Scope and Triage**.
 7. **Report the audit outcome.** Call `imsight-project-mgr->agent-driven-testing->report-results()` with one explicit audit outcome (`clean`, `changed`, or `blocked`), coverage summary, confirmed regressions kept out of edits, and surviving proof links.
 
 If the user scopes the audit to a subset of cases or a single changed subsystem, use your native planning tool to run the same source-wave, live-pass, and triage discipline on that explicit subset and record the untouched cases under unverified scope.
@@ -44,20 +44,20 @@ If the user scopes the audit to a subset of cases or a single changed subsystem,
 
 ## Edit Scope and Triage
 
-Edit scope during `audit-cases()` is **strictly limited to `<suite-root>`** (`README.md`, `cases/*.md`, and `helpers/*`). Never modify product code under `src/` or package code during an audit.
+Edit scope during `audit-cases()` is **strictly limited to `<output-dir>/<case-slug>/`** (`README.md`, `cases/*.md`, and `helpers/*`) plus any optional top-level `<output-dir>/README.md` bundle index. Never modify product code under `src/` or package code during an audit.
 
 | Observation | Triage Class | Allowed Action in Audit |
 | --- | --- | --- |
-| User-visible command, label, route, or prerequisite changed on purpose (backed by code/spec/commit evidence), and the case doc is stale | `doc-drift` | Update the case or `README.md` under `<suite-root>`, then verify live. |
-| Product behavior works for a user, but the harness script or selector cannot drive or observe it reliably | `harness-gap` | Fix the helper or selector under `<suite-root>` (keep scripts executable and documented in `README.md`), then **re-drive live** to prove the fix works. |
-| App behavior genuinely breaks its documented or intended contract | `product-regression` | **Do not edit product code and do not edit the case to accept the broken behavior.** Record exact repro steps, expected vs. observed state, commit SHA, and surviving proof artifacts in the report. |
+| User-visible command, label, route, or prerequisite changed on purpose (backed by code/spec/commit evidence), and the bundle doc is stale | `doc-drift` | Update the scenario or `README.md` under `<output-dir>/<case-slug>/`, then verify live. |
+| Product behavior works for a user, but the harness script or selector cannot drive or observe it reliably | `harness-gap` | Fix the helper or selector under `<output-dir>/<case-slug>/` (keep scripts executable and documented in `<output-dir>/<case-slug>/README.md`), then **re-drive live** to prove the fix works. |
+| App behavior genuinely breaks its documented or intended contract | `product-regression` | **Do not edit product code and do not edit the scenario to accept the broken behavior.** Record exact repro steps, expected vs. observed state, commit SHA, and surviving proof artifacts in the report. |
 
 ## Audit Outcomes
 
 Pick exactly one outcome and state it prominently in the report:
 
-- **`clean`**: every targeted case got source and live coverage with nothing worth changing in `<suite-root>`. No files modified.
-- **`changed`**: proven `doc-drift` or `harness-gap` corrections were applied strictly inside `<suite-root>`, every changed file was re-read, and every harness fix was re-driven live before final teardown.
+- **`clean`**: every targeted bundle and scenario got source and live coverage with nothing worth changing under `<output-dir>`. No files modified.
+- **`changed`**: proven `doc-drift` or `harness-gap` corrections were applied strictly inside the audited `<output-dir>/<case-slug>/` bundle(s) (and optional `<output-dir>/README.md` index), every changed file was re-read, and every harness fix was re-driven live before final teardown.
 - **`blocked`**: coverage could not complete or a proven fix could not be verified safely; name the exact blocker and partial coverage honestly.
 
 ## Guardrails
