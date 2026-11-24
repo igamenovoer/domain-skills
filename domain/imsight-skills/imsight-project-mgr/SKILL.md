@@ -1,6 +1,6 @@
 ---
 name: imsight-project-mgr
-description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes project setup, a metaproj/realworks migration, branch-specific submodule development, temporary in-repo worktrees in standalone repositories, project rules, editor configuration, or product release management here.
+description: Use when the user explicitly invokes imsight-project-mgr or another loaded skill routes project setup, a metaproj/realworks migration, branch-specific submodule development, temporary in-repo worktrees in standalone repositories, project rules, editor configuration, agent-driven instructional testing, or product release management here.
 metadata:
   skill_invocation_notation: >
     Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
@@ -57,6 +57,7 @@ If the request crosses several capabilities, use the native planning tool to ord
 | `realwork-project-mgr` | Route here for functional project structure, acquisition controls, project guidance, product releases, or temporary in-repo Git worktrees in standalone realwork repositories. | [SKILL-MAIN.md](subskills/realwork-project-mgr/SKILL-MAIN.md) |
 | `meta-project-mgr` | Route here to create or migrate a metaproj workspace, manage realwork branch submodules, or configure shared tools and resources. | [SKILL-MAIN.md](subskills/meta-project-mgr/SKILL-MAIN.md) |
 | `vscode-config` | Route here to scope editor file watching or Python analysis around authored source and large obtained/generated trees. | [SKILL-MAIN.md](subskills/vscode-config/SKILL-MAIN.md) |
+| `agent-driven-testing` | Route here to author, execute, audit, or report live agent-driven verification suites under a realwork's `tests/instructional/` directory using a project-local temporary workspace. | [SKILL-MAIN.md](subskills/agent-driven-testing/SKILL-MAIN.md) |
 
 ## Subcommands
 

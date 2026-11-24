@@ -1,3 +1,17 @@
+---
+metadata:
+  skill_invocation_notation: >
+    Top-level skill entrypoints use SKILL.md. Parent-scoped subskill entrypoints use
+    SKILL-MAIN.md and are loaded explicitly through their parent; nested SKILL.md is
+    accepted only as legacy input when SKILL-MAIN.md is absent.
+    Skill and subskill entrypoints use bare object paths: `X` invokes skill X and
+    `X->Y->Z` invokes subskill Z. Subcommands use parenthesized components:
+    `X->cmd()` invokes a direct subcommand, `X->Y->cmd()` invokes a subcommand of
+    subskill Y, and `X->parent()->child()` invokes child subcommand child exposed
+    by parent subcommand parent. Intermediate subcommands act as object generators.
+    Forms such as `X()` and `X->Y()` are invalid for skill or subskill entrypoints.
+---
+
 # Structure a Functional Project
 
 ## Workflow
@@ -18,7 +32,7 @@ realwork/
 |-- AGENTS.md, README.md, env.example
 |-- package/build manifest, license, .gitignore
 |-- src/ or established product source layout
-|-- tests/                   unit, integration, explicit acceptance/manual
+|-- tests/                   unit, integration, instructional (agent-driven), explicit acceptance/manual
 |-- scripts/                 functional operations and usable experiments
 |-- docs/                    usage, APIs, formats, requirements
 |-- configs/                 functional configuration
@@ -26,7 +40,7 @@ realwork/
 `-- extern/tracked/          required pinned source dependencies when needed
 ```
 
-Feature verification is functionality even when it tests an experimental script, uses a manual harness, or builds an isolated wheel as a test fixture. Test runners may be optional verification dependencies. Production code must not depend on test-only implementations. Keep fast defaults separate from explicitly selected slow/system/manual tests. Preserve an established `tests/core` layout if useful, but do not create an auxiliary development-policy suite inside the realwork.
+Feature verification is functionality even when it tests an experimental script, uses a manual harness, defines agent-driven instructional cases under `tests/instructional/` (managed through `imsight-project-mgr->agent-driven-testing`), or builds an isolated wheel as a test fixture. Test runners may be optional verification dependencies. Production code must not depend on test-only implementations. Keep fast defaults separate from explicitly selected slow/system/manual tests. Preserve an established `tests/core` layout if useful, but do not create an auxiliary development-policy suite inside the realwork.
 
 Do not generate empty directory hierarchies, a universal dependency bundle, or a replacement package name. Use actual requirements. `context/`, agent skills, all OpenSpec records, CI/lint/type policy, and shared development environments belong to meta; create them through meta setup or migration when requested.
 
