@@ -42,6 +42,6 @@ Before writing `PASS` for any case, verify all four items:
 
 - DO NOT report `PASS` for a case whose proof artifacts are missing, empty, uninspected, or from a different commit SHA.
 - DO NOT include raw credentials, API keys, sign-in ticket URLs, or session cookies in durable reports or chat summaries.
-- DO NOT write durable reports inside `<realwork>/tests/instructional/` or commit disposable temp files from `<project-tmp-root>` into Git.
+- DO NOT write durable reports inside `<suite-root>` or commit disposable temp files from `<project-tmp-root>` into Git.
 - DO NOT omit skipped cases, dropped swarm workers, or unverified entry points from the summary.
 - DO NOT relabel a `product-regression` as `doc-drift` or `PASS`.

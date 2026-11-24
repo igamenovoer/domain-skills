@@ -16,12 +16,18 @@ metadata:
 
 This reference defines the directory layout, project-local temporary workspace rules, harness contract, instructional test case schema, agent-behavior blinding rules, and operator prompting patterns shared by all `imsight-project-mgr->agent-driven-testing` subcommands.
 
-## Realwork Directory Layout (`tests/instructional/`)
+## Suite Location Resolution and Layout (`<suite-root>`)
 
-Instructional test suites are functional verification assets owned by the **realwork project**, never by a metaproj root. Keep all committed instructional test materials under `<realwork>/tests/instructional/`:
+Instructional test suites are functional verification assets normally owned by the **realwork project**, with `<realwork>/tests/instructional/` as the default location. Always resolve `<suite-root>` in this priority order before creating, reading, running, or auditing cases:
+
+1. **User-specified path**: honor an explicit suite directory (or explicit case output path) specified by the user. If the user names a single case file path (for example `<custom-dir>/cases/my-flow.md` or `<custom-dir>/my-flow.md`), derive `<suite-root>` from its enclosing suite root (or create `<custom-dir>/README.md` alongside it) and confirm the resolved path in the output.
+2. **Project context**: use an existing instructional test suite path declared in the realwork or enclosing metaproj `AGENTS.md` or `tests/README.md`.
+3. **Default**: `<realwork>/tests/instructional/`.
+
+Keep all committed instructional test materials under `<suite-root>`:
 
 ```text
-<realwork>/tests/instructional/
+<suite-root>/                  # Default: <realwork>/tests/instructional/ (or user-specified path)
 ├── README.md                  # Required. Harness contract, baseline preconditions, driving rules, and case index.
 ├── cases/                     # Required. One Markdown file per user-facing feature or scenario.
 │   ├── <feature-or-flow>.md
@@ -30,8 +36,8 @@ Instructional test suites are functional verification assets owned by the **real
 ```
 
 - Keep implementation internals out of `cases/`. Describe user-visible surfaces, stable handles, required preconditions, exact commands, and observable proof.
-- Every file in `helpers/` must be executable and have its exact invocation documented in `tests/instructional/README.md` or the calling case.
-- Never place disposable run logs, temporary scripts, secrets, auth tokens, screenshots, or recordings inside `tests/instructional/`.
+- Every file in `helpers/` must be executable and have its exact invocation documented in `<suite-root>/README.md` or the calling case.
+- Never place disposable run logs, temporary scripts, secrets, auth tokens, screenshots, or recordings inside `<suite-root>`.
 
 ## Project-Local Temporary Directory Contract
 
@@ -57,14 +63,14 @@ Allocate a unique run identifier (`<run-id>`, for example `YYYYMMDD-HHMMSS-<slug
 └── run-meta.json   # Run identity: realwork path, commit SHA, dirty status, harness version, timestamps, PIDs/sockets started
 ```
 
-- **Temporary scripts (`scripts/`)**: write one-off exploration wrappers, browser-driving scripts, or launch shims here. When agents keep rewriting the same temporary script across runs, promote a clean version into `<realwork>/tests/instructional/helpers/` and document it in `README.md`.
+- **Temporary scripts (`scripts/`)**: write one-off exploration wrappers, browser-driving scripts, or launch shims here. When agents keep rewriting the same temporary script across runs, promote a clean version into `<suite-root>/helpers/` and document it in `<suite-root>/README.md`.
 - **Disposable runtime state (`runtime/`)**: keep isolated data dirs, test databases, homes, logs, and browser profiles here. Delete or stop only what this run created during cleanup.
 - **Surviving artifacts (`evidence/`)**: store every screenshot, terminal capture, ARIA snapshot, HTTP/CLI transcript, and read-only cross-check file here under `<case-id>/`. Cleanup must never delete `evidence/`.
 - **OS socket-length exception**: if an IPC or tmux Unix socket path under `<project-tmp-root>` exceeds the OS `AF_UNIX` length limit, place only the short run-unique socket file under an isolated OS socket dir (such as `/tmp/tmux-<uid>/<project>-<run-id>/`), record its exact path in `run-meta.json`, clean up only that socket on teardown, and keep all scripts, runtime data, and evidence inside `<project-tmp-root>`.
 
-## Harness Contract (`tests/instructional/README.md`)
+## Harness Contract (`<suite-root>/README.md`)
 
-Write `tests/instructional/README.md` for a cold agent reading the repo mid-task, with concrete repo commands and zero placeholders. Include these sections:
+Write `<suite-root>/README.md` for a cold agent reading the repo mid-task, with concrete repo commands and zero placeholders. Include these sections:
 
 1. **Baseline Preconditions & Isolation**: how to resolve `<project-tmp-root>`, required env vars, seeded fixtures, isolated ports/data dirs/tmux sockets, and whether two instances can run side by side (if not, state explicitly to refuse double-driving a shared instance).
 2. **Launch**: exact command to start the target from an empty disposable data directory (including build, migrations, or seeding), plus the concrete signal that proves the target is *usable* (not merely listening). For short-lived CLIs or TUIs, state the one-time build step and how each drive launches an isolated PTY or tmux server (`env -u TMUX -u TMUX_PANE -u TMUX_TMPDIR tmux -S <socket>`).
@@ -75,7 +81,7 @@ Write `tests/instructional/README.md` for a cold agent reading the repo mid-task
 7. **Helpers** (when `helpers/` is present): list every executable script with its exact command-line invocation and purpose.
 8. **Case Index**: link every file under `cases/` with a one-line user-visible summary and any required capability tags (such as `cli`, `web`, `multi-agent`, `external-model`).
 
-## Instructional Test Case Template (`tests/instructional/cases/<case-slug>.md`)
+## Instructional Test Case Template (`<suite-root>/cases/<case-slug>.md`)
 
 Every case file starts with an H1 title and one concise paragraph describing the user-visible behavior under test, followed by **four fixed H2 sections** in this exact order:
 
@@ -130,21 +136,21 @@ When the system under test includes AI agents, system skills, prompts, or multi-
 
 ## How to Instruct an Agent to Generate Test Cases
 
-Users and operators can trigger `imsight-project-mgr->agent-driven-testing->generate-cases()` directly by specifying the target realwork, what source material to convert (repo features, a debug campaign, an OpenSpec change, or a bug/PR), any external dependencies or model lanes, and the project-local temp directory if non-default.
+Users and operators can trigger `imsight-project-mgr->agent-driven-testing->generate-cases()` directly by specifying the target realwork, an optional suite output location (`<suite-root>`, defaulting to `<realwork>/tests/instructional/`), what source material to convert (repo features, a debug campaign, an OpenSpec change, or a bug/PR), any external dependencies or model lanes, and the project-local temp directory if non-default.
 
 > **Example Warning:** The user/AI prompt examples below are for example purposes only. Learn their style, intent, and semantics rather than hardcoding the example text, filenames, or model names.
 
 ### Example 1: Bootstrap From a Realwork Repository
 
 - **User prompt**: "Invoke `imsight-project-mgr->agent-driven-testing->generate-cases()` on `<realwork>`. Interview the repo, set up `tests/instructional/README.md` with Launch/Doctor/Drive/Evidence/Cleanup using the project-local `tmp/` directory, and generate instructional cases for the top 3 user-facing CLI and Web workflows. Self-prove one case end to end before finishing."
-- **Expected AI response shape**: Reports the resolved realwork path and `<project-tmp-root>`, lists created/updated files under `tests/instructional/`, summarizes the self-proof run (exact commands, `Doctor` result, case driven, surviving artifact paths under `<run-tmp>/evidence/`, and cleanup verification), and flags any prerequisites that remained unreachable.
+- **Expected AI response shape**: Reports the resolved realwork path, `<suite-root>`, and `<project-tmp-root>`, lists created/updated files under `<suite-root>`, summarizes the self-proof run (exact commands, `Doctor` result, case driven, surviving artifact paths under `<run-tmp>/evidence/`, and cleanup verification), and flags any prerequisites that remained unreachable.
 
-### Example 2: Distill a Debug Campaign or Bug Fix Into Reusable Cases
+### Example 2: Distill a Debug Campaign Into a User-Specified Output Location
 
-- **User prompt**: "Invoke `imsight-project-mgr->agent-driven-testing->generate-cases()` on `<realwork>` to convert the recent debug campaign in `context/campaigns/debug/<campaign>/` into reusable instructional cases under `tests/instructional/cases/`. Include both the happy path and the failure/guardrail cases discovered during debugging, use `<project-tmp-root>` for scratch scripts and artifacts, and verify one case live."
-- **Expected AI response shape**: Lists each distilled case file mapped back to the campaign's observed scenarios and failure modes, confirms disposable scripts and proof artifacts stayed inside `<project-tmp-root>/instructional-tests/<run-id>/`, reports the live self-proof verdict and surviving evidence paths, and notes any deferred campaign arms not yet converted.
+- **User prompt**: "Invoke `imsight-project-mgr->agent-driven-testing->generate-cases()` on `<realwork>` to convert the recent debug campaign in `context/campaigns/debug/<campaign>/` into reusable instructional cases under `tests/instructional/mailbox/` (or another specified `<suite-root>`). Include both the happy path and the failure/guardrail cases discovered during debugging, use `<project-tmp-root>` for scratch scripts and artifacts, and verify one case live."
+- **Expected AI response shape**: Confirms the user-specified `<suite-root>`, lists each distilled case file mapped back to the campaign's observed scenarios and failure modes, confirms disposable scripts and proof artifacts stayed inside `<project-tmp-root>/instructional-tests/<run-id>/`, reports the live self-proof verdict and surviving evidence paths, and notes any deferred campaign arms not yet converted.
 
 ### Example 3: Add a Multi-Agent or Skill-Behavior Case With Blinding
 
-- **User prompt**: "Invoke `imsight-project-mgr->agent-driven-testing->generate-cases()` on `<realwork>` to add an instructional case in `tests/instructional/cases/two-agent-coordination.md` that verifies peer discovery and task delegation over mail without observer-effect leakage. Grade compliance from agent transcripts and mailbox state, and run a live self-proof."
-- **Expected AI response shape**: Confirms the new case includes the four standard H2 sections plus `## Blinding and Transcript Checks`, reports the live self-proof commands, transcript/mailbox cross-check findings, surviving artifact paths, and clean teardown of all spawned agents and isolated sessions.
+- **User prompt**: "Invoke `imsight-project-mgr->agent-driven-testing->generate-cases()` on `<realwork>` to add an instructional case in `<suite-root>/cases/two-agent-coordination.md` that verifies peer discovery and task delegation over mail without observer-effect leakage. Grade compliance from agent transcripts and mailbox state, and run a live self-proof."
+- **Expected AI response shape**: Confirms the resolved `<suite-root>` and that the new case includes the four standard H2 sections plus `## Blinding and Transcript Checks`, reports the live self-proof commands, transcript/mailbox cross-check findings, surviving artifact paths, and clean teardown of all spawned agents and isolated sessions.

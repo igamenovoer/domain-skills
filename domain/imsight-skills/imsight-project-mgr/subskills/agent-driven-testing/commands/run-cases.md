@@ -14,16 +14,16 @@ metadata:
 
 # Run Instructional Test Cases
 
-Execute one, several, or all instructional test cases under `<realwork>/tests/instructional/` against the live realwork checkout while using a project-local temporary directory for disposable scripts, isolated runtime state, and surviving proof artifacts.
+Execute one, several, or all instructional test cases under `<suite-root>` (user-specified location, project context, or `<realwork>/tests/instructional/` by default) against the live realwork checkout while using a project-local temporary directory for disposable scripts, isolated runtime state, and surviving proof artifacts.
 
 ## Workflow
 
 When `imsight-project-mgr->agent-driven-testing->run-cases()` is invoked, execute the following steps in order.
 
-1. **Resolve the realwork checkout and target cases.** Identify the realwork path, branch, commit SHA, dirty state, and which cases under `<realwork>/tests/instructional/cases/` are in scope. Read `<realwork>/tests/instructional/README.md` first. If `tests/instructional/` is missing, stop and direct the user to `imsight-project-mgr->agent-driven-testing->generate-cases()`.
-2. **Initialize the project-local run workspace.** Resolve `<project-tmp-root>` per [case-and-harness-contract.md](../references/case-and-harness-contract.md) and create `<run-tmp> = <project-tmp-root>/instructional-tests/<run-id>/` with `scripts/`, `runtime/`, `evidence/`, and `run-meta.json`. Verify `<project-tmp-root>` is Git-ignored before writing files.
+1. **Resolve the realwork checkout, suite location, and target cases.** Identify the realwork path, branch, commit SHA, dirty state, `<suite-root>` (per **Suite Location Resolution and Layout** in [case-and-harness-contract.md](../references/case-and-harness-contract.md)), and which cases under `<suite-root>/cases/` are in scope. Read `<suite-root>/README.md` first. If `<suite-root>` is missing, stop and direct the user to `imsight-project-mgr->agent-driven-testing->generate-cases()`.
+2. **Initialize the project-local run workspace.** Resolve `<project-tmp-root>` per [case-and-harness-contract.md](../references/case-and-harness-contract.md) and create `<run-tmp> = <project-tmp-root>/instructional-tests/<run-id>/` with `scripts/`, `runtime/`, `evidence/`, and `run-meta.json` (recording both the realwork checkout and `<suite-root>`). Verify `<project-tmp-root>` is Git-ignored before writing files.
 3. **Select the execution mode** from **Execution Modes** based on the user's goal (standard live pass, before-and-after fix verification, parallel slice fan-out, or blinded agent-behavior eval).
-4. **Launch and health-check (`Doctor`).** Follow `tests/instructional/README.md`'s `Launch` model (one long-lived instance driven serially for servers/UIs, or a fresh isolated session per drive for short-lived CLIs/TUIs). Run `Doctor` and verify stable app markers, revision, owned ports/sockets, and auth before executing any case step.
+4. **Launch and health-check (`Doctor`).** Follow `<suite-root>/README.md`'s `Launch` model (one long-lived instance driven serially for servers/UIs, or a fresh isolated session per drive for short-lived CLIs/TUIs). Run `Doctor` and verify stable app markers, revision, owned ports/sockets, and auth before executing any case step.
 5. **Drive each selected case while holding the live-pass invariants.** Put any throwaway per-run driving or probe scripts in `<run-tmp>/scripts/` and capture all proof artifacts into `<run-tmp>/evidence/<case-slug>/`. See **Live-Pass Invariants**.
 6. **Clean up disposable runtime state without touching evidence.** Tear down every process, gateway, container, browser profile, and isolated tmux server recorded in `run-meta.json`, clean disposable `runtime/` state if requested or safe, and verify on disk that every captured file in `<run-tmp>/evidence/` survived cleanup.
 7. **Produce the test report.** Invoke `imsight-project-mgr->agent-driven-testing->report-results()` (or apply [report-template.md](../references/report-template.md) directly) to write the durable Markdown report and return the concise in-chat summary.
@@ -36,7 +36,7 @@ Choose the mode that matches the user's verification goal:
 
 | Mode | When to Select | Required Discipline |
 | --- | --- | --- |
-| **Standard live pass** | Routine verification of one, several, or all cases in `tests/instructional/` | Follow `README.md`'s Launch model; run `Doctor`; drive every selected entry point and read-only cross-check; capture surviving proof. |
+| **Standard live pass** | Routine verification of one, several, or all cases in `<suite-root>` | Follow `README.md`'s Launch model; run `Doctor`; drive every selected entry point and read-only cross-check; capture surviving proof. |
 | **Before-and-after fix verification** | Proving a bug fix or PR resolves a reported symptom | Run identical environment inputs on baseline and patched builds. Observe the discriminating broken state **twice** (with an independent state reset between attempts) on baseline, then observe the expected fixed state **twice** on the patched build. Compilation or unit tests never count as "after" evidence. |
 | **Parallel slice fan-out** | Large suites where `README.md` confirms isolated instances can run concurrently | Partition disjoint cases across parallel subagents, each with its own `<run-tmp>` slice, ports, and exact commit SHA. Require every worker to return `PASS`, `FAIL`, `BLOCKED`, or `VERIFIED-UNREACHABLE` with SHA and artifact paths; drop and respawn once if SHA or evidence is missing. |
 | **Blinded agent-behavior eval** | Cases with `## Blinding and Transcript Checks` testing prompts, skills, or managed agents | Strip meta-words (`eval`, `test`, `judge`, `rubric`, `benchmark`, `candidate`, `arena`) from candidate workspaces and prompts; run organic requests; grade compliance from actual execution transcripts and side effects rather than candidate self-report. |

@@ -1,6 +1,6 @@
 interface:
   display_name: "imsight-project-mgr"
   short_description: "Manage functional projects and shared development workspaces"
-  default_prompt: "Use $imsight-project-mgr to select realwork-project-mgr for functional project setup, releases, or standalone temporary worktrees, meta-project-mgr for metaproj workspace creation, migration, and realwork submodules, vscode-config for editor scoping, or agent-driven-testing for tests/instructional verification suites."
+  default_prompt: "Use $imsight-project-mgr to select realwork-project-mgr for functional project setup, releases, or standalone temporary worktrees, meta-project-mgr for metaproj workspace creation, migration, and realwork submodules, vscode-config for editor scoping, or agent-driven-testing for instructional verification suites."
 policy:
   allow_implicit_invocation: false

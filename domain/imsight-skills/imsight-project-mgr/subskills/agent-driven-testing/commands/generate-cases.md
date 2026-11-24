@@ -14,22 +14,22 @@ metadata:
 
 # Generate Instructional Test Cases
 
-Create or extend an agent-driven instructional test suite under `<realwork>/tests/instructional/` so a cold agent can launch the realwork, verify its health, drive real user-facing flows, capture surviving evidence in a project-local temporary directory, and tear down cleanly.
+Create or extend an agent-driven instructional test suite under `<suite-root>` (a user-specified path, or `<realwork>/tests/instructional/` by default) so a cold agent can launch the realwork, verify its health, drive real user-facing flows, capture surviving evidence in a project-local temporary directory, and tear down cleanly.
 
 ## Workflow
 
 When `imsight-project-mgr->agent-driven-testing->generate-cases()` is invoked, execute the following steps in order.
 
-1. **Resolve the realwork target and source inputs.** Identify the selected realwork checkout and branch, plus any input sources named by the user (existing codebase features, a debug campaign under `context/campaigns/debug/`, OpenSpec specs/changes, or a bug/PR).
+1. **Resolve the realwork target, suite location, and source inputs.** Identify the selected realwork checkout and branch, resolve `<suite-root>` following **Suite Location Resolution and Layout** in [case-and-harness-contract.md](../references/case-and-harness-contract.md) (honoring any user-specified output location before falling back to project context or `<realwork>/tests/instructional/`), and collect any input sources named by the user (existing codebase features, a debug campaign under `context/campaigns/debug/`, OpenSpec specs/changes, or a bug/PR).
 2. **Resolve the project-local temporary directory.** Follow the discovery order in [case-and-harness-contract.md](../references/case-and-harness-contract.md) to find or initialize `<project-tmp-root>` inside the project and verify it is ignored by Git.
 3. **Interview the repository before asking the user.** Inspect code, docs, existing tests, and scripts across all five discovery axes. Ask the user only for facts that cannot be observed in the repo (such as private credentials, external model endpoints, or intentionally deferred scope). See **Repository Interview**.
 4. **Verify a runnable baseline.** Confirm the checkout builds or starts as-is before writing instructions against it. If startup fails, report the exact failure (or fix only an explicitly authorized verification-scaffolding gap, documented for cleanup) instead of encoding broken launch steps.
-5. **Author or update the harness contract (`tests/instructional/README.md`).** Populate all required sections (`Baseline Preconditions & Isolation`, `Launch`, `Doctor`, `Drive`, `Evidence`, `Cleanup`, `Helpers`, `Case Index`) grounded in real commands, stable handles, and `<project-tmp-root>` usage.
-6. **Author user-POV test cases (`tests/instructional/cases/<case-slug>.md`).** Write one file per user-facing feature or scenario (3 to 5 core cases when bootstrapping, or the exact requested cases when distilling a campaign/spec) using the four fixed H2 sections and, when testing AI agent behavior, the optional `## Blinding and Transcript Checks` section. See **Authoring Cases and Helpers**.
+5. **Author or update the harness contract (`<suite-root>/README.md`).** Populate all required sections (`Baseline Preconditions & Isolation`, `Launch`, `Doctor`, `Drive`, `Evidence`, `Cleanup`, `Helpers`, `Case Index`) grounded in real commands, stable handles, and `<project-tmp-root>` usage.
+6. **Author user-POV test cases (`<suite-root>/cases/<case-slug>.md`).** Write one file per user-facing feature or scenario (3 to 5 core cases when bootstrapping, or the exact requested cases when distilling a campaign/spec) using the four fixed H2 sections and, when testing AI agent behavior, the optional `## Blinding and Transcript Checks` section. See **Authoring Cases and Helpers**.
 7. **Prove the suite end to end before handoff.** Execute `Launch`, `Doctor`, at least ONE mapped case, evidence capture into `<run-tmp>/evidence/`, and `Cleanup`, then confirm the evidence still exists on disk after cleanup. See **Mandatory Self-Proof**.
-8. **Report the generated suite.** Summarize files written in `tests/instructional/`, the resolved `<project-tmp-root>`, the self-proof result with surviving artifact paths, any stand-in deltas, and recommended next steps (such as running `imsight-project-mgr->agent-driven-testing->run-cases()` across the full suite).
+8. **Report the generated suite.** Summarize the resolved `<suite-root>`, files written under `<suite-root>`, the resolved `<project-tmp-root>`, the self-proof result with surviving artifact paths, any stand-in deltas, and recommended next steps (such as running `imsight-project-mgr->agent-driven-testing->run-cases()` across the full suite).
 
-If the user's request does not fit cleanly into a fresh bootstrap (for example, refactoring an existing manual test script into `tests/instructional/`), use your native planning tool to sequence the interview, migration, and mandatory self-proof while preserving every contract rule.
+If the user's request does not fit cleanly into a fresh bootstrap (for example, refactoring an existing manual test script into `<suite-root>`), use your native planning tool to sequence the interview, migration, and mandatory self-proof while preserving every contract rule.
 
 ## Repository Interview
 
@@ -47,7 +47,7 @@ Apply [case-and-harness-contract.md](../references/case-and-harness-contract.md)
 
 - **User POV only**: name user entry points, stable selectors/flags, required preconditions, literal commands, expected observable states, and read-only cross-checks. Omit internal function names and implementation details.
 - **Distilling debug campaigns or bugs**: convert each validated workflow arm and each real defect discovered during debugging into explicit sub-cases, including negative/guardrail assertions (such as busy refusals, unsupported mode rejections, or peer-discovery isolation) and known traps under `Gotchas`.
-- **Promote repeated scripts to helpers**: during authoring or self-proof, put throwaway test scripts under `<project-tmp-root>/instructional-tests/<run-id>/scripts/`. When a setup, doctor, or driving wrapper will be needed on every future run, place a clean, executable, composable helper script in `<realwork>/tests/instructional/helpers/` (with `--help`, machine-readable JSON output where useful, and actionable error messages) and show its exact invocation in `README.md`.
+- **Promote repeated scripts to helpers**: during authoring or self-proof, put throwaway test scripts under `<project-tmp-root>/instructional-tests/<run-id>/scripts/`. When a setup, doctor, or driving wrapper will be needed on every future run, place a clean, executable, composable helper script in `<suite-root>/helpers/` (with `--help`, machine-readable JSON output where useful, and actionable error messages) and show its exact invocation in `<suite-root>/README.md`.
 - **No placeholders**: never leave `<TODO>`, dummy selectors, or unverified commands in committed case files.
 
 ## Mandatory Self-Proof
@@ -55,15 +55,15 @@ Apply [case-and-harness-contract.md](../references/case-and-harness-contract.md)
 An instructional test suite that has never been executed is a draft, not a deliverable. Before finishing `generate-cases()`:
 
 1. Allocate `<run-tmp>` at `<project-tmp-root>/instructional-tests/<run-id>/` with `scripts/`, `runtime/`, and `evidence/`.
-2. Follow your own `tests/instructional/README.md` literally: run `Launch`, run `Doctor`, drive at least one case from `tests/instructional/cases/`, capture its proof artifacts into `<run-tmp>/evidence/<case-slug>/`, and run `Cleanup`.
+2. Follow your own `<suite-root>/README.md` literally: run `Launch`, run `Doctor`, drive at least one case from `<suite-root>/cases/`, capture its proof artifacts into `<run-tmp>/evidence/<case-slug>/`, and run `Cleanup`.
 3. Run `Cleanup` after every failed iteration as well so broken attempts never leave stranded processes, ports, or isolated tmux servers.
 4. After final cleanup, verify on disk that the proof artifacts under `<run-tmp>/evidence/<case-slug>/` still exist and match the case's proof standard.
 5. If self-proof ran in a stand-in environment (for example, a local mock endpoint or container instead of a remote target), record every setup step the stand-in performed that the real target will not; mark those steps unverified.
 
 ## Guardrails
 
-- DO NOT leave placeholders, unverified commands, or internal implementation assertions in `tests/instructional/README.md` or `tests/instructional/cases/*.md`.
-- DO NOT write disposable self-proof scripts, logs, or evidence inside `tests/instructional/` or system `/tmp`.
+- DO NOT leave placeholders, unverified commands, or internal implementation assertions in `<suite-root>/README.md` or `<suite-root>/cases/*.md`.
+- DO NOT write disposable self-proof scripts, logs, or evidence inside `<suite-root>` or system `/tmp`.
 - DO NOT hand off newly generated instructional cases without completing at least one live end-to-end self-proof pass and confirming proof artifacts survived cleanup.
 - DO NOT weaken a case's journey or omit a failing precondition just to make self-proof pass.
-- DO NOT copy secrets, API keys, sign-in tokens, or session cookies into `tests/instructional/` or `helpers/`.
+- DO NOT copy secrets, API keys, sign-in tokens, or session cookies into `<suite-root>` or `helpers/`.
