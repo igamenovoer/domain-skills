@@ -14,49 +14,43 @@ metadata:
 
 # Instructional Test Reporting Contract
 
-This reference defines report destinations, verdict and triage taxonomies (including `usability-issue`), the forced-decision soft-goal reporting rule, the durable Markdown report template, and the concise in-chat summary contract used by `imsight-project-mgr->agent-driven-testing->report-results()` and the reporting step of `run-case()` and `audit-case()`.
+This reference defines report destinations, verdict and triage taxonomies, and the report format used by `run-case()`, `audit-case()`, and `report-results()`. Apply the judgment rules in [principles.md](principles.md) when evaluating evidence.
 
 ## Report Destination Priority (Part 3: Test Reports)
 
-Test reports are durable Markdown documents kept separate from both tracked test definitions (`<cases-dir>/<case-slug>/`) and raw test outputs (`<output-dir>/<test-slug>/`). Projects and users may choose to Git-track test reports (for example under `.imsight-arts/...`). Resolve where the durable Markdown report is written in this priority order:
+Test reports are curated, secret-redacted Markdown files stored separately from tracked test definitions (`<cases-dir>/<case-slug>/`) and ignored raw test outputs (`<output-dir>/<test-slug>/`). Projects and users may choose to track reports in Git. Resolve the destination in order:
 
-1. **User-specified destination**: an explicit file or directory requested by the user (for example, a debug campaign folder or PR handoff note).
-2. **Environment override**: `IMSIGHT_SKILL_OUTPUT_DIR` resolved from the owning project.
-3. **Default durable report root**:
+1. **User-specified file or directory.**
+2. **`IMSIGHT_SKILL_OUTPUT_DIR`** resolved from the owning project.
+3. **Default durable report root:**
    - Attached metaproj: `<meta-root>/.imsight-arts/project-mgr/agent-driven-testing/reports/<timestamp>-<run-slug>.md`
    - Standalone realwork: `<realwork-root>/.imsight-arts/project-mgr/agent-driven-testing/reports/<timestamp>-<run-slug>.md`
 
-Keep raw test outputs (screenshots, ARIA snapshots, terminal transcripts, JSON dumps, logs, temporary scripts, and any ad-hoc diagnostics) inside `<output-dir>/<test-slug>/` (and optionally place a run-local copy or pointer at `<output-dir>/<test-slug>/report.md`). Never write test reports or raw outputs into `<cases-dir>`, and never commit Git-ignored `<output-dir>/<test-slug>/` files into the realwork repository.
+Optionally place a copy or pointer at `<output-dir>/<test-slug>/report.md`. Never write reports into `<cases-dir>`.
 
-## Verdict Taxonomy
+## Verdict Taxonomy (Forced Decision — No `INCONCLUSIVE`)
 
-Assign **exactly one** of these four verdicts to each executed case (and sub-case when granular reporting is helpful). **There is no `INCONCLUSIVE` verdict:** when a case actually executes, the runner must make a definitive `PASS` or `FAIL` decision against the case's soft goals and document any residual uncertainty, caveats, or open questions in the report.
+Assign **exactly one** verdict per scenario. Whenever a scenario executes, the runner must decide `PASS` or `FAIL` and record any residual ambiguity, caveats, or open questions in the report body rather than deferring the verdict:
 
-| Verdict | Meaning | Required Evidence |
+| Verdict | Meaning | Required Proof |
 | --- | --- | --- |
-| `PASS` | The real user path ran, no hard disqualifier triggered, and the runner judges all soft goals satisfied based on disk-backed evidence and read-only cross-checks | Exact commands, exit codes/outputs, read-only cross-check result, evidence-cited soft-goal rationale, and surviving artifact paths in `<output-dir>/<test-slug>/evidence/` |
-| `FAIL` | The target launched and reached the feature, and real execution triggered a hard disqualifier or failed to satisfy one or more soft goals | Exact failing step, soft-goal rationale / disqualifier hit, expected vs. observed state, surviving artifact paths, and triage classification |
-| `BLOCKED` | The harness or target could not reach a valid drivable state (build/launch failure, `Doctor` failure not resolved by an authorized audit harness fix, or missing required capability) | Exact blocking command/error, `Doctor` output, and what stopped execution |
-| `VERIFIED-UNREACHABLE` | The harness ran cleanly, but a concrete external prerequisite (missing credential, entitlement, OS feature, or offline external service) prevented reaching the case | Attempted route/command, concrete unmet prerequisite, and note of whether the prerequisite is documented in `Gotchas` |
+| `PASS` | Real boundary ran, all **Quantified checks** held, and the runner judges all **Qualitative checks** satisfied from disk-backed evidence and independent cross-checks | Commands/actions run, quantified check values, qualitative judgment rationale citing surviving files in `<output-dir>/<test-slug>/evidence/`, and second-view result |
+| `FAIL` | Target reached the scenario, and execution violated a quantified check or failed a qualitative check | Failing step, violated check or qualitative rationale, expected vs. observed state, surviving evidence paths, and triage label(s) |
+| `BLOCKED` | Harness or target could not reach a valid drivable state (build/launch/preflight/`Doctor` failure) | Exact blocking command, error/`Doctor` output, and what stopped execution |
+| `VERIFIED-UNREACHABLE` | Harness worked, but a concrete external prerequisite (credentials, hardware, entitlement, external service) was unavailable | Attempted command/path and exact unmet prerequisite |
 
-### Run-Level Outcome (for `audit-case()`)
-
-- `clean`: every mapped case received source and live coverage with no drift, harness gap, or regression to fix.
-- `changed`: proven fixes were applied strictly inside `<cases-dir>/<case-slug>/` (doc drift or harness gap) and re-verified live.
-- `blocked`: coverage could not complete or a proven harness fix could not be verified safely; exact blocker named.
+For `audit-case()`, also state one run-level audit outcome: **`clean`** (full source + live coverage, no definition edits needed), **`changed`** (proven `doc-drift` or `harness-gap` edits applied inside `<cases-dir>/<case-slug>/` and re-verified live), or **`blocked`** (coverage or verification blocked; blocker named).
 
 ## Triage Categories
 
-Classify every non-passing finding honestly so product bugs and usability problems are never buried as test-doc updates. Multiple labels may apply when distinct issues appear in the same scenario, and `usability-issue` may also be attached to a `PASS` scenario whenever the system confused or misled the executing agent along the way:
+Multiple labels may apply when distinct issues surface in one scenario, and **`usability-issue` applies to `PASS` scenarios as well** whenever the system misled or confused the executing agent along the way:
 
-- `doc-drift`: the product behaves as intended (confirmed from source, specs, or commit history), while `<cases-dir>/<case-slug>/` describes stale flags, routes, labels, or omitted prerequisites.
-- `harness-gap`: the product works cleanly for a human user, but the harness script or selector in `<cases-dir>/<case-slug>/` cannot drive or observe it reliably.
-- `product-regression`: the product violates its documented or intended contract on the real surface. Record the repro steps, observed vs. expected behavior, and commit SHA; do not mask it by weakening the case.
-- `usability-issue`: the system under test behaves in a counter-intuitive way, misleads the executing agent into a wrong mental model or wrong operation, confuses the agent about current state, or lacks actionable feedback when an error occurs so figuring out the correct operation is unnecessarily hard. **Principle: if something confuses the executing agent, it will likely confuse human users as well.** Always record the exact confusing interaction, what the agent was misled to believe or try, what feedback was missing or unclear, and the supporting artifact path in `<output-dir>/<test-slug>/`.
+- `doc-drift`: intentional product behavior (confirmed from source, specs, or commit history) where `<cases-dir>/<case-slug>/` is stale.
+- `harness-gap`: product works cleanly for a user/caller, but the driver or helper in `<cases-dir>/<case-slug>/` fails to drive or observe it reliably.
+- `product-regression`: product breaks its intended contract, quantified invariant, or qualitative expectation on the real surface.
+- `usability-issue`: counter-intuitive behavior, misleading cues/flags/states, or opaque error feedback that confused the executing agent or forced trial-and-error (**if it confuses the agent, it will likely confuse users too**).
 
 ## Durable Markdown Report Template
-
-Write the Markdown report without hard-wrapping normal paragraphs, filling every section from observed run evidence:
 
 ```markdown
 # Instructional Test Report: <run-slug>
@@ -67,58 +61,43 @@ Date: YYYY-MM-DD HH:MM UTC | Overall Status: <PASS | FAIL | MIXED | BLOCKED> | M
 
 - **Realwork checkout**: `<path>` (branch `<branch>`, commit `<sha>`, working tree `<clean | dirty: summary>`)
 - **Enclosing metaproj**: `<path or none (standalone)>`
-- **Test definitions (tracked)**: `<cases-dir>/<case-slug>/` (`draft` or `proven`, strictly untouched during `run-case()`)
+- **Test definitions (tracked)**: `<cases-dir>/<case-slug>/` (`draft` or `proven`, untouched during `run-case()`)
 - **Test output root (ignored)**: `<output-dir>/<test-slug>/`
 - **Evidence root (verified post-cleanup)**: `<output-dir>/<test-slug>/evidence/`
-- **Temporary scripts used**: `<list under scripts/ or none>`
-- **Harness & tool versions**: `<app/CLI/browser/model versions actually observed by Doctor>`
-- **Stand-in or environment deltas**: `<none, or exact setup steps performed by a local stand-in that the production target will not perform>`
+- **Versions & environment**: `<binary/service/runtime/model versions observed by Doctor + any stand-in deltas>`
 
 ## Summary Table
 
-| Bundle / Scenario | Entry Point(s) Tested | Verdict | Triage | Doctor | Surviving Evidence | Notes |
+| Bundle / Scenario | Entry Point(s) | Verdict | Triage | Doctor | Surviving Evidence | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| `<case-slug>/<scenario-slug>` | `<cli / web / ...>` | `PASS` | `none` (or `usability-issue`, ...) | `pass` | `<output-dir>/<test-slug>/evidence/<case-slug>/<scenario-slug>/...>` | `<1-line summary>` |
+| `<case-slug>/<scenario-slug>` | `<entry point>` | `PASS` | `none` (or `usability-issue`, ...) | `pass` | `<output-dir>/<test-slug>/evidence/<case-slug>/<scenario-slug>/...>` | `<1-line summary>` |
 
 ## Per-Case Details
 
 ### `<case-slug>/<scenario-slug>` — `<VERDICT>`
 
-- **Preconditions & Doctor**: `<exact doctor check and observed app identity/version>`
-- **Executed path**: `<ordered steps or commands run>`
-- **Expected soft goals vs. observed**: `<concrete outputs, exit codes, UI/state observations>`
-- **Read-only cross-check**: `<independent verification of files, DB, mailbox, or transcript>`
-- **Soft-goal judgment rationale**: `<why the runner judged PASS or FAIL against each soft goal and hard disqualifier, citing specific artifact files>`
-- **Usability observations**: `<none, or specific counter-intuitive behavior, misleading cues, or missing error feedback encountered during this scenario>`
-- **Uncertainty & caveats**: `<none, or borderline observations, judgment assumptions, and open questions for the human reviewer>`
-- **Artifacts**: `<exact paths under <output-dir>/<test-slug>/evidence/<case-slug>/<scenario-slug>/ verified present after cleanup>`
-- **Triage & follow-up**: `<none, or doc-drift / harness-gap / product-regression / usability-issue with exact file/line or recommended explicit author-case() / product-fix follow-up>`
+- **Preconditions & Doctor**: `<observed readiness, version, and isolation check>`
+- **Executed path & second view**: `<commands/actions run + independent read-only cross-check>`
+- **Quantified checks**: `<pass/fail results with observed counts, codes, headers, or values>`
+- **Qualitative judgment**: `<n/a, or why the runner judged PASS/FAIL on each qualitative criterion, citing exact artifact files>`
+- **Usability observations**: `<none, or what misled/confused the agent and what error feedback was missing>`
+- **Uncertainty & caveats**: `<none, or borderline calls, assumptions, and open questions>`
+- **Artifacts & triage**: `<verified surviving paths under <output-dir>/<test-slug>/evidence/... + triage/follow-up>`
 
 ## Usability Issues
 
-- `<Aggregate every `usability-issue` observed across the run (including on PASS cases): what happened, why it misled or confused the agent, what feedback was missing, why it affects users, and the exact evidence path under <output-dir>/<test-slug>/; write "None." if no usability friction occurred>`
+- `<Aggregate every usability-issue across all scenarios (including PASS runs) with what happened, why it misleads users/agents, missing feedback, and evidence path; or "None.">`
 
 ## Uncertainty and Open Questions
 
-- `<Aggregate any qualitative judgment caveats, borderline soft-goal calls, environment ambiguities, or design questions that remain open for human follow-up; write "None." if completely clear>`
+- `<Aggregate borderline qualitative calls, environment caveats, or open questions for human review; or "None.">`
 
-## Cleanup Verification
+## Cleanup and Next Steps
 
-- **Stopped/removed**: `<exact PIDs, gateways, isolated tmux sockets, and disposable runtime/ directories cleaned>`
-- **Preserved**: `<confirmation that <output-dir>/<test-slug>/evidence/ files still exist, <cases-dir>/<case-slug>/ test definitions were not modified during run-case(), and user-owned sessions were untouched>`
-- **Residual items**: `<none, or any leaked resource and why>`
-
-## Unverified Scope and Next Steps
-
-- `<List skipped cases, unverified entry points, deferred lanes, whether any `draft` bundle is ready for explicit `author-case()` promotion to `proven`, or recommended product/usability/harness follow-ups>`
+- **Cleanup & preservation**: `<stopped PIDs/resources, preserved <output-dir>/<test-slug>/evidence/, untouched <cases-dir>/<case-slug>/ during run-case(), any residue>`
+- **Unverified scope & next steps**: `<skipped cases/entry points, whether a draft bundle is ready for explicit author-case() promotion to proven, or recommended product/usability/harness follow-ups>`
 ```
 
 ## In-Chat Summary Contract
 
-Always pair the durable report with a concise in-chat summary containing:
-
-1. **Target & Run Identity**: realwork checkout, commit SHA, test definitions path (`<cases-dir>/<case-slug>/`), test output path (`<output-dir>/<test-slug>/`), and link to the durable Markdown report.
-2. **Result Table**: case name, definitive verdict (`PASS` / `FAIL` / `BLOCKED` / `VERIFIED-UNREACHABLE`), triage labels (`doc-drift`, `harness-gap`, `product-regression`, `usability-issue`, or `none`), and primary evidence path.
-3. **Key Findings, Usability Issues & Uncertainty**: concrete rationale for every `FAIL`, `BLOCKED`, `doc-drift`, `harness-gap`, `product-regression`, and `usability-issue` item (including usability friction found on passing runs), plus brief highlights of any notable uncertainty or open questions recorded in the report.
-4. **Cleanup & Read-Only Confirmation**: confirm owned processes/disposable runtime state were torn down, proof artifacts still exist under `<output-dir>/<test-slug>/evidence/`, and `<cases-dir>/<case-slug>/` remained untouched (for `run-case()`).
-5. **Next Step**: recommend the single clearest follow-up (for example, fixing a confirmed `product-regression` or `usability-issue`, explicitly invoking `author-case()` to promote `status: draft` -> `proven` or fix a `harness-gap`, or invoking `audit-case()`).
+Pair the durable report with a concise summary covering: (1) checkout SHA, `<cases-dir>/<case-slug>/`, `<output-dir>/<test-slug>/`, and report link; (2) verdict + triage table; (3) concrete findings for every failure, `usability-issue`, and notable uncertainty; (4) cleanup + read-only definition confirmation; and (5) the single clearest next step.

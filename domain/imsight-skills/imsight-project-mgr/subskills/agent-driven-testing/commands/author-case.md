@@ -14,43 +14,29 @@ metadata:
 
 # Author Instructional Test Cases
 
-**Phase 2 (Create or Update Tracked Test Definitions Only).** Create or update a self-contained agent-driven instructional test definition bundle under `<cases-dir>/<case-slug>/` (where `<cases-dir>` defaults to `<realwork>/tests/instructional/` and is tracked in Git) grounded in static repository inspection, without launching the app or executing the test cases.
+**Phase 2 (Create or Update Tracked Definitions Only).** Write or update a self-contained test bundle under `<cases-dir>/<case-slug>/` for a cold agent, grounded statically in the repository without launching the program or running tests.
 
 ## Predecessors
 
-- Normally follows an approved design from `imsight-project-mgr->agent-driven-testing->propose-case()`, or an explicit user instruction to create/update a specific `<cases-dir>/<case-slug>/` bundle (for example, promoting `status: draft` -> `status: proven` after a verified `run-case()` report, or folding in `harness-gap` / `doc-drift` fixes reported by `run-case()`).
-- If the scope, preconditions, or soft goals are still ambiguous and no prior proposal exists, stop and recommend running `imsight-project-mgr->agent-driven-testing->propose-case()` first.
+- Follows an approved proposal from `imsight-project-mgr->agent-driven-testing->propose-case()`, or an explicit user instruction to create or update `<cases-dir>/<case-slug>/` (including promoting `Status: draft` -> `Status: proven` from a verified `run-case()` report or folding in reported `doc-drift` / `harness-gap` fixes).
+- If scope, preconditions, or criteria remain unsettled, stop and point to `propose-case()`.
 
 ## Workflow
 
 When `imsight-project-mgr->agent-driven-testing->author-case()` is invoked, execute the following steps in order.
 
-1. **Resolve target realwork, `<cases-dir>`, `<case-slug>`, and authoring intent.** Confirm whether creating a new bundle or updating an existing `<cases-dir>/<case-slug>/` bundle per **Part 1: Test Definitions** in [case-and-harness-contract.md](../references/case-and-harness-contract.md), and gather the approved proposal or explicit update instructions (plus any referenced specs, PRs, debug campaigns, or prior `run-case()` reports).
-2. **Ground every command and handle statically against the repository.** Inspect the repo read-only across `Surface`, `Run`, `Drive`, `Observe`, and `Isolate` (if not already completed in `propose-case()`) and confirm that every referenced CLI command, flag, route, selector convention, script path, and fixture actually exists in the current checkout. Do not launch the app or run live tests.
-3. **Author or update the bundle harness contract (`<cases-dir>/<case-slug>/README.md`).** Populate all required sections (`Status`, `Baseline Preconditions & Isolation`, `Launch`, `Doctor`, `Drive`, `Evidence`, `Cleanup`, `Helpers`, `Case Index`) with concrete repo commands and zero placeholders, pointing execution outputs to `<output-dir>/<test-slug>/`. Set `Status: draft` whenever creating a new bundle or materially changing its harness, steps, or helpers; set `Status: proven (commit <sha>, report <path>)` only when the user explicitly instructs promoting a bundle backed by a cited verified `run-case()` report. If an optional top-level `<cases-dir>/README.md` bundle index already exists, update only its link to `<case-slug>/README.md`.
-4. **Author or update user-POV scenarios (`<cases-dir>/<case-slug>/cases/<scenario-slug>.md`).** Write or update one file per user-facing scenario using the five fixed H2 sections (`Sub-cases`, `How to get to it (user POV)`, `Driving it with <harness-name>`, `Expected Outcome (Soft Goals)`, `Gotchas`) and, when testing AI agent behavior, the optional `## Blinding and Transcript Checks` section. See **Authoring Cases and Helpers**.
-5. **Author or update optional helpers (`<cases-dir>/<case-slug>/helpers/`).** When a reusable setup, doctor, or driving wrapper belongs in the bundle, write a clean, executable, composable script (with `--help`, machine-readable JSON output where useful, and actionable error messages), verify basic syntax statically (for example `bash -n` or `py_compile`), and document its exact invocation in `<cases-dir>/<case-slug>/README.md`.
-6. **Run static hygiene checks and report authored definitions.** Re-read every written or modified file to verify zero placeholders, valid relative links, executable helper bits, and accurate `Status: draft` / `Status: proven` labeling. Summarize the resolved `<cases-dir>/<case-slug>/`, files written/updated, static checks performed, confirmation that no live run was executed, and recommended next step (`imsight-project-mgr->agent-driven-testing->run-case()`).
+1. **Resolve `<cases-dir>/<case-slug>/` and ground commands statically.** Confirm every command, flag, entrypoint, config key, and helper path against the current codebase across the five interview axes in [propose-case.md](propose-case.md). Leave zero `<TODO>` placeholders.
+2. **Write or update `<cases-dir>/<case-slug>/README.md`.** Follow the **Harness Contract** in [case-and-harness-contract.md](../references/case-and-harness-contract.md) (`Status`, `Launch`, `Doctor`, `Drive`, `Evidence`, `Cleanup`, `Helpers`, `Case Index`), routing run outputs to `<output-dir>/<test-slug>/`. Stamp `Status: draft` whenever creating a bundle or materially changing its harness, steps, or helpers; stamp `Status: proven (commit <sha>, report <path>)` only when explicitly authorized with a cited verified `run-case()` report. Update any existing `<cases-dir>/README.md` bundle index link if adding or removing a bundle.
+3. **Write or update `<cases-dir>/<case-slug>/cases/<scenario-slug>.md`.** Apply [case-and-harness-contract.md](../references/case-and-harness-contract.md) and [principles.md](../references/principles.md) (`v1`–`v3`): describe user/caller-visible steps, independent read-only cross-checks, **Quantified checks** for every structural/measurable obligation, and **Qualitative checks** strictly for irreducible natural-language semantics (plus `## Blinding and Transcript Checks` when testing AI agents).
+4. **Write or update optional `<cases-dir>/<case-slug>/helpers/`.** Promote reusable driver or setup logic into clean, executable scripts (`chmod +x`, `--help`, structured output where useful), check syntax statically (such as `bash -n` or `py_compile`), and show exact invocations in `<cases-dir>/<case-slug>/README.md`.
+5. **Re-read and report.** Re-read every written file to verify links, executable permissions, zero placeholders, and accurate `Status: draft | proven` metadata. Report files written/updated, confirm no live run occurred, and point to `imsight-project-mgr->agent-driven-testing->run-case()` as the next phase.
 
-If the user's request involves migrating an existing manual test script or updating multiple scenarios from a `run-case()` report, use your native planning tool to sequence static verification, file updates, and link hygiene while keeping `author-case()` strictly free of live test execution.
-
-## Authoring Cases and Helpers
-
-Apply [case-and-harness-contract.md](../references/case-and-harness-contract.md) strictly:
-
-- **User POV only**: name user entry points, stable selectors/flags, required preconditions, literal commands, read-only cross-checks, and qualitative soft goals. Omit internal function names and implementation details.
-- **Soft goals with concrete grounding**: write qualitative user-visible outcomes under `## Expected Outcome (Soft Goals)`, paired with **Observable signals to inspect** and **Hard disqualifiers** so the executing agent in `run-case()` has clear criteria for a forced `PASS`/`FAIL` decision.
-- **Distilling debug campaigns or bugs**: convert each validated workflow arm and each real defect discovered during debugging into explicit sub-cases, including negative/guardrail assertions (such as busy refusals, unsupported mode rejections, or peer-discovery isolation) and known traps under `Gotchas`.
-- **Promote repeated scripts to helpers**: when prior `run-case()` reports show agents rewriting the same throwaway script in `<output-dir>/<test-slug>/scripts/`, promote a clean executable helper into `<cases-dir>/<case-slug>/helpers/` and document its exact invocation in `<cases-dir>/<case-slug>/README.md`.
-- **Honest draft status**: per `pstack`, an unexecuted bundle is a draft, not a proven deliverable. Never stamp `Status: proven` without an explicit user update backed by a verified `run-case()` report and commit SHA.
-- **No placeholders**: never leave `<TODO>`, dummy selectors, or unverified placeholder commands in committed case files.
+If migrating legacy manual scripts or applying multi-file updates from a run report, use your native planning tool to sequence static checks and edits without starting live runs.
 
 ## Guardrails
 
-- DO NOT launch the target application, start services, or execute live test scenarios during `author-case()` unless the user explicitly requested chaining `run-case()`.
-- DO NOT mark a newly created or materially modified unexecuted bundle as `Status: proven`; stamp it `Status: draft`.
-- DO NOT write a bundle's harness `README.md`, `cases/`, or `helpers/` directly under `<cases-dir>`; always output into `<cases-dir>/<case-slug>/`.
-- DO NOT leave placeholders, ungrounded commands, or internal implementation assertions in `<cases-dir>/<case-slug>/README.md` or `<cases-dir>/<case-slug>/cases/*.md`.
-- DO NOT write disposable scripts, logs, raw test outputs, or test reports inside `<cases-dir>` or system `/tmp`.
-- DO NOT copy secrets, API keys, sign-in tokens, or session cookies into `<cases-dir>` or `helpers/`.
-- DO NOT edit product source code during `author-case()`.
+- DO NOT launch the target program, start services, or run test scenarios during `author-case()` unless the user explicitly asked to chain `run-case()`.
+- DO NOT stamp an unexecuted new or materially modified bundle as `Status: proven`; mark it `Status: draft`.
+- DO NOT write bundle files directly under `<cases-dir>`; always nest under `<cases-dir>/<case-slug>/`.
+- DO NOT encode private implementation details where boundary behavior belongs (`v1`), leave structural checks unquantified (`v2`), or leave placeholders in committed files.
+- DO NOT store disposable scripts, logs, raw outputs, secrets, or test reports inside `<cases-dir>`, or edit product source code during `author-case()`.

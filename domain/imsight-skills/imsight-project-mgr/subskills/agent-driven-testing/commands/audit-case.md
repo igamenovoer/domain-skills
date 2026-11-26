@@ -14,64 +14,39 @@ metadata:
 
 # Audit Instructional Test Cases
 
-**Maintenance Pass (Explicit Invocation Only).** Keep tracked instructional test definitions under `<cases-dir>/<case-slug>/` (defaulting `<cases-dir>` to `<realwork>/tests/instructional/`) honest as the realwork evolves by checking index hygiene, auditing every scenario against current source in parallel, driving every scenario live with outputs stored under `<output-dir>/<test-slug>/`, triaging drift versus harness gaps versus product regressions versus usability issues strictly, and shipping proven test-definition corrections without touching product code.
+**Maintenance Pass (Explicit Invocation Only).** Keep `<cases-dir>/<case-slug>/` definitions honest as the codebase evolves: parallel source readers per scenario, one live pass exercising every scenario with outputs in `<output-dir>/<test-slug>/`, and strict triage separating `doc-drift` and `harness-gap` (fixed in definitions) from `product-regression` and `usability-issue` (reported, never papered over).
 
 ## Predecessors
 
-- Requires at least one existing test definition bundle under `<cases-dir>/<case-slug>/` (`README.md` and `cases/*.md`). If none exist, refuse to run and point the user to `imsight-project-mgr->agent-driven-testing->propose-case()` and `imsight-project-mgr->agent-driven-testing->author-case()`.
-- Invoking `audit-case()` explicitly authorizes edits strictly inside the audited `<cases-dir>/<case-slug>/` definition bundle(s) (and optional `<cases-dir>/README.md` index) for proven `doc-drift` or `harness-gap` fixes only.
+- Requires existing definitions under `<cases-dir>/<case-slug>/`; if none exist, stop and point to `propose-case()` and `author-case()`.
+- Explicit `audit-case()` invocation authorizes edits **strictly inside `<cases-dir>/<case-slug>/`** (and optional `<cases-dir>/README.md` index) for proven `doc-drift` and `harness-gap` fixes only.
 
 ## Workflow
 
-When `imsight-project-mgr->agent-driven-testing->audit-case()` is invoked, execute the following steps in order.
+When `imsight-project-mgr->agent-driven-testing->audit-case()` is invoked, execute the following steps in order while applying [principles.md](../references/principles.md) (`v1`–`v7`).
 
-1. **Locate target test definitions (`<cases-dir>/<case-slug>/`) and allocate test output (`<output-dir>/<test-slug>/`).** Resolve `<cases-dir>` and the target `<cases-dir>/<case-slug>/` bundle(s) (one named bundle, or every `<case-slug>/` directory containing `README.md` and `cases/` under `<cases-dir>`) per **Part 1: Test Definitions** in [case-and-harness-contract.md](../references/case-and-harness-contract.md). If none exist, stop and point the user to `propose-case()` and `author-case()`. Resolve `<output-dir>` per **Part 2: Test Output** and allocate `<output-dir>/<test-slug>/`.
-2. **Run index hygiene.** Compare each bundle's `<cases-dir>/<case-slug>/README.md` case index against `<cases-dir>/<case-slug>/cases/` and `helpers/`, and check any optional top-level `<cases-dir>/README.md` index against existing `<case-slug>/` subdirectories. Record or repair missing, extra, duplicate, or dead links.
-3. **Run a parallel read-only source wave.** Launch one read-only subagent per scenario file concurrently to inspect current product source against the scenario, cite likely doc drift with `file:line`, and propose one concise live-verification recipe. Children never drive the app and never edit files. See **Source Wave and Reconciliation**.
-4. **Reconcile source findings and sweep recent churn.** Merge overlapping recipes into as few clean app states as practical, spot-check cited drift, and inspect recent commits for new user-facing surfaces missing from `<cases-dir>` (requiring a concrete source path before flagging a missing surface).
-5. **Execute a mandatory live pass.** Even when source looks clean, run all mapped scenarios live writing raw outputs into `<output-dir>/<test-slug>/` and holding `imsight-project-mgr->agent-driven-testing->run-case()` live invariants (coordinator owns driving, `Doctor` before first drive / per fresh session / after failures, forced verdicts on soft goals with evidence-cited rationale, usability-issue observation, evidence survives cleanup, failed-iteration residue cleaned). If a `Doctor` failure is caused by harness drift inside `<cases-dir>/<case-slug>/`, fix it within edit scope, restart only what the fix invalidated, and retry once before calling the audit `blocked`.
-6. **Triage every finding strictly.** Classify each mismatch or friction point into `doc-drift`, `harness-gap`, `product-regression`, or `usability-issue`, applying edits only inside the audited `<cases-dir>/<case-slug>/` bundle(s) (and optional `<cases-dir>/README.md` index), re-driving every harness fix live before final teardown, and updating `Status: proven (commit <sha>, report <path>)` when the audited bundle achieves full verified live coverage. See **Edit Scope and Triage**.
-7. **Report the audit outcome.** Call `imsight-project-mgr->agent-driven-testing->report-results()` with one explicit audit outcome (`clean`, `changed`, or `blocked`), coverage summary, forced per-case verdicts, usability issues, uncertainty/open questions, confirmed regressions kept out of edits, and surviving proof links under `<output-dir>/<test-slug>/`.
+1. **Locate `<cases-dir>/<case-slug>/`, allocate `<output-dir>/<test-slug>/`, and run index hygiene.** Repair missing, extra, duplicate, or dead links in `<cases-dir>/<case-slug>/README.md` (and any `<cases-dir>/README.md` index).
+2. **Source wave.** Spawn one read-only subagent per scenario concurrently. Each reads current product source and returns: (1) one-sentence user/caller-facing summary, (2) `file:line` entry points, (3) likely drift with citation or `none`, and (4) one concise live-verification recipe. Children never run the program or edit files.
+3. **Reconcile and check recent churn.** Merge overlapping recipes into minimal program states, spot-check cited drift, and scan recent commits for new public surfaces missing from `<cases-dir>` (citing concrete source paths).
+4. **Live pass (mandatory even if source looks clean).** Follow [run-case.md](run-case.md) invariants (`Doctor`, real boundary, independent second view, forced verdicts, surviving proof in `<output-dir>/<test-slug>/evidence/`, clean residue teardown). If `Doctor` fails due to bundle drift, fix it within `<cases-dir>/<case-slug>/`, restart only what the fix invalidated, and retry once before calling `blocked`.
+5. **Triage and re-prove.** Apply **Triage Rules** below. Re-drive every `harness-gap` or `doc-drift` edit live before final teardown, re-read all modified definition files, and update `Status: proven (commit <sha>, report <path>)` when a bundle achieves full verified live coverage.
+6. **Report via [report-template.md](../references/report-template.md)** with one explicit audit outcome: **`clean`** (full source + live coverage, no definition edits), **`changed`** (proven `doc-drift`/`harness-gap` fixes applied inside `<cases-dir>/<case-slug>/` and re-driven live), or **`blocked`** (coverage or verification could not finish safely; exact blocker named).
 
-If the user scopes the audit to a subset of cases or a single changed subsystem, use your native planning tool to run the same source-wave, live-pass, and triage discipline on that explicit subset and record the untouched cases under unverified scope.
+If auditing an explicitly scoped subset of scenarios, use your native planning tool to run the same source-wave, live-pass, and triage loop on that subset and list untouched scenarios under unverified scope.
 
-## Source Wave and Reconciliation
+## Triage Rules
 
-- **Per-case read-only subagent return shape**:
-  1. One-sentence user-facing feature summary from current source.
-  2. Authoritative source entry points (`file:line`).
-  3. Likely drift (with exact citation) or `none`.
-  4. One concise live-verification recipe matching the harness in `README.md`.
-- **Reconciliation rules**:
-  - Wait until every targeted case file has a returned summary before driving live.
-  - Spot-check cited drift directly; do not waste turns re-proving clean claims from source because the live pass will exercise them directly.
-  - Do not report a missing feature solely from speculation; cite the real CLI command, route, UI control, or spec file added in recent churn.
-
-## Edit Scope and Triage
-
-Edit scope during `audit-case()` is **strictly limited to `<cases-dir>/<case-slug>/`** (`README.md`, `cases/*.md`, and `helpers/*`) plus any optional top-level `<cases-dir>/README.md` bundle index. Never modify product code under `src/` or package code during an audit.
-
-| Observation | Triage Class | Allowed Action in Audit |
+| Finding | Label | Action During Audit |
 | --- | --- | --- |
-| User-visible command, label, route, or prerequisite changed on purpose (backed by code/spec/commit evidence), and the test definition is stale | `doc-drift` | Update the scenario or `README.md` under `<cases-dir>/<case-slug>/`, then verify live. |
-| Product behavior works cleanly for a human user, but the harness script or selector cannot drive or observe it reliably | `harness-gap` | Fix the helper or selector under `<cases-dir>/<case-slug>/` (keep scripts executable and documented in `<cases-dir>/<case-slug>/README.md`), then **re-drive live** to prove the fix works. |
-| App behavior genuinely breaks its documented or intended contract (or fails soft goals / triggers a hard disqualifier) | `product-regression` | **Do not edit product code and do not edit the scenario to accept the broken behavior.** Record exact repro steps, expected vs. observed state, commit SHA, and surviving proof artifacts in the report. |
-| System behavior is counter-intuitive, misleads the agent into a wrong mental model or operation, confuses state, or lacks actionable feedback when an error occurs (**if it confuses the agent, it will likely confuse users too**) | `usability-issue` | **Do not edit product code and do not bury the UX flaw as mere doc drift.** Report the exact confusing interaction, what misled the agent, what error feedback was missing, and the surviving evidence under `## Usability Issues` in the report (including on passing cases). You may also add a factual note in `Gotchas` only after recording the `usability-issue` prominently in the report. |
-
-## Audit Outcomes
-
-Pick exactly one outcome and state it prominently in the report:
-
-- **`clean`**: every targeted bundle and scenario got source and live coverage with nothing worth changing under `<cases-dir>`. No definition files modified.
-- **`changed`**: proven `doc-drift` or `harness-gap` corrections were applied strictly inside the audited `<cases-dir>/<case-slug>/` bundle(s) (and optional `<cases-dir>/README.md` index), every changed file was re-read, and every harness fix was re-driven live before final teardown.
-- **`blocked`**: coverage could not complete or a proven fix could not be verified safely; name the exact blocker and partial coverage honestly.
+| Intentional change in commands, flags, interfaces, or prerequisites (backed by source/spec/commit), leaving definitions stale | `doc-drift` | Update `<cases-dir>/<case-slug>/` (keeping structural checks quantified per `v2`), then verify live. |
+| Program works cleanly at its boundary, but the bundle's driver or helper cannot drive or observe it reliably | `harness-gap` | Fix the driver/helper in `<cases-dir>/<case-slug>/` (executable, documented in `README.md`), then **re-drive live**. |
+| Program violates its intended contract, quantified invariant, or qualitative expectation | `product-regression` | **Touch neither product code nor the scenario expectation.** Report repro steps, commit SHA, and surviving proof. |
+| Interface, state transitions, or error messages mislead or confuse the agent (`v6`) | `usability-issue` | **Do not edit product code and do not bury UX friction as `doc-drift`.** Report prominently under `## Usability Issues` (even on `PASS` cases) before adding any factual note in `Gotchas`. |
 
 ## Guardrails
 
 - DO NOT edit product source code, production configs, or non-instructional test suites during `audit-case()`.
-- DO NOT skip the live pass because the source wave looked clean.
-- DO NOT let read-only source-wave subagents drive the live app or modify files.
-- DO NOT hide a `product-regression` or `usability-issue` by rewriting a case file or softening its soft goals to paper over broken or confusing behavior.
-- DO NOT ship a `harness-gap` fix without re-driving the fixed path live before final teardown.
-- DO NOT emit an `INCONCLUSIVE` case verdict; make a definitive verdict and record uncertainty or open questions in the report.
-- DO NOT commit scratch audit notes or raw test outputs from `<output-dir>/<test-slug>/` into the repository.
+- DO NOT skip the live pass because the source wave looked clean, or let source-wave subagents run the program or edit files.
+- DO NOT mask a `product-regression` or `usability-issue` by weakening quantified checks or qualitative criteria (`v5`, `v6`).
+- DO NOT ship a `harness-gap` fix without re-driving the fixed path live before teardown.
+- DO NOT emit an `INCONCLUSIVE` verdict or commit raw files from `<output-dir>/<test-slug>/`.

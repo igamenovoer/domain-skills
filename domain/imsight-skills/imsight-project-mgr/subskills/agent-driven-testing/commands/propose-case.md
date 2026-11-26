@@ -14,48 +14,44 @@ metadata:
 
 # Propose Instructional Test Cases
 
-**Phase 1 (Discussion Only).** Interview the realwork repository read-only and propose a concrete instructional test case design — intent, scope, preconditions, driving plan, and qualitative **soft goals** — so the user can review and refine the design before any tracked test definitions are written or any app is launched.
+**Phase 1 (Discussion Only).** Interview the realwork repository read-only and propose a concrete test design — intent, scope, preconditions, driving plan, and decomposed **quantified + qualitative criteria** — before any files are written or any program runs.
 
 ## Workflow
 
 When `imsight-project-mgr->agent-driven-testing->propose-case()` is invoked, execute the following steps in order.
 
-1. **Resolve target realwork, `<cases-dir>`, `<case-slug>`, and source inputs.** Identify the realwork checkout and branch, resolve the tracked test-definitions location `<cases-dir>/<case-slug>/` per **Part 1: Test Definitions** in [case-and-harness-contract.md](../references/case-and-harness-contract.md), and inspect any existing bundle at `<cases-dir>/<case-slug>/` plus any user-referenced specs, PRs, issues, or debug campaigns.
-2. **Interview the repository read-only.** Inspect code, docs, existing harnesses, scripts, and tests across all five discovery axes (`Surface`, `Run`, `Drive`, `Observe`, `Isolate`) without modifying files or launching the app. Note only the facts that cannot be observed in the repository as explicit questions for the user. See **Repository Interview**.
-3. **Design the test case proposal with soft goals.** Draft the proposed bundle scope, sub-cases, preconditions, `Doctor` and driving approach, observable signals, hard disqualifiers, and qualitative soft goals (explicitly specifying how the future runner agent will judge `PASS` vs. `FAIL` from captured evidence and watch for `usability-issue` friction). See **Proposal Structure**.
-4. **Present the proposal in chat and stop.** Return the structured proposal and open questions for user review. Do not create or edit any files, do not write a durable report, and do not launch or test the app; wait for the user to iterate or explicitly invoke `imsight-project-mgr->agent-driven-testing->author-case()`.
+1. **Resolve target realwork and `<cases-dir>/<case-slug>/`.** Identify the realwork checkout, branch, and tracked test-definition location per [case-and-harness-contract.md](../references/case-and-harness-contract.md), plus any existing bundle, spec, PR, or debug campaign named by the user.
+2. **Interview the repository, not the user.** Answer the five discovery axes from the codebase and ask the user only what cannot be observed in code. See **Repository Interview**.
+3. **Decompose test criteria following [principles.md](../references/principles.md) (`v1`–`v3`).** Separate everything countable, typed, or structural into explicit **Quantified checks**, and reserve **Qualitative checks** strictly for irreducible natural-language semantics that the runner will judge from captured artifacts.
+4. **Present the proposal in chat and stop.** Return the structured proposal below and wait for user feedback or an explicit `imsight-project-mgr->agent-driven-testing->author-case()` request.
 
-If the user is comparing alternative test designs or scoping a large multi-bundle verification plan, use your native planning tool to break the read-only interview across subsystems while keeping `propose-case()` strictly discussion-only with zero disk writes or live execution.
+If the user is comparing alternative designs or scoping multiple bundles, use your native planning tool to structure the read-only interview while keeping `propose-case()` strictly free of file writes and execution.
 
 ## Repository Interview
 
-Answer these five questions directly from the realwork codebase (and any referenced debug campaign, PR, or OpenSpec change) before proposing a design:
+Answer from source, configs, scripts, and existing tests before asking the user:
 
-- **Surface**: what does a user or operator actually touch (CLI, TUI, Web UI, HTTP service, multi-agent workflow, library)? Name the primary surface and secondary entry points.
-- **Run**: how does the app start locally from an empty data directory? Prefer the repo's documented dev/runtime command (`pixi run`, `npm run`, `uv`, `cargo`, `Makefile`), noting ports, env vars, migrations, seed fixtures, and auth.
-- **Drive**: what programmatic harness already exists in the repo (Playwright specs, fixture CLIs, PTY helpers, gateway/HTTP clients)? Reuse maintained repo harnesses first; only then choose a generic recipe (Playwright/CDP for Web, isolated tmux/PTY for CLI/TUI, HTTP/CLI for services).
-- **Observe**: what concrete evidence proves behavior (screenshots, ARIA snapshots, terminal captures, JSON outputs, exit codes, log entries, DB/mailbox/file read-backs, or agent transcripts)?
-- **Isolate**: can multiple instances run side by side via isolated ports, data dirs, isolated test output directories (`<output-dir>/<test-slug>/`), and dedicated tmux sockets (`tmux -S` with `TMUX` and `TMUX_PANE` cleared)? If two instances cannot coexist safely, flag that constraint upfront.
+- **Surface:** what public interface does a user, operator, or caller actually touch (CLI, service/API, batch or compute pipeline, library, daemon, multi-agent workflow, TUI/GUI)? Pick the primary surface and note secondary entry points.
+- **Run:** how does the program build and start locally from clean state? Note commands, env vars, seed inputs, hardware/service dependencies, and readiness signals.
+- **Drive:** what harness or client already exists in the repo? Reuse maintained repo tools first before picking a generic driver.
+- **Observe:** what outputs and independent read-only second views prove what happened (`v3`)?
+- **Isolate:** can concurrent runs isolate state, ports, sockets, and `<output-dir>/<test-slug>/` directories safely, or must runs serialize?
 
-## Proposal Structure
+## Proposal Shape
 
-Present every proposal in chat with these sections so the user can approve or adjust the design in one pass:
-
-1. **Target & Artifact Placement**: resolved realwork checkout, tracked test definitions path (`<cases-dir>/<case-slug>/`), expected test output root (`<output-dir>/<test-slug>/`), durable report destination, whether creating new or updating existing definitions, and whether any helpers are recommended.
-2. **Intent & Scope**: what user-visible behavior is being verified, why it matters (what unit tests cannot prove), proposed sub-cases, and explicit non-goals.
-3. **Preconditions & Isolation**: required fixtures, configs, credentials/models, isolated ports/data dirs/sockets, and what `Doctor` will check before driving.
-4. **Driving & Evidence Plan**: user POV entry points, literal harness strategy, read-only second-view cross-checks, and proof artifacts to save under `<output-dir>/<test-slug>/evidence/`.
-5. **Expected Outcome (Soft Goals) & Pass/Fail Definition**:
-   - **Soft goals**: qualitative descriptions of what successful behavior looks like from the user's POV; the executing agent in `run-case()` will inspect captured evidence and make the final definitive decision (`PASS` or `FAIL`, no `INCONCLUSIVE`).
-   - **Observable signals to inspect**: exact artifacts and cross-checks the runner must cite in its rationale.
-   - **Hard disqualifiers**: non-negotiable failure conditions that trigger an automatic `FAIL` regardless of qualitative judgment.
-   - **Usability watchpoints**: places where counter-intuitive flows, misleading labels, or weak error feedback should be noted as `usability-issue` during execution.
-6. **Gotchas, Blinding Needs & Open Questions**: known timing/environment traps, whether `## Blinding and Transcript Checks` is needed (for AI-agent behavior cases), and any decisions requiring user input before moving to `author-case()`.
+1. **Placement:** realwork checkout, `<cases-dir>/<case-slug>/`, expected `<output-dir>/<test-slug>/`, report destination, and whether creating or updating definitions.
+2. **Intent & Scope:** user/caller-visible behavior under test, proposed sub-cases (pairing positive and contrastive negative/boundary paths per `v1`/`v3`), and explicit non-goals.
+3. **Preconditions, Isolation & Doctor:** required fixtures/inputs/credentials, isolation boundaries, and what `Doctor` (or preflight) checks before driving (`v4`).
+4. **Driving & Second-View Plan:** literal public entry points, driver approach, independent read-only cross-checks, and artifacts to capture.
+5. **Expected Outcome (`v2`):**
+   - **Quantified checks:** explicit, machine-checkable predicates for every structural, countable, or bounded invariant (exit codes, counts, routing/header fields, schema/state invariants, numeric bounds, zero unhandled errors).
+   - **Qualitative checks:** plain natural-language criteria only for irreducible semantic behavior (or `None` when fully quantifiable), naming which artifacts the runner inspects to decide `PASS` vs. `FAIL`.
+6. **Risks, Blinding & Open Questions:** timing/state traps, usability watchpoints (`v6`), blinding needs if testing AI agents (`v3`), and unresolved questions for the user.
 
 ## Guardrails
 
-- DO NOT create, edit, or delete any files (including `<cases-dir>/<case-slug>/`, helper scripts, test output files, or durable reports) during `propose-case()`.
-- DO NOT build, launch, or drive the target application, start background services, or run test cases during `propose-case()`.
-- DO NOT ask the user questions that can already be answered by inspecting the repository.
-- DO NOT write brittle implementation-level assertions where user-visible soft goals and observable signals belong.
-- DO NOT automatically proceed to `author-case()` or `run-case()` unless the user explicitly instructed chaining phases.
+- DO NOT create, edit, or delete any files during `propose-case()`.
+- DO NOT build, launch, or run the target program during `propose-case()`.
+- DO NOT ask the user questions the repository already answers.
+- DO NOT leave structural or countable expectations unquantified, and DO NOT force irreducible semantics into brittle string-match assertions.
+- DO NOT proceed to `author-case()` or `run-case()` unless the user explicitly asked to chain phases.
