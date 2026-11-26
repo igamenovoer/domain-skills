@@ -1,6 +1,6 @@
 interface:
   display_name: "Agent-Driven Testing"
-  short_description: "Author, run, audit, and report instructional test bundles under <output-dir>/<case-slug>/"
-  default_prompt: "Use $imsight-project-mgr->agent-driven-testing to generate, run, audit, or report instructional test bundles under <output-dir>/<case-slug>/ (defaulting <output-dir> to tests/instructional) using the project-local temporary directory."
+  short_description: "Propose, author, run, audit, and report instructional test suites across separated definitions, test outputs, and reports"
+  default_prompt: "Use $imsight-project-mgr->agent-driven-testing to propose, author, run, audit, or report instructional test suites with tracked test definitions under <cases-dir>/<case-slug>/ (defaulting to tests/instructional/), isolated test outputs under <output-dir>/<test-slug>/, and durable test reports."
 policy:
   allow_implicit_invocation: false

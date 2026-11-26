@@ -57,7 +57,7 @@ If the request crosses several capabilities, use the native planning tool to ord
 | `realwork-project-mgr` | Route here for functional project structure, acquisition controls, project guidance, product releases, or temporary in-repo Git worktrees in standalone realwork repositories. | [SKILL-MAIN.md](subskills/realwork-project-mgr/SKILL-MAIN.md) |
 | `meta-project-mgr` | Route here to create or migrate a metaproj workspace, manage realwork branch submodules, or configure shared tools and resources. | [SKILL-MAIN.md](subskills/meta-project-mgr/SKILL-MAIN.md) |
 | `vscode-config` | Route here to scope editor file watching or Python analysis around authored source and large obtained/generated trees. | [SKILL-MAIN.md](subskills/vscode-config/SKILL-MAIN.md) |
-| `agent-driven-testing` | Route here to author, execute, audit, or report live agent-driven verification bundles under `<output-dir>/<case-slug>/` (defaulting `<output-dir>` to a realwork's `tests/instructional/`) using a project-local temporary workspace. | [SKILL-MAIN.md](subskills/agent-driven-testing/SKILL-MAIN.md) |
+| `agent-driven-testing` | Route here to propose, author, run, audit, or report live agent-driven verification suites with tracked test definitions (`<cases-dir>/<case-slug>/`, defaulting to `<realwork>/tests/instructional/`), isolated test outputs (`<output-dir>/<test-slug>/`), and durable test reports (`.imsight-arts/...`). | [SKILL-MAIN.md](subskills/agent-driven-testing/SKILL-MAIN.md) |
 
 ## Subcommands
 
