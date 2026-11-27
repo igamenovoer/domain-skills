@@ -1,6 +1,6 @@
 interface:
   display_name: "Imsight Reporting"
-  short_description: "Write evidence-based daily and weekly project reports"
-  default_prompt: "Use $imsight-reporting use write-day-log() to prepare today's three-point report from Git and project evidence, or use write-week-report() to summarize a period by outcome rather than by day."
+  short_description: "Write clear, evidence-grounded daily and weekly stakeholder reports"
+  default_prompt: "Use $imsight-reporting use write-day-log() to prepare today's report, or write-week-report() to synthesize a period by project-relevant outcomes."
 policy:
   allow_implicit_invocation: false
